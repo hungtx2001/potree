@@ -24,31 +24,31 @@
 				<li><span data-i18n="appearance.nb_max_pts"></span>: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div></li>
 				<li><span data-i18n="appearance.field_view"></span>: <span id="lblFOV"></span><div id="sldFOV"></div></li>
 
-				<div class="divider"><span>Eye-Dome-Lighting</span></div>
+				<div class="divider"><span data-i18n="appearance.edl_title">Eye-Dome-Lighting</span></div>
 
 				<li><label><input type="checkbox" id="chkEDLEnabled"/><span data-i18n="appearance.edl_enable"></span></label></li>
 				<li><span data-i18n="appearance.edl_radius"></span>: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
 				<li><span data-i18n="appearance.edl_strength"></span>: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
 				<li><span data-i18n="appearance.edl_opacity"></span>: <span id="lblEDLOpacity"></span><div id="sldEDLOpacity"></div></li>
 				
-				<div class="divider"><span>Background</span></div>
+				<div class="divider"><span data-i18n="appearance.background">Background</span></div>
 
 				<li>
 					<selectgroup id="background_options">
-						<option id="background_options_skybox" value="skybox">Skybox</option>
-						<option id="background_options_gradient" value="gradient">Gradient</option>
-						<option id="background_options_black" value="black">Black</option>
-						<option id="background_options_white" value="white">White</option>
-						<option id="background_options_none" value="null">None</option>
+						<option id="background_options_skybox" value="skybox" data-i18n="appearance.skybox">Skybox</option>
+						<option id="background_options_gradient" value="gradient" data-i18n="appearance.gradient">Gradient</option>
+						<option id="background_options_black" value="black" data-i18n="appearance.black">Black</option>
+						<option id="background_options_white" value="white" data-i18n="appearance.white">White</option>
+						<option id="background_options_none" value="null" data-i18n="appearance.none">None</option>
 					</selectgroup>
 				</li>
 
-				<div class="divider"><span>Other</span></div>
+				<div class="divider"><span data-i18n="appearance.other">Other</span></div>
 
 				<li>
 					<selectgroup id="splat_quality_options">
-						<option id="splat_quality_options_standard" value="standard">Standard</option>
-						<option id="splat_quality_options_hq" value="hq">High Quality</option>
+						<option id="splat_quality_options_standard" value="standard" data-i18n="appearance.standard">Standard</option>
+						<option id="splat_quality_options_hq" value="hq" data-i18n="appearance.high_quality">High Quality</option>
 					</selectgroup>
 				</li>
 				
@@ -63,38 +63,38 @@
 		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
 		<div class="pv-menu-list">
 
-			<div class="divider"><span>Measurement</span></div>
+			<div class="divider"><span data-i18n="tb.measurments_opt">Measurement</span></div>
 
 			<li id="tools"></li>
 
 			<li>
 				<selectgroup id="measurement_options_show">
-					<option id="measurement_options_show_yes" value="SHOW">Show</option>
-					<option id="measurement_options_show_no" value="HIDE">Hide</option>
+					<option id="measurement_options_show_yes" value="SHOW" data-i18n="measurements.show_label">Show</option>
+					<option id="measurement_options_show_no" value="HIDE" data-i18n="measurements.hide_label">Hide</option>
 				</selectgroup>
 			</li>
 
-			<div class="divider"><span>Clipping</span></div>
+			<div class="divider"><span data-i18n="tb.clipping_opt">Clipping</span></div>
 
 			<li id="clipping_tools"></li>
 
 			<li>
 				<selectgroup id="cliptask_options">
-					<option id="cliptask_options_none" value="NONE">None</option>
-					<option id="cliptask_options_highlight" value="HIGHLIGHT">Highlight</option>
-					<option id="cliptask_options_show_inside" value="SHOW_INSIDE">Inside</option>
-					<option id="cliptask_options_show_outside" value="SHOW_OUTSIDE">Outside</option>
+					<option id="cliptask_options_none" value="NONE" data-i18n="clipping.none">None</option>
+					<option id="cliptask_options_highlight" value="HIGHLIGHT" data-i18n="clipping.highlight">Highlight</option>
+					<option id="cliptask_options_show_inside" value="SHOW_INSIDE" data-i18n="clipping.inside">Inside</option>
+					<option id="cliptask_options_show_outside" value="SHOW_OUTSIDE" data-i18n="clipping.outside">Outside</option>
 				</selectgroup>
 			</li>
 
 			<li>
 				<selectgroup id="clipmethod_options">
-					<option id="clipmethod_options_any" value="INSIDE_ANY">Inside Any</option>
-					<option id="clipmethod_options_all" value="INSIDE_ALL">Inside All</option>
+					<option id="clipmethod_options_any" value="INSIDE_ANY" data-i18n="clipping.inside_any">Inside Any</option>
+					<option id="clipmethod_options_all" value="INSIDE_ALL" data-i18n="clipping.inside_all">Inside All</option>
 				</selectgroup>
 			</li>
 			
-			<div class="divider"><span>Navigation</span></div>
+			<div class="divider"><span data-i18n="tb.navigation_opt">Navigation</span></div>
 
 			<li id="navigation"></li>
 
@@ -107,11 +107,11 @@
 
 			<div id="scene_export"></div>
 
-			<div class="divider"><span>Objects</span></div>
+			<div class="divider"><span data-i18n="scene.objects">Objects</span></div>
 
 			<div id="scene_objects"></div>
 
-			<div class="divider"><span>Properties</span></div>
+			<div class="divider"><span data-i18n="scene.properties">Properties</span></div>
 
 			<div id="scene_object_properties"></div>
 		</div>
@@ -120,11 +120,11 @@
 		<h3 id="menu_filters"><span data-i18n="tb.filters_opt"></span></h3>
 		<div>
 
-			<div class="divider"><span>Classification</span></div>
+			<div class="divider"><span data-i18n="tb.classification_filter_opt">Classification</span></div>
 
 			<ul id="classificationList" class="pv-menu-list"></ul>
 
-			<div class="divider"><span>Returns</span></div>
+			<div class="divider"><span data-i18n="filters.returns">Returns</span></div>
 
 			<div id="return_filter_panel">
 				<ul class="pv-menu-list">
@@ -135,7 +135,7 @@
 				</ul>
 			</div>
 
-			<div class="divider"><span>Point Source ID</span></div>
+			<div class="divider"><span data-i18n="filters.point_source_id">Point Source ID</span></div>
 
 			<div>
 				<ul class="pv-menu-list" id="pointsourceid_filter_panel">
@@ -143,7 +143,7 @@
 				</ul>
 			</div>
 
-			<div class="divider"><span>GPS Time</span></div>
+			<div class="divider"><span data-i18n="filters.gps_time">GPS Time</span></div>
 
 			<div id="gpstime_filter_panel">
 
@@ -152,9 +152,9 @@
 
 						<li>
 							<span style="display: flex">
-								<span>Time: </span>
+								<span data-i18n="filters.time">Time: </span>
 								<input id="txtGpsTime" type="text" style="margin: auto 10px"/>
-								<input id="btnFindGpsTime" type="button" value="find" />
+								<input id="btnFindGpsTime" type="button" value="find" data-i18n="[value]filters.find" />
 							</span>
 						</li>
 
@@ -169,25 +169,25 @@
 		<h3 id="menu_about"><span data-i18n="tb.about_opt"></span></h3>
 		<div>
 			<ul class="pv-menu-list">
-				<li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology. 
-				<a href="https://github.com/potree/potree" target="_blank">(github)</a>
+				<li><a href="http://potree.org" target="_blank">Potree</a> <span data-i18n="about.potree_desc">is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology.</span> 
+				<a href="https://github.com/potree/potree" target="_blank" data-i18n="about.see_github">(github)</a>
 				</li>
-				<li><b>Author: </b><a href="mailto:mschuetz@potree.org">Markus Sch&uuml;tz</a></li>
-				<li><b>License: </b><a target="_blank" href="https://github.com/potree/potree/blob/develop/LICENSE/">FreeBSD (2-clause BSD)</a></li>
-				<li><b>Dependency Licenses:</b> <a target="_blank" href="https://github.com/potree/potree/tree/develop/libs/">See github</a></li>
+				<li><b data-i18n="about.author">Author: </b><a href="mailto:mschuetz@potree.org">Markus Sch&uuml;tz</a></li>
+				<li><b data-i18n="about.license">License: </b><a target="_blank" href="https://github.com/potree/potree/blob/develop/LICENSE/">FreeBSD (2-clause BSD)</a></li>
+				<li><b data-i18n="about.dependency_licenses">Dependency Licenses:</b> <a target="_blank" href="https://github.com/potree/potree/tree/develop/libs/" data-i18n="about.see_github">See github</a></li>
 
 <li>
-<b>Funding:</b>
-Potree is funded by a combination of research projects, companies, institutions and individuals. If you're making good use of Potree, please consider funding its future development <a href="https://github.com/sponsors/potree">via Github Sponsors</a> or by directly inquiring <a href="mailto:mschuetz@potree.org">via e-mail</a>.
+<b data-i18n="about.funding">Funding:</b>
+<span data-i18n="about.funding_desc">Potree is funded by a combination of research projects, companies, institutions and individuals. If you're making good use of Potree, please consider funding its future development</span> <a href="https://github.com/sponsors/potree" data-i18n="about.via_github">via Github Sponsors</a> <span data-i18n="about.or_email">or by directly inquiring via e-mail</span> <a href="mailto:mschuetz@potree.org">mschuetz@potree.org</a>.
 
 <br>
 <br>
-Research projects who's funding contributes to Potree:
+<span data-i18n="about.research_projects">Research projects who's funding contributes to Potree:</span>
 
 <table>
 	<tr>
-		<th>Project Name</th>
-		<th>Funding Agency</th>
+		<th data-i18n="about.project_name">Project Name</th>
+		<th data-i18n="about.funding_agency">Funding Agency</th>
 	</tr>
 	<tr>
 		<td><a href="https://projekte.ffg.at/projekt/3851914">LargeClouds2BIM</a></td>
@@ -208,7 +208,7 @@ Research projects who's funding contributes to Potree:
 </table>
 
 <br>
-Thanks to all the companies and institutions funding Potree:
+<span data-i18n="about.thanks">Thanks to all the companies and institutions funding Potree:</span>
 
 <table style="width: 100%; text-align: center;">
 	<tr>

@@ -11,7 +11,12 @@
 		"classification_filter_opt": "Classification filter",
 		"filters_opt": "Filters",
 		"parameters_opt": "Other settings",
-		"about_opt": "About"
+		"about_opt": "About",
+		"point_clouds": "Point Clouds",
+		"other_opt": "Other",
+		"vectors_opt": "Vectors",
+		"images_opt": "Images",
+		"images360_opt": "360° images"
 	},
 	"tt": {
 		"angle_measurement": "Angle measurement",
@@ -49,7 +54,7 @@
 		"camera_animation": "Camera Animation"
 	},
 	"appearance": {
-		"nb_max_pts": "Point budget", 
+		"nb_max_pts": "Point budget",
 		"point_size": "Point size",
 		"min_point_size": "Minimum size",
 		"point_opacity": "Opacity",
@@ -73,16 +78,39 @@
 		"length_unit": "Length unit",
 		"freeze": "Lock view",
 		"language": "Language",
-		"backface_culling": "Backface Culling"
+		"backface_culling": "Backface Culling",
+		"edl_title": "Eye-Dome-Lighting",
+		"background": "Background",
+		"other": "Other",
+		"gradient": "Gradient",
+		"black": "Black",
+		"white": "White",
+		"none": "None",
+		"standard": "Standard",
+		"high_quality": "High Quality",
+		"splat_quality": "Splat Quality"
 	},
 	"measurements": {
 		"clip": "clip",
-		"show": "show volume"
+		"show": "show volume",
+		"show_label": "Show",
+		"hide_label": "Hide",
+		"show_hide_labels": "Show/Hide labels"
+	},
+	"clipping": {
+		"none": "None",
+		"highlight": "Highlight",
+		"inside": "Inside",
+		"outside": "Outside",
+		"inside_any": "Inside Any",
+		"inside_all": "Inside All",
+		"clip_task": "Clip Task",
+		"clip_method": "Clip Method"
 	},
 	"annotations": {
 		"show3D": "show in 3D",
 		"showMap": "show on map"
-	}, 
+	},
 	"profile": {
 		"nb_points": "Number of Points",
 		"title": "Height profile",
@@ -91,14 +119,46 @@
 	},
 	"scene": {
 		"camera_position": "Camera Position",
-		"camera_target": "Camera Target"
+		"camera_target": "Camera Target",
+		"export": "Export:",
+		"objects": "Objects",
+		"properties": "Properties",
+		"camera": "Camera"
 	},
 	"filters": {
 		"return_number": "Return Number",
 		"number_of_returns": "Number of Returns",
 		"gps_min": "min",
 		"gps_max": "max",
-		"gps_time": "GPS Time"
+		"gps_time": "GPS Time",
+		"returns": "Returns",
+		"point_source_id": "Point Source ID",
+		"time": "Time:",
+		"find": "find",
+		"show_hide_all": "show/hide all",
+		"invert": "invert",
+		"apply": "Apply"
+	},
+	"navigation": {
+		"camera_projection": "Camera Projection",
+		"perspective": "Perspective",
+		"orthographic": "Orthographic"
+	},
+	"about": {
+		"title": "About",
+		"potree_desc": "Potree is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology.",
+		"author": "Author:",
+		"license": "License:",
+		"dependency_licenses": "Dependency Licenses:",
+		"see_github": "See github",
+		"funding": "Funding:",
+		"funding_desc": "Potree is funded by a combination of research projects, companies, institutions and individuals. If you're making good use of Potree, please consider funding its future development",
+		"via_github": "via Github Sponsors",
+		"or_email": "or by directly inquiring via e-mail",
+		"research_projects": "Research projects whose funding contributes to Potree:",
+		"project_name": "Project Name",
+		"funding_agency": "Funding Agency",
+		"thanks": "Thanks to all the companies and institutions funding Potree:"
 	},
 	"settings": {
 		"language": "Language"
