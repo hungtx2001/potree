@@ -407,6 +407,10 @@ Research projects who's funding contributes to Potree:
 		<th>Funding Agency</th>
 	</tr>
 	<tr>
+		<td><a href="https://www.netidee.at/potree-next">Potree-Next</a></td>
+		<td><a href="https://www.netidee.at/">Netidee</a></td>
+	</tr>
+	<tr>
 		<td><a href="https://projekte.ffg.at/projekt/3851914">LargeClouds2BIM</a></td>
 		<td><a href="https://www.ffg.at/">FFG</a></td>
 	</tr>
