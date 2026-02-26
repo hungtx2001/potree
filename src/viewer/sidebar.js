@@ -1246,7 +1246,6 @@ export class Sidebar {
 
 		let languages = [
 			["EN", "en"],
-			["VN", "vn"],
 			["FR", "fr"],
 			["DE", "de"],
 			["JP", "jp"],
@@ -1255,7 +1254,7 @@ export class Sidebar {
 			["ZH", "zh"],
 			["IT", "it"],
 			["CA", "ca"],
-			["VN", "vn"]
+			["VI", "vi"]
 		];
 
 		let elLanguages = $('#potree_languages');
