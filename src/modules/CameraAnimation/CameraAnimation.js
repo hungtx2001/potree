@@ -1,528 +1,526 @@
-
 import * as THREE from "../../../libs/three.js/build/three.module.js";
-import { EventDispatcher } from "../../EventDispatcher.js";
-import { Utils } from "../../utils.js";
+import {EventDispatcher} from "../../EventDispatcher.js";
+import {Utils} from "../../utils.js";
 import {Line2} from "../../../libs/three.js/lines/Line2.js";
 import {LineGeometry} from "../../../libs/three.js/lines/LineGeometry.js";
 import {LineMaterial} from "../../../libs/three.js/lines/LineMaterial.js";
 
 
-class ControlPoint{
+class ControlPoint {
 
-	constructor(){
-		this.position = new THREE.Vector3(0, 0, 0);
-		this.target = new THREE.Vector3(0, 0, 0);
-		this.positionHandle = null;
-		this.targetHandle = null;
-	}
+  constructor() {
+    this.position = new THREE.Vector3(0, 0, 0);
+    this.target = new THREE.Vector3(0, 0, 0);
+    this.positionHandle = null;
+    this.targetHandle = null;
+  }
 
-};
+}
 
 
+export class CameraAnimation extends EventDispatcher {
 
-export class CameraAnimation extends EventDispatcher{
+  constructor(viewer) {
+    super();
 
-	constructor(viewer){
-		super();
-		
-		this.viewer = viewer;
+    this.viewer = viewer;
 
-		this.selectedElement = null;
+    this.selectedElement = null;
 
-		this.controlPoints = [];
+    this.controlPoints = [];
 
-		this.uuid = THREE.Math.generateUUID();
+    this.uuid = THREE.Math.generateUUID();
 
-		this.node = new THREE.Object3D();
-		this.node.name = "camera animation";
-		this.viewer.scene.scene.add(this.node);
+    this.node = new THREE.Object3D();
+    this.node.name = "camera animation";
+    this.viewer.scene.scene.add(this.node);
 
-		this.frustum = this.createFrustum();
-		this.node.add(this.frustum);
+    this.frustum = this.createFrustum();
+    this.node.add(this.frustum);
 
-		this.name = "Camera Animation";
-		this.duration = 5;
-		this.t = 0;
-		// "centripetal", "chordal", "catmullrom"
-		this.curveType = "centripetal" 
-		this.visible = true;
+    this.name = "Camera Animation";
+    this.duration = 5;
+    this.t = 0;
+    // "centripetal", "chordal", "catmullrom"
+    this.curveType = "centripetal"
+    this.visible = true;
 
-		this.createUpdateHook();
-		this.createPath();
-	}
+    this.createUpdateHook();
+    this.createPath();
+  }
 
-	static defaultFromView(viewer){
-		const animation = new CameraAnimation(viewer);
+  static defaultFromView(viewer) {
+    const animation = new CameraAnimation(viewer);
 
-		const camera = viewer.scene.getActiveCamera();
-		const target = viewer.scene.view.getPivot();
+    const camera = viewer.scene.getActiveCamera();
+    const target = viewer.scene.view.getPivot();
 
-		const cpCenter = new THREE.Vector3(
-			0.3 * camera.position.x + 0.7 * target.x,
-			0.3 * camera.position.y + 0.7 * target.y,
-			0.3 * camera.position.z + 0.7 * target.z,
-		);
+    const cpCenter = new THREE.Vector3(
+      0.3 * camera.position.x + 0.7 * target.x,
+      0.3 * camera.position.y + 0.7 * target.y,
+      0.3 * camera.position.z + 0.7 * target.z,
+    );
 
-		const targetCenter = new THREE.Vector3(
-			0.05 * camera.position.x + 0.95 * target.x,
-			0.05 * camera.position.y + 0.95 * target.y,
-			0.05 * camera.position.z + 0.95 * target.z,
-		);
+    const targetCenter = new THREE.Vector3(
+      0.05 * camera.position.x + 0.95 * target.x,
+      0.05 * camera.position.y + 0.95 * target.y,
+      0.05 * camera.position.z + 0.95 * target.z,
+    );
 
-		const r = camera.position.distanceTo(target) * 0.3;
+    const r = camera.position.distanceTo(target) * 0.3;
 
-		//const dir = target.clone().sub(camera.position).normalize();
-		const angle = Utils.computeAzimuth(camera.position, target);
+    //const dir = target.clone().sub(camera.position).normalize();
+    const angle = Utils.computeAzimuth(camera.position, target);
 
-		const n = 5;
-		for(let i = 0; i < n; i++){
-			let u = 1.5 * Math.PI * (i / n) + angle;
+    const n = 5;
+    for ( let i = 0; i < n; i++ ) {
+      let u = 1.5 * Math.PI * (i / n) + angle;
 
-			const dx = r * Math.cos(u);
-			const dy = r * Math.sin(u);
+      const dx = r * Math.cos(u);
+      const dy = r * Math.sin(u);
 
-			const cpPos = [
-				cpCenter.x + dx,
-				cpCenter.y + dy,
-				cpCenter.z,
-			];
+      const cpPos = [
+        cpCenter.x + dx,
+        cpCenter.y + dy,
+        cpCenter.z,
+      ];
 
-			const targetPos = [
-				targetCenter.x + dx * 0.1,
-				targetCenter.y + dy * 0.1,
-				targetCenter.z,
-			];
+      const targetPos = [
+        targetCenter.x + dx * 0.1,
+        targetCenter.y + dy * 0.1,
+        targetCenter.z,
+      ];
 
-			const cp = animation.createControlPoint();
-			cp.position.set(...cpPos);
-			cp.target.set(...targetPos);
-		}
+      const cp = animation.createControlPoint();
+      cp.position.set(...cpPos);
+      cp.target.set(...targetPos);
+    }
 
-		return animation;
-	}
+    return animation;
+  }
 
-	createUpdateHook(){
-		const viewer = this.viewer;
+  createUpdateHook() {
+    const viewer = this.viewer;
 
-		viewer.addEventListener("update", () => {
+    viewer.addEventListener("update", () => {
 
-			const camera = viewer.scene.getActiveCamera();
-			const {width, height} = viewer.renderer.getSize(new THREE.Vector2());
+      const camera = viewer.scene.getActiveCamera();
+      const {width, height} = viewer.renderer.getSize(new THREE.Vector2());
 
-			this.node.visible = this.visible;
+      this.node.visible = this.visible;
 
-			for(const cp of this.controlPoints){
-				
-				{ // position
-					const projected = cp.position.clone().project(camera);
+      for ( const cp of this.controlPoints ) {
 
-					const visible = this.visible && (projected.z < 1 && projected.z > -1);
+        { // position
+          const projected = cp.position.clone().project(camera);
 
-					if(visible){
-						const x = width * (projected.x * 0.5 + 0.5);
-						const y = height - height * (projected.y * 0.5 + 0.5);
+          const visible = this.visible && (projected.z < 1 && projected.z > -1);
 
-						cp.positionHandle.svg.style.left = x - cp.positionHandle.svg.clientWidth / 2;
-						cp.positionHandle.svg.style.top = y - cp.positionHandle.svg.clientHeight / 2;
-						cp.positionHandle.svg.style.display = "";
-					}else{
-						cp.positionHandle.svg.style.display = "none";
-					}
-				}
+          if ( visible ) {
+            const x = width * (projected.x * 0.5 + 0.5);
+            const y = height - height * (projected.y * 0.5 + 0.5);
 
-				{ // target
-					const projected = cp.target.clone().project(camera);
+            cp.positionHandle.svg.style.left = x - cp.positionHandle.svg.clientWidth / 2;
+            cp.positionHandle.svg.style.top = y - cp.positionHandle.svg.clientHeight / 2;
+            cp.positionHandle.svg.style.display = "";
+          } else {
+            cp.positionHandle.svg.style.display = "none";
+          }
+        }
 
-					const visible = this.visible && (projected.z < 1 && projected.z > -1);
+        { // target
+          const projected = cp.target.clone().project(camera);
 
-					if(visible){
-						const x = width * (projected.x * 0.5 + 0.5);
-						const y = height - height * (projected.y * 0.5 + 0.5);
+          const visible = this.visible && (projected.z < 1 && projected.z > -1);
 
-						cp.targetHandle.svg.style.left = x - cp.targetHandle.svg.clientWidth / 2;
-						cp.targetHandle.svg.style.top = y - cp.targetHandle.svg.clientHeight / 2;
-						cp.targetHandle.svg.style.display = "";
-					}else{
-						cp.targetHandle.svg.style.display = "none";
-					}
-				}
+          if ( visible ) {
+            const x = width * (projected.x * 0.5 + 0.5);
+            const y = height - height * (projected.y * 0.5 + 0.5);
 
-			}
+            cp.targetHandle.svg.style.left = x - cp.targetHandle.svg.clientWidth / 2;
+            cp.targetHandle.svg.style.top = y - cp.targetHandle.svg.clientHeight / 2;
+            cp.targetHandle.svg.style.display = "";
+          } else {
+            cp.targetHandle.svg.style.display = "none";
+          }
+        }
 
-			this.line.material.resolution.set(width, height);
+      }
 
-			this.updatePath();
+      this.line.material.resolution.set(width, height);
 
-			{ // frustum
-				const frame = this.at(this.t);
-				const frustum = this.frustum;
+      this.updatePath();
 
-				frustum.position.copy(frame.position);
-				frustum.lookAt(...frame.target.toArray());
-				frustum.scale.set(20, 20, 20);
+      { // frustum
+        const frame = this.at(this.t);
+        const frustum = this.frustum;
 
-				frustum.material.resolution.set(width, height);
-			}
+        frustum.position.copy(frame.position);
+        frustum.lookAt(...frame.target.toArray());
+        frustum.scale.set(20, 20, 20);
 
-		});
-	}
+        frustum.material.resolution.set(width, height);
+      }
 
-	createControlPoint(index){
+    });
+  }
 
-		if(index === undefined){
-			index = this.controlPoints.length;
-		}
+  createControlPoint(index) {
 
-		const cp = new ControlPoint();
+    if ( index === undefined ) {
+      index = this.controlPoints.length;
+    }
 
+    const cp = new ControlPoint();
 
-		if(this.controlPoints.length >= 2 && index === 0){
-			const cp1 = this.controlPoints[0];
-			const cp2 = this.controlPoints[1];
 
-			const dir = cp1.position.clone().sub(cp2.position).multiplyScalar(0.5);
-			cp.position.copy(cp1.position).add(dir);
+    if ( this.controlPoints.length >= 2 && index === 0 ) {
+      const cp1 = this.controlPoints[0];
+      const cp2 = this.controlPoints[1];
 
-			const tDir = cp1.target.clone().sub(cp2.target).multiplyScalar(0.5);
-			cp.target.copy(cp1.target).add(tDir);
-		}else if(this.controlPoints.length >= 2 && index === this.controlPoints.length){
-			const cp1 = this.controlPoints[this.controlPoints.length - 2];
-			const cp2 = this.controlPoints[this.controlPoints.length - 1];
+      const dir = cp1.position.clone().sub(cp2.position).multiplyScalar(0.5);
+      cp.position.copy(cp1.position).add(dir);
 
-			const dir = cp2.position.clone().sub(cp1.position).multiplyScalar(0.5);
-			cp.position.copy(cp1.position).add(dir);
+      const tDir = cp1.target.clone().sub(cp2.target).multiplyScalar(0.5);
+      cp.target.copy(cp1.target).add(tDir);
+    } else if ( this.controlPoints.length >= 2 && index === this.controlPoints.length ) {
+      const cp1 = this.controlPoints[this.controlPoints.length - 2];
+      const cp2 = this.controlPoints[this.controlPoints.length - 1];
 
-			const tDir = cp2.target.clone().sub(cp1.target).multiplyScalar(0.5);
-			cp.target.copy(cp2.target).add(tDir);
-		}else if(this.controlPoints.length >= 2){
-			const cp1 = this.controlPoints[index - 1];
-			const cp2 = this.controlPoints[index];
+      const dir = cp2.position.clone().sub(cp1.position).multiplyScalar(0.5);
+      cp.position.copy(cp1.position).add(dir);
 
-			cp.position.copy(cp1.position.clone().add(cp2.position).multiplyScalar(0.5));
-			cp.target.copy(cp1.target.clone().add(cp2.target).multiplyScalar(0.5));
-		}
+      const tDir = cp2.target.clone().sub(cp1.target).multiplyScalar(0.5);
+      cp.target.copy(cp2.target).add(tDir);
+    } else if ( this.controlPoints.length >= 2 ) {
+      const cp1 = this.controlPoints[index - 1];
+      const cp2 = this.controlPoints[index];
 
-		// cp.position.copy(viewer.scene.view.position);
-		// cp.target.copy(viewer.scene.view.getPivot());
+      cp.position.copy(cp1.position.clone().add(cp2.position).multiplyScalar(0.5));
+      cp.target.copy(cp1.target.clone().add(cp2.target).multiplyScalar(0.5));
+    }
 
-		cp.positionHandle = this.createHandle(cp.position);
-		cp.targetHandle = this.createHandle(cp.target);
+    // cp.position.copy(viewer.scene.view.position);
+    // cp.target.copy(viewer.scene.view.getPivot());
 
-		this.controlPoints.splice(index, 0, cp);
+    cp.positionHandle = this.createHandle(cp.position);
+    cp.targetHandle = this.createHandle(cp.target);
 
-		this.dispatchEvent({
-			type: "controlpoint_added",
-			controlpoint: cp,
-		});
+    this.controlPoints.splice(index, 0, cp);
 
-		return cp;
-	}
+    this.dispatchEvent({
+      type: "controlpoint_added",
+      controlpoint: cp,
+    });
 
-	removeControlPoint(cp){
-		this.controlPoints = this.controlPoints.filter(_cp => _cp !== cp);
+    return cp;
+  }
 
-		this.dispatchEvent({
-			type: "controlpoint_removed",
-			controlpoint: cp,
-		});
+  removeControlPoint(cp) {
+    this.controlPoints = this.controlPoints.filter(_cp => _cp !== cp);
 
-		cp.positionHandle.svg.remove();
-		cp.targetHandle.svg.remove();
+    this.dispatchEvent({
+      type: "controlpoint_removed",
+      controlpoint: cp,
+    });
 
-		// TODO destroy cp
-	}
+    cp.positionHandle.svg.remove();
+    cp.targetHandle.svg.remove();
 
-	createPath(){
+    // TODO destroy cp
+  }
 
-		{ // position
-			const geometry = new LineGeometry();
+  createPath() {
 
-			let material = new LineMaterial({ 
-				color: 0x00ff00, 
-				dashSize: 5, 
-				gapSize: 2,
-				linewidth: 2, 
-				resolution:  new THREE.Vector2(1000, 1000),
-			});
+    { // position
+      const geometry = new LineGeometry();
 
-			const line = new Line2(geometry, material);
+      let material = new LineMaterial({
+        color: 0x00ff00,
+        dashSize: 5,
+        gapSize: 2,
+        linewidth: 2,
+        resolution: new THREE.Vector2(1000, 1000),
+      });
 
-			this.line = line;
-			this.node.add(line);
-		}
+      const line = new Line2(geometry, material);
 
-		{ // target
-			const geometry = new LineGeometry();
+      this.line = line;
+      this.node.add(line);
+    }
 
-			let material = new LineMaterial({ 
-				color: 0x0000ff, 
-				dashSize: 5, 
-				gapSize: 2,
-				linewidth: 2, 
-				resolution:  new THREE.Vector2(1000, 1000),
-			});
+    { // target
+      const geometry = new LineGeometry();
 
-			const line = new Line2(geometry, material);
+      let material = new LineMaterial({
+        color: 0x0000ff,
+        dashSize: 5,
+        gapSize: 2,
+        linewidth: 2,
+        resolution: new THREE.Vector2(1000, 1000),
+      });
 
-			this.targetLine = line;
-			this.node.add(line);
-		}
-	}
+      const line = new Line2(geometry, material);
 
-	createFrustum(){
+      this.targetLine = line;
+      this.node.add(line);
+    }
+  }
 
-		const f = 0.3;
+  createFrustum() {
 
-		const positions = [
-			 0,  0,  0,
-			-f, -f, +1,
+    const f = 0.3;
 
-			 0,  0,  0,
-			 f, -f, +1,
+    const positions = [
+      0, 0, 0,
+      -f, -f, +1,
 
-			 0,  0,  0,
-			 f,  f, +1,
+      0, 0, 0,
+      f, -f, +1,
 
-			 0,  0,  0,
-			-f,  f, +1,
+      0, 0, 0,
+      f, f, +1,
 
-			-f, -f, +1,
-			 f, -f, +1,
+      0, 0, 0,
+      -f, f, +1,
 
-			 f, -f, +1,
-			 f,  f, +1,
+      -f, -f, +1,
+      f, -f, +1,
 
-			 f,  f, +1,
-			-f,  f, +1,
+      f, -f, +1,
+      f, f, +1,
 
-			-f,  f, +1,
-			-f, -f, +1,
-		];
+      f, f, +1,
+      -f, f, +1,
 
-		const geometry = new LineGeometry();
+      -f, f, +1,
+      -f, -f, +1,
+    ];
 
-		geometry.setPositions(positions);
-		geometry.verticesNeedUpdate = true;
-		geometry.computeBoundingSphere();
+    const geometry = new LineGeometry();
 
-		let material = new LineMaterial({ 
-			color: 0xff0000, 
-			linewidth: 2, 
-			resolution:  new THREE.Vector2(1000, 1000),
-		});
+    geometry.setPositions(positions);
+    geometry.verticesNeedUpdate = true;
+    geometry.computeBoundingSphere();
 
-		const line = new Line2(geometry, material);
-		line.computeLineDistances();
-		
-		return line;
-	}
+    let material = new LineMaterial({
+      color: 0xff0000,
+      linewidth: 2,
+      resolution: new THREE.Vector2(1000, 1000),
+    });
 
-	updatePath(){
+    const line = new Line2(geometry, material);
+    line.computeLineDistances();
 
-		{ // positions
-			const positions = this.controlPoints.map(cp => cp.position);
-			const first = positions[0];
+    return line;
+  }
 
-			const curve = new THREE.CatmullRomCurve3(positions);
-			curve.curveType = this.curveType;
+  updatePath() {
 
-			const n = 100;
+    { // positions
+      const positions = this.controlPoints.map(cp => cp.position);
+      const first = positions[0];
 
-			const curvePositions = [];
-			for(let k = 0; k <= n; k++){
-				const t = k / n;
+      const curve = new THREE.CatmullRomCurve3(positions);
+      curve.curveType = this.curveType;
 
-				const position = curve.getPoint(t).sub(first);
+      const n = 100;
 
-				curvePositions.push(position.x, position.y, position.z);
-			}
+      const curvePositions = [];
+      for ( let k = 0; k <= n; k++ ) {
+        const t = k / n;
 
-			this.line.geometry.setPositions(curvePositions);
-			this.line.geometry.verticesNeedUpdate = true;
-			this.line.geometry.computeBoundingSphere();
-			this.line.position.copy(first);
-			this.line.computeLineDistances();
+        const position = curve.getPoint(t).sub(first);
 
-			this.cameraCurve = curve;
-		}
+        curvePositions.push(position.x, position.y, position.z);
+      }
 
-		{ // targets
-			const positions = this.controlPoints.map(cp => cp.target);
-			const first = positions[0];
+      this.line.geometry.setPositions(curvePositions);
+      this.line.geometry.verticesNeedUpdate = true;
+      this.line.geometry.computeBoundingSphere();
+      this.line.position.copy(first);
+      this.line.computeLineDistances();
 
-			const curve = new THREE.CatmullRomCurve3(positions);
-			curve.curveType = this.curveType;
+      this.cameraCurve = curve;
+    }
 
-			const n = 100;
+    { // targets
+      const positions = this.controlPoints.map(cp => cp.target);
+      const first = positions[0];
 
-			const curvePositions = [];
-			for(let k = 0; k <= n; k++){
-				const t = k / n;
+      const curve = new THREE.CatmullRomCurve3(positions);
+      curve.curveType = this.curveType;
 
-				const position = curve.getPoint(t).sub(first);
+      const n = 100;
 
-				curvePositions.push(position.x, position.y, position.z);
-			}
+      const curvePositions = [];
+      for ( let k = 0; k <= n; k++ ) {
+        const t = k / n;
 
-			this.targetLine.geometry.setPositions(curvePositions);
-			this.targetLine.geometry.verticesNeedUpdate = true;
-			this.targetLine.geometry.computeBoundingSphere();
-			this.targetLine.position.copy(first);
-			this.targetLine.computeLineDistances();
+        const position = curve.getPoint(t).sub(first);
 
-			this.targetCurve = curve;
-		}
-	}
+        curvePositions.push(position.x, position.y, position.z);
+      }
 
-	at(t){
-		
-		if(t > 1){
-			t = 1;
-		}else if(t < 0){
-			t = 0;
-		}
+      this.targetLine.geometry.setPositions(curvePositions);
+      this.targetLine.geometry.verticesNeedUpdate = true;
+      this.targetLine.geometry.computeBoundingSphere();
+      this.targetLine.position.copy(first);
+      this.targetLine.computeLineDistances();
 
-		const camPos = this.cameraCurve.getPointAt(t);
-		const target = this.targetCurve.getPointAt(t);
+      this.targetCurve = curve;
+    }
+  }
 
-		const frame = {
-			position: camPos,
-			target: target,
-		};
+  at(t) {
 
-		return frame;
-	}
+    if ( t > 1 ) {
+      t = 1;
+    } else if ( t < 0 ) {
+      t = 0;
+    }
 
-	set(t){
-		this.t = t;
-	}
+    const camPos = this.cameraCurve.getPointAt(t);
+    const target = this.targetCurve.getPointAt(t);
 
-	createHandle(vector){
-		
-		const svgns = "http://www.w3.org/2000/svg";
-		const svg = document.createElementNS(svgns, "svg");
+    const frame = {
+      position: camPos,
+      target: target,
+    };
 
-		svg.setAttribute("width", "2em");
-		svg.setAttribute("height", "2em");
-		svg.setAttribute("position", "absolute");
+    return frame;
+  }
 
-		svg.style.left = "50px";
-		svg.style.top = "50px";
-		svg.style.position = "absolute";
-		svg.style.zIndex = "10000";
+  set(t) {
+    this.t = t;
+  }
 
-		const circle = document.createElementNS(svgns, 'circle');
-		circle.setAttributeNS(null, 'cx', "1em");
-		circle.setAttributeNS(null, 'cy', "1em");
-		circle.setAttributeNS(null, 'r', "0.5em");
-		circle.setAttributeNS(null, 'style', 'fill: red; stroke: black; stroke-width: 0.2em;' );
-		svg.appendChild(circle);
+  createHandle(vector) {
 
+    const svgns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgns, "svg");
 
-		const element = this.viewer.renderer.domElement.parentElement;
-		element.appendChild(svg);
+    svg.setAttribute("width", "2em");
+    svg.setAttribute("height", "2em");
+    svg.setAttribute("position", "absolute");
 
+    svg.style.left = "50px";
+    svg.style.top = "50px";
+    svg.style.position = "absolute";
+    svg.style.zIndex = "10000";
 
-		const startDrag = (evt) => {
-			this.selectedElement = svg;
+    const circle = document.createElementNS(svgns, 'circle');
+    circle.setAttributeNS(null, 'cx', "1em");
+    circle.setAttributeNS(null, 'cy', "1em");
+    circle.setAttributeNS(null, 'r', "0.5em");
+    circle.setAttributeNS(null, 'style', 'fill: red; stroke: black; stroke-width: 0.2em;');
+    svg.appendChild(circle);
 
-			document.addEventListener("mousemove", drag);
-		};
 
-		const endDrag = (evt) => {
-			this.selectedElement = null;
+    const element = this.viewer.renderer.domElement.parentElement;
+    element.appendChild(svg);
 
-			document.removeEventListener("mousemove", drag);
-		};
 
-		const drag = (evt) => {
-			if (this.selectedElement) {
-				evt.preventDefault();
+    const startDrag = (evt) => {
+      this.selectedElement = svg;
 
-				const rect = viewer.renderer.domElement.getBoundingClientRect();
+      document.addEventListener("mousemove", drag);
+    };
 
-				const x = evt.clientX - rect.x;
-				const y = evt.clientY - rect.y;
+    const endDrag = (evt) => {
+      this.selectedElement = null;
 
-				const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
-				const camera = this.viewer.scene.getActiveCamera();
-				//const cp = this.controlPoints.find(cp => cp.handle.svg === svg);
-				const projected = vector.clone().project(camera);
+      document.removeEventListener("mousemove", drag);
+    };
 
-				projected.x = ((x / width) - 0.5) / 0.5;
-				projected.y = (-(y - height) / height - 0.5) / 0.5;
+    const drag = (evt) => {
+      if ( this.selectedElement ) {
+        evt.preventDefault();
 
-				const unprojected = projected.clone().unproject(camera);
-				vector.set(unprojected.x, unprojected.y, unprojected.z);
+        const rect = viewer.renderer.domElement.getBoundingClientRect();
 
+        const x = evt.clientX - rect.x;
+        const y = evt.clientY - rect.y;
 
-			}
-		};
+        const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
+        const camera = this.viewer.scene.getActiveCamera();
+        //const cp = this.controlPoints.find(cp => cp.handle.svg === svg);
+        const projected = vector.clone().project(camera);
 
-		svg.addEventListener('mousedown', startDrag);
-		svg.addEventListener('mouseup', endDrag);
+        projected.x = ((x / width) - 0.5) / 0.5;
+        projected.y = (-(y - height) / height - 0.5) / 0.5;
 
-		const handle = {
-			svg: svg,
-		};
+        const unprojected = projected.clone().unproject(camera);
+        vector.set(unprojected.x, unprojected.y, unprojected.z);
 
-		return handle;
-	}
 
-	setVisible(visible){
-		this.node.visible = visible;
+      }
+    };
 
-		const display = visible ? "" : "none";
+    svg.addEventListener('mousedown', startDrag);
+    svg.addEventListener('mouseup', endDrag);
 
-		for(const cp of this.controlPoints){
-			cp.positionHandle.svg.style.display = display;
-			cp.targetHandle.svg.style.display = display;
-		}
+    const handle = {
+      svg: svg,
+    };
 
-		this.visible = visible;
-	}
+    return handle;
+  }
 
-	setDuration(duration){
-		this.duration = duration;
-	}
+  setVisible(visible) {
+    this.node.visible = visible;
 
-	getDuration(duration){
-		return this.duration;
-	}
+    const display = visible ? "" : "none";
 
-	play(){
+    for ( const cp of this.controlPoints ) {
+      cp.positionHandle.svg.style.display = display;
+      cp.targetHandle.svg.style.display = display;
+    }
 
-		const tStart = performance.now();
-		const duration = this.duration;
+    this.visible = visible;
+  }
 
-		const originalyVisible = this.visible;
-		this.setVisible(false);
+  setDuration(duration) {
+    this.duration = duration;
+  }
 
-		const onUpdate = (delta) => {
+  getDuration(duration) {
+    return this.duration;
+  }
 
-			let tNow = performance.now();
-			let elapsed = (tNow - tStart) / 1000;
-			let t = elapsed / duration;
+  play() {
 
-			this.set(t);
+    const tStart = performance.now();
+    const duration = this.duration;
 
-			const frame = this.at(t);
+    const originalyVisible = this.visible;
+    this.setVisible(false);
 
-			viewer.scene.view.position.copy(frame.position);
-			viewer.scene.view.lookAt(frame.target);
+    const onUpdate = (delta) => {
 
+      let tNow = performance.now();
+      let elapsed = (tNow - tStart) / 1000;
+      let t = elapsed / duration;
 
-			if(t > 1){
-				this.setVisible(originalyVisible);
+      this.set(t);
 
-				this.viewer.removeEventListener("update", onUpdate);
-			}
+      const frame = this.at(t);
 
-		};
+      viewer.scene.view.position.copy(frame.position);
+      viewer.scene.view.lookAt(frame.target);
 
-		this.viewer.addEventListener("update", onUpdate);
 
-	}
+      if ( t > 1 ) {
+        this.setVisible(originalyVisible);
+
+        this.viewer.removeEventListener("update", onUpdate);
+      }
+
+    };
+
+    this.viewer.addEventListener("update", onUpdate);
+
+  }
 
 }
 

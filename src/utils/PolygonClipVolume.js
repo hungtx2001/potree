@@ -1,66 +1,65 @@
-
 import * as THREE from "../../libs/three.js/build/three.module.js";
 
-export class PolygonClipVolume extends THREE.Object3D{
-	
-	constructor(camera){
-		super();
+export class PolygonClipVolume extends THREE.Object3D {
 
-		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-		this.name = "polygon_clip_volume_" + this.constructor.counter;
+  constructor(camera) {
+    super();
 
-		this.camera = camera.clone();
-		this.camera.rotation.set(...camera.rotation.toArray()); // [r85] workaround because camera.clone() doesn't work on rotation
-		this.camera.rotation.order = camera.rotation.order;
-		this.camera.updateMatrixWorld();
-		this.camera.updateProjectionMatrix();
-		this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
+    this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+    this.name = "polygon_clip_volume_" + this.constructor.counter;
 
-		this.viewMatrix = this.camera.matrixWorldInverse.clone();
-		this.projMatrix = this.camera.projectionMatrix.clone();
+    this.camera = camera.clone();
+    this.camera.rotation.set(...camera.rotation.toArray()); // [r85] workaround because camera.clone() doesn't work on rotation
+    this.camera.rotation.order = camera.rotation.order;
+    this.camera.updateMatrixWorld();
+    this.camera.updateProjectionMatrix();
+    this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
 
-		// projected markers
-		this.markers = [];
-		this.initialized = false;
-	}
+    this.viewMatrix = this.camera.matrixWorldInverse.clone();
+    this.projMatrix = this.camera.projectionMatrix.clone();
 
-	addMarker() {
+    // projected markers
+    this.markers = [];
+    this.initialized = false;
+  }
 
-		let marker = new THREE.Mesh();
+  addMarker() {
 
-		let cancel;
+    let marker = new THREE.Mesh();
 
-		let drag = e => {
-			let size = e.viewer.renderer.getSize(new THREE.Vector2());
-			let projectedPos = new THREE.Vector3(
-				2.0 * (e.drag.end.x / size.width) - 1.0,
-				-2.0 * (e.drag.end.y / size.height) + 1.0,
-				0
-			);
+    let cancel;
 
-			marker.position.copy(projectedPos);
-		};
-		
-		let drop = e => {	
-			cancel();
-		};
-		
-		cancel = e => {
-			marker.removeEventListener("drag", drag);
-			marker.removeEventListener("drop", drop);
-		};
-		
-		marker.addEventListener("drag", drag);
-		marker.addEventListener("drop", drop);
+    let drag = e => {
+      let size = e.viewer.renderer.getSize(new THREE.Vector2());
+      let projectedPos = new THREE.Vector3(
+        2.0 * (e.drag.end.x / size.width) - 1.0,
+        -2.0 * (e.drag.end.y / size.height) + 1.0,
+        0
+      );
+
+      marker.position.copy(projectedPos);
+    };
+
+    let drop = e => {
+      cancel();
+    };
+
+    cancel = e => {
+      marker.removeEventListener("drag", drag);
+      marker.removeEventListener("drop", drop);
+    };
+
+    marker.addEventListener("drag", drag);
+    marker.addEventListener("drop", drop);
 
 
-		this.markers.push(marker);
-	}
+    this.markers.push(marker);
+  }
 
-	removeLastMarker() {
-		if(this.markers.length > 0) {
-			this.markers.splice(this.markers.length - 1, 1);
-		}
-	}
+  removeLastMarker() {
+    if ( this.markers.length > 0 ) {
+      this.markers.splice(this.markers.length - 1, 1);
+    }
+  }
 
-};
+}

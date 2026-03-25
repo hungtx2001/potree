@@ -5,26 +5,29 @@
 	margin: 5px;
 	border: 1px solid black; 
 	display: none; box-sizing: border-box; z-index:10000">
-	
-	<div id="profile_titlebar" class="pv-titlebar" style="display: flex; position: absolute; height: 30px; width: 100%; box-sizing: border-box;">
+
+    <div class="pv-titlebar" id="profile_titlebar"
+         style="display: flex; position: absolute; height: 30px; width: 100%; box-sizing: border-box;">
 		<span style="padding-right: 10px">
-			<span id="profile_window_title" data-i18n="profile.title"></span>
+			<span data-i18n="profile.title" id="profile_window_title"></span>
 		</span>
-		<span id="profileInfo" style="flex-grow: 1; flex-direction: row"> </span>
-		<!-- <span id="profile_toggle_size_button" class="ui-icon ui-icon-newwin profile-button"> </span> -->
-		<!--<span id="closeProfileContainer" class="ui-icon ui-icon-close profile-button"> </span>-->
-		<img id="closeProfileContainer" class="button-icon" style="width: 24px; height: 24px; margin: 4px"/>
-	</div>
-	
-	<div style="position: absolute; top: 30px; width: 100%; height: calc(100% - 30px); box-sizing: border-box;" class="pw_content">
+        <span id="profileInfo" style="flex-grow: 1; flex-direction: row"> </span>
+        <!-- <span id="profile_toggle_size_button" class="ui-icon ui-icon-newwin profile-button"> </span> -->
+        <!--<span id="closeProfileContainer" class="ui-icon ui-icon-close profile-button"> </span>-->
+        <img class="button-icon" id="closeProfileContainer" style="width: 24px; height: 24px; margin: 4px" />
+    </div>
+
+    <div class="pw_content"
+         style="position: absolute; top: 30px; width: 100%; height: calc(100% - 30px); box-sizing: border-box;">
 		
-		<span class="pv-main-color" style="height: 100%; width: 100%; padding: 5px; display:flex; flex-direction: column; box-sizing: border-box;">
+		<span class="pv-main-color"
+              style="height: 100%; width: 100%; padding: 5px; display:flex; flex-direction: column; box-sizing: border-box;">
 			<div style=" width: 100%; color: #9d9d9d; margin: 5px; display: flex; flex-direction: row; box-sizing: border-box;">
 				<span data-i18n="profile.nb_points"></span>: &nbsp;
 				<span id="profile_num_points">-</span>
-				<!--<span id="profile_threshold" style="width: 300px">
-					Threshold: <span id="potree_profile_threshold_label">123</span> <div id="potree_profile_threshold_slider"></div>
-				</span>-->
+                <!--<span id="profile_threshold" style="width: 300px">
+                    Threshold: <span id="potree_profile_threshold_label">123</span> <div id="potree_profile_threshold_slider"></div>
+                </span>-->
 				<span style="flex-grow: 1;"></span>
 				<span>
 				
@@ -33,46 +36,46 @@
 						vertical-align: top; 
 						background: white; color:black"></span> -->
 
-					<input id="potree_profile_rotate_amount" 
-						type="text" maxlength="4" value="10" style="
-						display: inline-block; 
-						width: 2.5em; 
-						vertical-align: top; 
+					<input id="potree_profile_rotate_amount"
+                           maxlength="4" style="
+						display: inline-block;
+						width: 2.5em;
+						vertical-align: top;
 						background: white;
 						margin: 2px;
-						"></span>
+						" type="text" value="10"></span>
 					
-					<img id="potree_profile_rotate_cw" class="text-icon"/>
-					<img id="potree_profile_rotate_ccw" class="text-icon"/>
+					<img class="text-icon" id="potree_profile_rotate_cw" />
+					<img class="text-icon" id="potree_profile_rotate_ccw" />
 
-					<img id="potree_profile_move_forward" class="text-icon"/>
-					<img id="potree_profile_move_backward" class="text-icon"/>
+					<img class="text-icon" id="potree_profile_move_forward" />
+					<img class="text-icon" id="potree_profile_move_backward" />
 
-					<a id="potree_download_profile_dxf2D_link" href="#" download="profile_2D.dxf">
-						<img id="potree_download_dxf2D_icon" class="text-icon"/>
+					<a download="profile_2D.dxf" href="#" id="potree_download_profile_dxf2D_link">
+						<img class="text-icon" id="potree_download_dxf2D_icon" />
 					</a>
 
-					<a id="potree_download_profile_dxf3D_link" href="#" download="profile_3D.dxf">
-						<img id="potree_download_dxf3D_icon" class="text-icon"/>
+					<a download="profile_3D.dxf" href="#" id="potree_download_profile_dxf3D_link">
+						<img class="text-icon" id="potree_download_dxf3D_icon" />
 					</a>
 
-					<a id="potree_download_profile_ortho_link" href="#" download="profile.csv">
-						<img id="potree_download_csv_icon" class="text-icon"/>
+					<a download="profile.csv" href="#" id="potree_download_profile_ortho_link">
+						<img class="text-icon" id="potree_download_csv_icon" />
 					</a>
 					
-					<a id="potree_download_profile_link" href="#" download="profile.las">
-						<img id="potree_download_las_icon" class="text-icon"/>
+					<a download="profile.las" href="#" id="potree_download_profile_link">
+						<img class="text-icon" id="potree_download_las_icon" />
 					</a>
 					
 				</span>
-			</div>
-			
-			<div id="profile_draw_container" style="
+    </div>
+
+    <div id="profile_draw_container" style="
 				width: 100%; 
 				flex-grow: 1; 
 				position: relative; height: 100%; 
 				box-sizing: border-box; user-select: none">
-				<div style="
+        <div style="
 					position: absolute; 
 					left: 41px; 
 					top: 0; 
@@ -81,7 +84,7 @@
 					height: calc(100% - 20px); 
 					background-color: #000000;
 					"></div>
-				<svg id="profileSVG" style="
+        <svg id="profileSVG" style="
 					fill: #9d9d9d;
 					position: absolute; 
 					left: 0; right: 0; 
@@ -89,7 +92,7 @@
 					width: 100%; 
 					height: 100%;
 					"></svg>
-				<div id="profileCanvasContainer" style="
+        <div id="profileCanvasContainer" style="
 					position: absolute; 
 					left: 41px; 
 					top: 0; 
@@ -98,8 +101,8 @@
 					height: calc(100% - 20px); 
 					/*background-color: #000000;*/
 					"></div>
-				
-				<div id="profileSelectionProperties" style="
+
+        <div id="profileSelectionProperties" style="
 					position: absolute; 
 					left: 50px; 
 					top: 10px; 
@@ -110,12 +113,12 @@
 					border: 1px solid white;
 					user-select: text;
 					">
-					position: asdsadf asdf<br>
-					rgb: 123 423 123
-					</div>
-				
-			</div>
-		</span>
-	</div>
+            position: asdsadf asdf<br>
+            rgb: 123 423 123
+        </div>
+
+    </div>
+    </span>
+</div>
 
 </div>

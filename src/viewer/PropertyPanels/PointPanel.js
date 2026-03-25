@@ -1,13 +1,11 @@
-
-
 import {MeasurePanel} from "./MeasurePanel.js";
 
-export class PointPanel extends MeasurePanel{
-	constructor(viewer, measurement, propertiesPanel){
-		super(viewer, measurement, propertiesPanel);
+export class PointPanel extends MeasurePanel {
+  constructor(viewer, measurement, propertiesPanel) {
+    super(viewer, measurement, propertiesPanel);
 
-		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
-		this.elContent = $(`
+    let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+    this.elContent = $(`
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
@@ -22,25 +20,25 @@ export class PointPanel extends MeasurePanel{
 			</div>
 		`);
 
-		this.elRemove = this.elContent.find("img[name=remove]");
-		this.elRemove.click( () => {
-			this.viewer.scene.removeMeasurement(measurement);
-		});
+    this.elRemove = this.elContent.find("img[name=remove]");
+    this.elRemove.click(() => {
+      this.viewer.scene.removeMeasurement(measurement);
+    });
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
+    this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+    this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+    this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
-		this.update();
-	}
+    this.update();
+  }
 
-	update(){
-		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
-		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
+  update() {
+    let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
+    elCoordiantesContainer.empty();
+    elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
-		let elAttributesContainer = this.elContent.find('.attributes_table_container');
-		elAttributesContainer.empty();
-		elAttributesContainer.append(this.createAttributesTable());
-	}
-};
+    let elAttributesContainer = this.elContent.find('.attributes_table_container');
+    elAttributesContainer.empty();
+    elAttributesContainer.append(this.createAttributesTable());
+  }
+}

@@ -1,9 +1,8 @@
-
 /**
  * @author mrdoob / http://mrdoob.com/ https://github.com/mrdoob/eventdispatcher.js
- * 
+ *
  * with slight modifications by mschuetz, http://potree.org
- * 
+ *
  */
 
 // The MIT License
@@ -29,71 +28,68 @@
 // THE SOFTWARE.
 
 
+export class EventDispatcher {
 
+  constructor() {
+    this._listeners = {};
+  }
 
+  addEventListener(type, listener) {
 
-export class EventDispatcher{
+    const listeners = this._listeners;
 
-	constructor(){
-		this._listeners = {};
-	}
+    if ( listeners[type] === undefined ) {
+      listeners[type] = [];
+    }
 
-	addEventListener(type, listener){
+    if ( listeners[type].indexOf(listener) === -1 ) {
+      listeners[type].push(listener);
+    }
 
-		const listeners = this._listeners;
+  }
 
-		if(listeners[type] === undefined){
-			listeners[type] = [];
-		}
+  hasEventListener(type, listener) {
 
-		if(listeners[type].indexOf(listener) === - 1){
-			listeners[type].push( listener );
-		}
+    const listeners = this._listeners;
 
-	}
+    return listeners[type] !== undefined && listeners[type].indexOf(listener) !== -1;
+  }
 
-	hasEventListener(type, listener){
+  removeEventListener(type, listener) {
 
-		const listeners = this._listeners;
+    let listeners = this._listeners;
+    let listenerArray = listeners[type];
 
-		return listeners[type] !== undefined && listeners[type].indexOf(listener) !== - 1;
-	}
+    if ( listenerArray !== undefined ) {
 
-	removeEventListener(type, listener){
+      let index = listenerArray.indexOf(listener);
 
-		let listeners = this._listeners;
-		let listenerArray = listeners[type];
+      if ( index !== -1 ) {
+        listenerArray.splice(index, 1);
+      }
+    }
 
-		if (listenerArray !== undefined){
+  }
 
-			let index = listenerArray.indexOf(listener);
+  removeEventListeners(type) {
+    if ( this._listeners[type] !== undefined ) {
+      delete this._listeners[type];
+    }
+  };
 
-			if(index !== - 1){
-				listenerArray.splice(index, 1);
-			}
-		}
+  dispatchEvent(event) {
 
-	}
+    let listeners = this._listeners;
+    let listenerArray = listeners[event.type];
 
-	removeEventListeners(type){
-		if(this._listeners[type] !== undefined){
-			delete this._listeners[type];
-		}
-	};
+    if ( listenerArray !== undefined ) {
+      event.target = this;
 
-	dispatchEvent(event){
+      for ( let listener of listenerArray.slice(0) ) {
+        listener.call(this, event);
+      }
+    }
 
-		let listeners = this._listeners;
-		let listenerArray = listeners[event.type];
-
-		if ( listenerArray !== undefined ) {
-			event.target = this;
-
-			for(let listener of listenerArray.slice(0)){
-				listener.call(this, event);
-			}
-		}
-
-	}
+  }
 
 }
