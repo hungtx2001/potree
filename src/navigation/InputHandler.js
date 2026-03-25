@@ -18,6 +18,10 @@ export class InputHandler extends EventDispatcher {
     this.domElement = this.renderer.domElement;
     this.enabled = true;
 
+    // Cesium integration: when set, Cesium SSC is toggled on tool drag
+    this.cesiumViewer = null;
+    this.cesiumControls = null;
+
     this.scene = null;
     this.interactiveScenes = [];
     this.interactiveObjects = new Set();
@@ -114,6 +118,11 @@ export class InputHandler extends EventDispatcher {
     }
 
     this.drag = null;
+
+    // Cesium mode: re-enable Cesium navigation after touch drag ends
+    if ( this.cesiumControls ) {
+      this.cesiumControls.setToolActive(false);
+    }
 
     for ( let inputListener of this.getSortedListeners() ) {
       inputListener.dispatchEvent({
@@ -372,6 +381,11 @@ export class InputHandler extends EventDispatcher {
       this.drag = null;
     }
 
+    // Cesium mode: re-enable Cesium navigation after drag ends
+    if ( this.cesiumControls ) {
+      this.cesiumControls.setToolActive(false);
+    }
+
     if ( !consumed ) {
       if ( e.button === THREE.MOUSE.LEFT ) {
         if ( noMovement ) {
@@ -547,6 +561,11 @@ export class InputHandler extends EventDispatcher {
         this.drag[key] = args[key];
       }
     }
+
+    // Cesium mode: disable Cesium navigation when dragging a tool object
+    if ( this.cesiumControls && object ) {
+      this.cesiumControls.setToolActive(true);
+    }
   }
 
   getMousePointCloudIntersection(mouse) {
@@ -692,6 +711,14 @@ export class InputHandler extends EventDispatcher {
     this.deselectAll();
 
     this.scene = scene;
+  }
+
+  /**
+   * Enable Cesium mode: link InputHandler to CesiumControls for
+   * automatic SSC toggling when Potree tools are used.
+   */
+  setCesiumMode(cesiumControls) {
+    this.cesiumControls = cesiumControls;
   }
 
   update(delta) {

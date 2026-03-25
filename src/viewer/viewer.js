@@ -28,6 +28,7 @@ import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
 import {EarthControls} from "../navigation/EarthControls.js";
 import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
 import {VRControls} from "../navigation/VRControls.js";
+import {CesiumControls} from "../navigation/CesiumControls.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 import {ClassificationScheme} from "../materials/ClassificationScheme.js";
 import {VRButton} from '../../libs/three.js/extra/VRButton.js';
@@ -444,6 +445,93 @@ export class Viewer extends EventDispatcher {
       return this.controls;
     }
 
+  }
+
+  /**
+   * Enable Cesium-driven camera controls.
+   * Cesium ScreenSpaceController becomes the primary navigation.
+   * Potree tools (measure, clip, volume) continue to work.
+   *
+   * @param {Cesium.Viewer} cesiumViewer - initialized Cesium viewer
+   * @param {Object} projection - { toMap: { forward }, toScene: { forward } }
+   */
+  setCesiumViewer(cesiumViewer, projection) {
+    // === CRITICAL: Lock the toScene projection to the point cloud's UTM zone ===
+    // The camera may be at a different longitude than the point cloud,
+    // which would cause toScene to pick a different UTM zone and produce
+    // completely wrong coordinates. We detect the zone from the point cloud
+    // bounding box and lock toScene to always use that zone.
+    var lockedProjection = this._lockProjectionZone(projection);
+
+    this.cesiumControls = new CesiumControls(this, cesiumViewer, lockedProjection);
+    this.cesiumControls.enabled = false;
+    this.cesiumControls.setScene(this.scene);
+
+    // Switch to Cesium controls
+    this.setControls(this.cesiumControls);
+
+    // Make Potree canvas transparent to pointer events
+    // so Cesium receives mouse/touch input for navigation
+    this.renderer.domElement.style.pointerEvents = 'none';
+
+    // Link InputHandler to CesiumControls for tool ↔ SSC toggling
+    this.inputHandler.setCesiumMode(this.cesiumControls);
+
+    // Make Potree background transparent to see Cesium globe behind
+    this.setBackground(null);
+    if ( this.renderer ) {
+      this.renderer.setClearColor(0x000000, 0);
+    }
+  }
+
+  /**
+   * Detect the point cloud's UTM projection string by running the
+   * bounding box center through toMap, then create a locked toScene
+   * that always uses that same zone.
+   */
+  _lockProjectionZone(projection) {
+    var box = this.scene.getBoundingBox();
+    if ( !box || box.isEmpty() ) {
+      console.warn('Potree: no point cloud loaded, cannot lock UTM zone');
+      return projection;
+    }
+
+    var center = box.getCenter(new THREE.Vector3());
+    var wgs84Center = projection.toMap.forward([center.x, center.y]);
+
+    if ( !wgs84Center || wgs84Center.length < 2 ) {
+      console.warn('Potree: toMap projection failed for zone detection');
+      return projection;
+    }
+
+    // Now we know the WGS84 center of the point cloud.
+    // Do a round-trip: toScene(wgs84Center) should give back ~center.
+    // The key insight: we build a FIXED proj4 transformer from this center's lon.
+    var lon = wgs84Center[0];
+    var lat = wgs84Center[1];
+
+    // Compute the correct UTM zone from the point cloud center
+    var zone = Math.floor((lon + 180) / 6) + 1;
+    var hemi = lat >= 0 ? '' : ' +south';
+    var projString = '+proj=utm +zone=' + zone + ' +datum=WGS84 +units=m +no_defs' + hemi;
+
+    // Create a LOCKED transformer that always uses this zone
+    var lockedTransformer = proj4('EPSG:4326', projString);
+
+    console.log('Potree: locked toScene to UTM zone ' + zone + ' (lon=' + lon.toFixed(2) + ', lat=' + lat.toFixed(2) + ')');
+
+    // Verify round-trip accuracy
+    var roundTrip = lockedTransformer.forward([lon, lat]);
+    console.log('Potree: round-trip check: original=(' + center.x.toFixed(1) + ',' + center.y.toFixed(1) + ') → (' + roundTrip[0].toFixed(1) + ',' + roundTrip[1].toFixed(1) + ')');
+
+    return {
+      toMap: projection.toMap,
+      toScene: {
+        forward: function (lonlat) {
+          return lockedTransformer.forward(lonlat);
+        }
+      }
+    };
   }
 
   getMinNodeSize() {
@@ -1158,6 +1246,8 @@ export class Viewer extends EventDispatcher {
       this.vrControls.addEventListener('end', this.enableAnnotations.bind(this));
     }
 
+    // CesiumControls placeholder - created via setCesiumViewer()
+    this.cesiumControls = null;
 
   };
 
@@ -1788,17 +1878,22 @@ export class Viewer extends EventDispatcher {
       controls.setScene(scene);
       controls.update(delta);
 
-      if ( typeof debugDisabled === "undefined" ) {
-        this.scene.cameraP.position.copy(scene.view.position);
-        this.scene.cameraP.rotation.order = "ZXY";
-        this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
-        this.scene.cameraP.rotation.z = this.scene.view.yaw;
-      }
+      if ( controls.directCamera ) {
+        // CesiumControls already set camera position/rotation directly
+        // via lookAt — don't overwrite with View.js yaw/pitch
+      } else {
+        if ( typeof debugDisabled === "undefined" ) {
+          this.scene.cameraP.position.copy(scene.view.position);
+          this.scene.cameraP.rotation.order = "ZXY";
+          this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
+          this.scene.cameraP.rotation.z = this.scene.view.yaw;
+        }
 
-      this.scene.cameraO.position.copy(scene.view.position);
-      this.scene.cameraO.rotation.order = "ZXY";
-      this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
-      this.scene.cameraO.rotation.z = this.scene.view.yaw;
+        this.scene.cameraO.position.copy(scene.view.position);
+        this.scene.cameraO.rotation.order = "ZXY";
+        this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
+        this.scene.cameraO.rotation.z = this.scene.view.yaw;
+      }
     }
 
     camera.updateMatrix();
