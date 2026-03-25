@@ -455,7 +455,7 @@ export class Viewer extends EventDispatcher {
    * @param {Cesium.Viewer} cesiumViewer - initialized Cesium viewer
    * @param {Object} projection - { toMap: { forward }, toScene: { forward } }
    */
-  setCesiumViewer(cesiumViewer, projection) {
+  setCesiumViewer(cesiumViewer, projection, cesiumLib) {
     // === CRITICAL: Lock the toScene projection to the point cloud's UTM zone ===
     // The camera may be at a different longitude than the point cloud,
     // which would cause toScene to pick a different UTM zone and produce
@@ -463,7 +463,7 @@ export class Viewer extends EventDispatcher {
     // bounding box and lock toScene to always use that zone.
     var lockedProjection = this._lockProjectionZone(projection);
 
-    this.cesiumControls = new CesiumControls(this, cesiumViewer, lockedProjection);
+    this.cesiumControls = new CesiumControls(this, cesiumViewer, lockedProjection, cesiumLib);
     this.cesiumControls.enabled = false;
     this.cesiumControls.setScene(this.scene);
 

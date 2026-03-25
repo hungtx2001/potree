@@ -15,7 +15,7 @@ import {EventDispatcher} from "../EventDispatcher.js";
 
 export class CesiumControls extends EventDispatcher {
 
-  constructor(viewer, cesiumViewer, projection) {
+  constructor(viewer, cesiumViewer, projection, cesiumLib) {
     super();
 
     this.viewer = viewer;
@@ -24,6 +24,7 @@ export class CesiumControls extends EventDispatcher {
 
     this.cesiumViewer = cesiumViewer;
     this.projection = projection;
+    this.Cesium = cesiumLib || window.Cesium;
 
     this.sceneControls = new THREE.Scene();
 
@@ -43,12 +44,11 @@ export class CesiumControls extends EventDispatcher {
     this._cesiumSSC = cesiumViewer.scene.screenSpaceCameraController;
 
     // Pre-allocated Cesium scratch objects (avoid new per frame)
-    var Cesium = window.Cesium;
-    if ( Cesium ) {
-      this._cScratch1 = new Cesium.Cartesian3();
-      this._cScratch2 = new Cesium.Cartesian3();
-      this._cScratchTarget = new Cesium.Cartesian3();
-      this._cScratchUp = new Cesium.Cartesian3();
+    if ( this.Cesium ) {
+      this._cScratch1 = new this.Cesium.Cartesian3();
+      this._cScratch2 = new this.Cesium.Cartesian3();
+      this._cScratchTarget = new this.Cesium.Cartesian3();
+      this._cScratchUp = new this.Cesium.Cartesian3();
     }
 
     // Reusable arrays for projection calls
@@ -95,7 +95,7 @@ export class CesiumControls extends EventDispatcher {
 
     var view = this.scene.view;
     var cam = this._cesiumCamera;
-    var Cesium = window.Cesium;
+    var Cesium = this.Cesium;
 
     if ( !Cesium ) return;
 
@@ -232,7 +232,7 @@ export class CesiumControls extends EventDispatcher {
   flyToPointCloud(duration) {
     if ( duration === undefined ) duration = 2;
 
-    var Cesium = window.Cesium;
+    var Cesium = this.Cesium;
     if ( !Cesium || !this.scene || !this.projection || !this.projection.toMap || !this.projection.toMap.forward ) return;
 
     var box = this.scene.getBoundingBox();
