@@ -325,7 +325,6 @@ class Shader {
     const tEnd = performance.now();
     const duration = tEnd - tStart;
 
-    console.log(`shader compile duration: ${duration.toFixed(3)}`);
 
 
   }
@@ -855,7 +854,6 @@ export class Renderer {
 
       const geometry = node.geometryNode.geometry;
 
-      if ( !geometry ) console.log('Missing geometry', node)
       if ( geometry.attributes["gps-time"] ) {
         const bufferAttribute = geometry.attributes["gps-time"];
         const attGPS = octree.getAttribute("gps-time");

@@ -99,13 +99,7 @@ export class CesiumControls extends EventDispatcher {
 
     if ( !Cesium ) return;
 
-    // Throttled debug logging
-    var now = Date.now();
-    var doLog = false;
-    if ( (now - this._lastLogTime) > 2000 ) {
-      this._lastLogTime = now;
-      doLog = true;
-    }
+
 
     // === Reverse 3-point projection (zero allocations) ===
     var posECEF = cam.positionWC;
@@ -206,21 +200,7 @@ export class CesiumControls extends EventDispatcher {
       }
     }
 
-    if ( doLog ) {
-      console.log('=== CesiumControls sync ===');
-      console.log('pos:', pos3.x.toFixed(1), pos3.y.toFixed(1), pos3.z.toFixed(1));
-      console.log('target:', target3.x.toFixed(1), target3.y.toFixed(1), target3.z.toFixed(1));
-      var box = this.scene.getBoundingBox();
-      if ( box && !box.isEmpty() ) {
-        var c = box.getCenter(this._scratchCenter);
-        console.log('PC center:', c.x.toFixed(1), c.y.toFixed(1), c.z.toFixed(1), 'dist:', pos3.distanceTo(c).toFixed(1));
-      }
-      if ( frustum ) {
-        console.log('FOV: fov=' + ((frustum.fov || 0) * 180 / Math.PI).toFixed(1) +
-          ' fovy=' + ((frustum.fovy || 0) * 180 / Math.PI).toFixed(1) +
-          ' potree=' + this.viewer.getFOV().toFixed(1));
-      }
-    }
+
   }
 
   /**
@@ -279,7 +259,6 @@ export class CesiumControls extends EventDispatcher {
       duration: duration,
     });
 
-    console.log('CesiumControls: flyTo [' + lon.toFixed(4) + ', ' + lat.toFixed(4) + '] h=' + cameraHeight.toFixed(0) +
-      ' extent=' + horizontalExtent.toFixed(0) + ' fov=' + (fovRad * 180 / Math.PI).toFixed(1));
+
   }
 }

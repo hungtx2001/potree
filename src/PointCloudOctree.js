@@ -1067,7 +1067,6 @@ export class PointCloudOctree extends PointCloudTree {
     fitted.scale.multiply(ds);
 
     let duration = performance.now() - start;
-    console.log("duration: ", duration);
 
     yield fitted;
   }
@@ -1124,7 +1123,6 @@ export class PointCloudOctree extends PointCloudTree {
     fitted.scale.multiply(ds);
 
     let duration = performance.now() - start;
-    console.log("duration: ", duration);
 
     return fitted;
   }

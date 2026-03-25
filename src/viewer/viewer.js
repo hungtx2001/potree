@@ -518,11 +518,9 @@ export class Viewer extends EventDispatcher {
     // Create a LOCKED transformer that always uses this zone
     var lockedTransformer = proj4('EPSG:4326', projString);
 
-    console.log('Potree: locked toScene to UTM zone ' + zone + ' (lon=' + lon.toFixed(2) + ', lat=' + lat.toFixed(2) + ')');
 
     // Verify round-trip accuracy
     var roundTrip = lockedTransformer.forward([lon, lat]);
-    console.log('Potree: round-trip check: original=(' + center.x.toFixed(1) + ',' + center.y.toFixed(1) + ') → (' + roundTrip[0].toFixed(1) + ',' + roundTrip[1].toFixed(1) + ')');
 
     return {
       toMap: projection.toMap,
@@ -1063,7 +1061,7 @@ export class Viewer extends EventDispatcher {
     this.isFlipYZ = !this.isFlipYZ;
 
     // TODO flipyz
-    console.log('TODO');
+
   }
 
   setCameraMode(mode) {
@@ -1326,7 +1324,7 @@ export class Viewer extends EventDispatcher {
       VRButton.createButton(this.renderer).then(vrButton => {
 
         if ( vrButton == null ) {
-          console.log("VR not supported or active.");
+          console.warn("VR not supported or active.");
 
           return;
         }
@@ -1430,11 +1428,9 @@ export class Viewer extends EventDispatcher {
     }
 
     let dropHandler = async (event) => {
-      console.log(event);
       event.preventDefault();
 
       for ( const item of event.dataTransfer.items ) {
-        console.log(item);
 
         if ( item.kind !== "file" ) {
           continue;
@@ -1494,7 +1490,7 @@ export class Viewer extends EventDispatcher {
 
   initThree() {
 
-    console.log(`initializing three.js ${THREE.REVISION}`);
+
 
     let width = this.renderArea.clientWidth;
     let height = this.renderArea.clientHeight;
@@ -2329,7 +2325,7 @@ export class Viewer extends EventDispatcher {
             + ` ${n.toString().padStart(csam)}\n`;
         }
         message += `\n`;
-        console.log(message);
+
 
         performance.clearMarks();
         performance.clearMeasures();

@@ -661,15 +661,13 @@ export class MapView {
       try {
         this.setSceneProjection(pointcloud.projection);
       } catch ( e ) {
-        console.log('Failed projection:', e);
+        console.warn('Failed projection:', e);
 
         if ( pointcloud.fallbackProjection ) {
           try {
-            console.log('Trying fallback projection...');
             this.setSceneProjection(pointcloud.fallbackProjection);
-            console.log('Set projection from fallback');
           } catch ( e ) {
-            console.log('Failed fallback projection:', e);
+            console.warn('Failed fallback projection:', e);
             return;
           }
         } else {

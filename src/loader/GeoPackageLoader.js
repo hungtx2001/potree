@@ -209,7 +209,7 @@ export class GeoPackageLoader {
         return line;
       }
     } else {
-      console.log("unhandled feature: ", feature);
+
     }
   }
 

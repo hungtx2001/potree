@@ -29,7 +29,6 @@ export class GeoControls extends EventDispatcher {
   constructor(object, domElement) {
     super();
 
-    console.log("deprecated?");
 
     this.object = object;
     this.domElement = (domElement !== undefined) ? domElement : document;

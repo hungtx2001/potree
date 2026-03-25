@@ -105,7 +105,6 @@ var GeoTIFF = (function (exports) {
 
       let offsetToFirstIFD = data.readUInt32LE(4);
 
-      console.log("offsetToFirstIFD", offsetToFirstIFD);
 
       let ifds = [];
       let IFDsRead = false;
@@ -113,11 +112,10 @@ var GeoTIFF = (function (exports) {
       let i = 0;
       while ( IFDsRead || i < 100 ) {
 
-        console.log("currentIFDOffset", currentIFDOffset);
+
         let numEntries = data.readUInt16LE(currentIFDOffset);
         let nextIFDOffset = data.readUInt32LE(currentIFDOffset + 2 + numEntries * 12);
 
-        console.log("next offset: ", currentIFDOffset + 2 + numEntries * 12);
 
         let entryBuffer = data.slice(currentIFDOffset + 2, currentIFDOffset + 2 + 12 * numEntries);
 
@@ -149,7 +147,6 @@ var GeoTIFF = (function (exports) {
           ifds.push(ifd);
         }
 
-        console.log("nextIFDOffset", nextIFDOffset);
 
         if ( nextIFDOffset === 0 ) {
           break;
@@ -228,11 +225,9 @@ var GeoTIFF = (function (exports) {
         }
       }
 
-      console.log(`width: ${width}`);
-      console.log(`height: ${height}`);
-      console.log(`numStrips: ${numStrips}`);
-      console.log("stripByteCounts", stripByteCounts.join(", "));
-      console.log("stripOffsets", stripOffsets.join(", "));
+
+
+
 
       let image = new Image();
       image.width = width;

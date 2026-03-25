@@ -242,7 +242,6 @@ export class OrientedImageLoader {
     const raycaster = new THREE.Raycaster();
 
     const tEnd = performance.now();
-    console.log(tEnd - tStart);
 
     // const sp = new THREE.PlaneGeometry(1, 1);
     // const lg = new THREE.Geometry();
@@ -394,7 +393,6 @@ export class OrientedImageLoader {
     };
 
     const moveToImage = (image) => {
-      console.log("move to image " + image.id);
 
       const mesh = image.mesh;
       const newCamPos = image.position.clone();

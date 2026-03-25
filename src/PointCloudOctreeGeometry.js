@@ -210,7 +210,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
       let duration = performance.now() - tStart;
       if ( duration > 5 ) {
         let msg = `duration: ${duration}ms, numNodes: ${decoded.length}`;
-        console.log(msg);
+
       }
 
       node.loadPoints();
@@ -229,7 +229,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
             let hbuffer = xhr.response;
             callback(node, hbuffer);
           } else {
-            console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl);
+
             Potree.numNodesLoading--;
           }
         }
@@ -237,7 +237,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
       try {
         xhr.send(null);
       } catch ( e ) {
-        console.log('fehler beim laden der punktwolke: ' + e);
+
       }
     }
   }

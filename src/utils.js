@@ -314,7 +314,7 @@ export class Utils {
           }, function progress(xhr) {
             // console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
           }, function error(xhr) {
-            console.log('An error happened', xhr);
+            console.error('An error happened', xhr);
           }
         );
       }
@@ -671,7 +671,7 @@ export class Utils {
 
     const end = performance.now();
     const duration = (end - start);
-    console.log(`duration: ${duration.toFixed(3)}ms`);
+
 
     return {
       node: closestNode,
@@ -813,13 +813,11 @@ export class Utils {
 
     try {
       let success = document.execCommand('copy');
-      if ( success ) {
-        console.log("copied text to clipboard");
-      } else {
-        console.log("copy to clipboard failed");
+      if ( !success ) {
+        console.warn("copy to clipboard failed");
       }
     } catch ( err ) {
-      console.log("error while trying to copy to clipboard");
+      console.warn("error while trying to copy to clipboard");
     }
 
     document.body.removeChild(textArea);

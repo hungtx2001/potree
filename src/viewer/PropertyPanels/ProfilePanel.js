@@ -130,7 +130,6 @@ export class ProfilePanel extends MeasurePanel {
         let rightDir = new THREE.Vector3().crossVectors(startEndDir, upDir);
         let leftDir = new THREE.Vector3().crossVectors(endStartDir, upDir);
 
-        console.log(leftDir);
 
         let right = rightDir.clone().multiplyScalar(width * 0.5).add(center);
         let left = leftDir.clone().multiplyScalar(width * 0.5).add(center);
