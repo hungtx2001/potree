@@ -1,182 +1,182 @@
-
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {BoxVolume} from "./Volume.js";
 import {Utils} from "../utils.js";
 import {PointSizeType} from "../defines.js";
-import { EventDispatcher } from "../EventDispatcher.js";
+import {EventDispatcher} from "../EventDispatcher.js";
 
 
-export class ScreenBoxSelectTool extends EventDispatcher{
+export class ScreenBoxSelectTool extends EventDispatcher {
 
-	constructor(viewer){
-		super();
+  constructor(viewer) {
+    super();
 
-		this.viewer = viewer;
-		this.scene = new THREE.Scene();
+    this.viewer = viewer;
+    this.scene = new THREE.Scene();
 
-		viewer.addEventListener("update", this.update.bind(this));
-		viewer.addEventListener("render.pass.perspective_overlay", this.render.bind(this));
-		viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
-	}
+    viewer.addEventListener("update", this.update.bind(this));
+    viewer.addEventListener("render.pass.perspective_overlay", this.render.bind(this));
+    viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
+  }
 
-	onSceneChange(scene){
-		console.log("scene changed");
-	}
+  onSceneChange(scene) {
+    console.log("scene changed");
+  }
 
-	startInsertion(){
-		let domElement = this.viewer.renderer.domElement;
+  startInsertion() {
+    let domElement = this.viewer.renderer.domElement;
 
-		let volume = new BoxVolume();
-		volume.position.set(12345, 12345, 12345);
-		volume.showVolumeLabel = false;
-		volume.visible = false;
-		volume.update();
-		this.viewer.scene.addVolume(volume);
+    let volume = new BoxVolume();
+    volume.position.set(12345, 12345, 12345);
+    volume.showVolumeLabel = false;
+    volume.visible = false;
+    volume.update();
+    this.viewer.scene.addVolume(volume);
 
-		this.importance = 10;
+    this.importance = 10;
 
-		let selectionBox = $(`<div style="position: absolute; border: 2px solid white; pointer-events: none; border-style:dashed"></div>`);
-		$(domElement.parentElement).append(selectionBox);
-		selectionBox.css("right", "10px");
-		selectionBox.css("bottom", "10px");
+    let selectionBox = $(`<div style="position: absolute; border: 2px solid white; pointer-events: none; border-style:dashed"></div>`);
+    $(domElement.parentElement).append(selectionBox);
+    selectionBox.css("right", "10px");
+    selectionBox.css("bottom", "10px");
 
-		let drag = e =>{
+    let drag = e => {
 
-			volume.visible = true;
+      volume.visible = true;
 
-			let mStart = e.drag.start;
-			let mEnd = e.drag.end;
+      let mStart = e.drag.start;
+      let mEnd = e.drag.end;
 
-			let box2D = new THREE.Box2();
-			box2D.expandByPoint(mStart);
-			box2D.expandByPoint(mEnd);
+      let box2D = new THREE.Box2();
+      box2D.expandByPoint(mStart);
+      box2D.expandByPoint(mEnd);
 
-			selectionBox.css("left", `${box2D.min.x}px`);
-			selectionBox.css("top", `${box2D.min.y}px`);
-			selectionBox.css("width", `${box2D.max.x - box2D.min.x}px`);
-			selectionBox.css("height", `${box2D.max.y - box2D.min.y}px`);
+      selectionBox.css("left", `${box2D.min.x}px`);
+      selectionBox.css("top", `${box2D.min.y}px`);
+      selectionBox.css("width", `${box2D.max.x - box2D.min.x}px`);
+      selectionBox.css("height", `${box2D.max.y - box2D.min.y}px`);
 
-			let camera = e.viewer.scene.getActiveCamera();
-			let size = e.viewer.renderer.getSize(new THREE.Vector2());
-			let frustumSize = new THREE.Vector2(
-				camera.right - camera.left, 
-				camera.top - camera.bottom);
+      let camera = e.viewer.scene.getActiveCamera();
+      let size = e.viewer.renderer.getSize(new THREE.Vector2());
+      let frustumSize = new THREE.Vector2(
+        camera.right - camera.left,
+        camera.top - camera.bottom);
 
-			let screenCentroid = new THREE.Vector2().addVectors(e.drag.end, e.drag.start).multiplyScalar(0.5);
-			let ray = Utils.mouseToRay(screenCentroid, camera, size.width, size.height);
+      let screenCentroid = new THREE.Vector2().addVectors(e.drag.end, e.drag.start).multiplyScalar(0.5);
+      let ray = Utils.mouseToRay(screenCentroid, camera, size.width, size.height);
 
-			let diff = new THREE.Vector2().subVectors(e.drag.end, e.drag.start);
-			diff.divide(size).multiply(frustumSize);
-			
-			volume.position.copy(ray.origin);
-			volume.up.copy(camera.up);
-			volume.rotation.copy(camera.rotation);
-			volume.scale.set(diff.x, diff.y, 1000 * 100);
+      let diff = new THREE.Vector2().subVectors(e.drag.end, e.drag.start);
+      diff.divide(size).multiply(frustumSize);
 
-			e.consume();
-		};
+      volume.position.copy(ray.origin);
+      volume.up.copy(camera.up);
+      volume.rotation.copy(camera.rotation);
+      volume.scale.set(diff.x, diff.y, 1000 * 100);
 
-		let drop = e => {
-			this.importance = 0;
+      e.consume();
+    };
 
-			$(selectionBox).remove();
+    let drop = e => {
+      this.importance = 0;
 
-			this.viewer.inputHandler.deselectAll();
-			this.viewer.inputHandler.toggleSelection(volume);
+      $(selectionBox).remove();
 
-			let camera = e.viewer.scene.getActiveCamera();
-			let size = e.viewer.renderer.getSize(new THREE.Vector2());
-			let screenCentroid = new THREE.Vector2().addVectors(e.drag.end, e.drag.start).multiplyScalar(0.5);
-			let ray = Utils.mouseToRay(screenCentroid, camera, size.width, size.height);
+      this.viewer.inputHandler.deselectAll();
+      this.viewer.inputHandler.toggleSelection(volume);
 
-			let line = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
+      let camera = e.viewer.scene.getActiveCamera();
+      let size = e.viewer.renderer.getSize(new THREE.Vector2());
+      let screenCentroid = new THREE.Vector2().addVectors(e.drag.end, e.drag.start).multiplyScalar(0.5);
+      let ray = Utils.mouseToRay(screenCentroid, camera, size.width, size.height);
 
-			this.removeEventListener("drag", drag);
-			this.removeEventListener("drop", drop);
+      let line = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
 
-			let allPointsNear = [];
-			let allPointsFar = [];
+      this.removeEventListener("drag", drag);
+      this.removeEventListener("drop", drop);
 
-			// TODO support more than one point cloud
-			for(let pointcloud of this.viewer.scene.pointclouds){
+      let allPointsNear = [];
+      let allPointsFar = [];
 
-				if(!pointcloud.visible){
-					continue;
-				}
+      // TODO support more than one point cloud
+      for ( let pointcloud of this.viewer.scene.pointclouds ) {
 
-				let volCam = camera.clone();
-				volCam.left = -volume.scale.x / 2; 
-				volCam.right = +volume.scale.x / 2;
-				volCam.top = +volume.scale.y / 2;
-				volCam.bottom = -volume.scale.y / 2;
-				volCam.near = -volume.scale.z / 2;
-				volCam.far = +volume.scale.z / 2;
-				volCam.rotation.copy(volume.rotation);
-				volCam.position.copy(volume.position);
+        if ( !pointcloud.visible ) {
+          continue;
+        }
 
-				volCam.updateMatrix();
-				volCam.updateMatrixWorld();
-				volCam.updateProjectionMatrix();
-				volCam.matrixWorldInverse.copy(volCam.matrixWorld).invert();
+        let volCam = camera.clone();
+        volCam.left = -volume.scale.x / 2;
+        volCam.right = +volume.scale.x / 2;
+        volCam.top = +volume.scale.y / 2;
+        volCam.bottom = -volume.scale.y / 2;
+        volCam.near = -volume.scale.z / 2;
+        volCam.far = +volume.scale.z / 2;
+        volCam.rotation.copy(volume.rotation);
+        volCam.position.copy(volume.position);
 
-				let ray = new THREE.Ray(volCam.getWorldPosition(new THREE.Vector3()), volCam.getWorldDirection(new THREE.Vector3()));
-				let rayInverse = new THREE.Ray(
-					ray.origin.clone().add(ray.direction.clone().multiplyScalar(volume.scale.z)),
-					ray.direction.clone().multiplyScalar(-1));
+        volCam.updateMatrix();
+        volCam.updateMatrixWorld();
+        volCam.updateProjectionMatrix();
+        volCam.matrixWorldInverse.copy(volCam.matrixWorld).invert();
 
-				let pickerSettings = {
-					width: 8, 
-					height: 8, 
-					pickWindowSize: 8, 
-					all: true,
-					pickClipped: true,
-					pointSizeType: PointSizeType.FIXED,
-					pointSize: 1};
-				let pointsNear = pointcloud.pick(viewer, volCam, ray, pickerSettings);
+        let ray = new THREE.Ray(volCam.getWorldPosition(new THREE.Vector3()), volCam.getWorldDirection(new THREE.Vector3()));
+        let rayInverse = new THREE.Ray(
+          ray.origin.clone().add(ray.direction.clone().multiplyScalar(volume.scale.z)),
+          ray.direction.clone().multiplyScalar(-1));
 
-				volCam.rotateX(Math.PI);
-				volCam.updateMatrix();
-				volCam.updateMatrixWorld();
-				volCam.updateProjectionMatrix();
-				volCam.matrixWorldInverse.copy(volCam.matrixWorld).invert();
-				let pointsFar = pointcloud.pick(viewer, volCam, rayInverse, pickerSettings);
+        let pickerSettings = {
+          width: 8,
+          height: 8,
+          pickWindowSize: 8,
+          all: true,
+          pickClipped: true,
+          pointSizeType: PointSizeType.FIXED,
+          pointSize: 1
+        };
+        let pointsNear = pointcloud.pick(viewer, volCam, ray, pickerSettings);
 
-				allPointsNear.push(...pointsNear);
-				allPointsFar.push(...pointsFar);
-			}
+        volCam.rotateX(Math.PI);
+        volCam.updateMatrix();
+        volCam.updateMatrixWorld();
+        volCam.updateProjectionMatrix();
+        volCam.matrixWorldInverse.copy(volCam.matrixWorld).invert();
+        let pointsFar = pointcloud.pick(viewer, volCam, rayInverse, pickerSettings);
 
-			if(allPointsNear.length > 0 && allPointsFar.length > 0){
-				let viewLine = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
+        allPointsNear.push(...pointsNear);
+        allPointsFar.push(...pointsFar);
+      }
 
-				let closestOnLine = allPointsNear.map(p => viewLine.closestPointToPoint(p.position, false, new THREE.Vector3()));
-				let closest = closestOnLine.sort( (a, b) => ray.origin.distanceTo(a) - ray.origin.distanceTo(b))[0];
+      if ( allPointsNear.length > 0 && allPointsFar.length > 0 ) {
+        let viewLine = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
 
-				let farthestOnLine = allPointsFar.map(p => viewLine.closestPointToPoint(p.position, false, new THREE.Vector3()));
-				let farthest = farthestOnLine.sort( (a, b) => ray.origin.distanceTo(b) - ray.origin.distanceTo(a))[0];
+        let closestOnLine = allPointsNear.map(p => viewLine.closestPointToPoint(p.position, false, new THREE.Vector3()));
+        let closest = closestOnLine.sort((a, b) => ray.origin.distanceTo(a) - ray.origin.distanceTo(b))[0];
 
-				let distance = closest.distanceTo(farthest);
-				let centroid = new THREE.Vector3().addVectors(closest, farthest).multiplyScalar(0.5);
-				volume.scale.z = distance * 1.1;
-				volume.position.copy(centroid);
-			}
+        let farthestOnLine = allPointsFar.map(p => viewLine.closestPointToPoint(p.position, false, new THREE.Vector3()));
+        let farthest = farthestOnLine.sort((a, b) => ray.origin.distanceTo(b) - ray.origin.distanceTo(a))[0];
 
-			volume.clip = true;
-		};
+        let distance = closest.distanceTo(farthest);
+        let centroid = new THREE.Vector3().addVectors(closest, farthest).multiplyScalar(0.5);
+        volume.scale.z = distance * 1.1;
+        volume.position.copy(centroid);
+      }
 
-		this.addEventListener("drag", drag);
-		this.addEventListener("drop", drop);
+      volume.clip = true;
+    };
 
-		viewer.inputHandler.addInputListener(this);
+    this.addEventListener("drag", drag);
+    this.addEventListener("drop", drop);
 
-		return volume;
-	}
+    viewer.inputHandler.addInputListener(this);
 
-	update(e){
-		//console.log(e.delta)
-	}
+    return volume;
+  }
 
-	render(){
-		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
-	}
+  update(e) {
+    //console.log(e.delta)
+  }
+
+  render() {
+    this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
+  }
 
 }

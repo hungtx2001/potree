@@ -1,141 +1,140 @@
-
 import * as THREE from "../libs/three.js/build/three.module.js";
 
-export class PathAnimation{
-	
-	constructor(path, start, end, speed, callback){
-			this.path = path;
-			this.length = this.path.spline.getLength();
-			this.speed = speed;
-			this.callback = callback;
-			this.tween = null;
-			this.startPoint = Math.max(start, 0);
-			this.endPoint = Math.min(end, this.length);
-			this.t = 0.0;
-	}
+export class PathAnimation {
 
-	start(resume = false){
-		if(this.tween){
-			this.tween.stop();
-			this.tween = null;
-		}
-	
-		let tStart;
-		if(resume){
-			tStart = this.t;
-		}else{
-			tStart = this.startPoint / this.length;
-		}
-		let tEnd = this.endPoint / this.length;
-		let animationDuration = (tEnd - tStart) * this.length * 1000 / this.speed;
-	
-		let progress = {t: tStart};
-		this.tween = new TWEEN.Tween(progress).to({t: tEnd}, animationDuration);
-		this.tween.easing(TWEEN.Easing.Linear.None);
-		this.tween.onUpdate((e) => {
-			this.t = progress.t;
-			this.callback(progress.t);
-		});
-		this.tween.onComplete(() => {
-			if(this.repeat){
-				this.start();
-			}
-		});
+  constructor(path, start, end, speed, callback) {
+    this.path = path;
+    this.length = this.path.spline.getLength();
+    this.speed = speed;
+    this.callback = callback;
+    this.tween = null;
+    this.startPoint = Math.max(start, 0);
+    this.endPoint = Math.min(end, this.length);
+    this.t = 0.0;
+  }
 
-		setTimeout(() => {
-			this.tween.start();
-		}, 0);
-	}
+  start(resume = false) {
+    if ( this.tween ) {
+      this.tween.stop();
+      this.tween = null;
+    }
 
-	stop(){
-		if(!this.tween){
-			return;
-		}
-		this.tween.stop();
-		this.tween = null;
-		this.t = 0;
-	}
+    let tStart;
+    if ( resume ) {
+      tStart = this.t;
+    } else {
+      tStart = this.startPoint / this.length;
+    }
+    let tEnd = this.endPoint / this.length;
+    let animationDuration = (tEnd - tStart) * this.length * 1000 / this.speed;
 
-	pause(){
-		if(!this.tween){
-			return;
-		}
-		
-		this.tween.stop();
-		TWEEN.remove(this.tween);
-		this.tween = null;
-	}
+    let progress = {t: tStart};
+    this.tween = new TWEEN.Tween(progress).to({t: tEnd}, animationDuration);
+    this.tween.easing(TWEEN.Easing.Linear.None);
+    this.tween.onUpdate((e) => {
+      this.t = progress.t;
+      this.callback(progress.t);
+    });
+    this.tween.onComplete(() => {
+      if ( this.repeat ) {
+        this.start();
+      }
+    });
 
-	resume(){
-		this.start(true);
-	}
+    setTimeout(() => {
+      this.tween.start();
+    }, 0);
+  }
 
-	getPoint(t){
-		return this.path.spline.getPoint(t);
-	}
+  stop() {
+    if ( !this.tween ) {
+      return;
+    }
+    this.tween.stop();
+    this.tween = null;
+    this.t = 0;
+  }
+
+  pause() {
+    if ( !this.tween ) {
+      return;
+    }
+
+    this.tween.stop();
+    TWEEN.remove(this.tween);
+    this.tween = null;
+  }
+
+  resume() {
+    this.start(true);
+  }
+
+  getPoint(t) {
+    return this.path.spline.getPoint(t);
+  }
 
 }
 
-export class AnimationPath{
-	constructor (points = []) {
-		this.points = points;
-		this.spline = new THREE.CatmullRomCurve3(points);
-		//this.spline.reparametrizeByArcLength(1 / this.spline.getLength().total);
-	}
+export class AnimationPath {
+  constructor(points = []) {
+    this.points = points;
+    this.spline = new THREE.CatmullRomCurve3(points);
+    //this.spline.reparametrizeByArcLength(1 / this.spline.getLength().total);
+  }
 
-	get (t) {
-		return this.spline.getPoint(t);
-	}
+  get closed() {
+    return this.spline.closed;
+  }
 
-	getLength () {
-		return this.spline.getLength();
-	}
+  set closed(value) {
+    this.spline.closed = value;
+  }
 
-	animate (start, end, speed, callback) {
-		let animation = new PathAnimation(this, start, end, speed, callback);
-		animation.start();
+  get(t) {
+    return this.spline.getPoint(t);
+  }
 
-		return animation;
-	}
+  getLength() {
+    return this.spline.getLength();
+  }
 
-	pause () {
-		if (this.tween) {
-			this.tween.stop();
-		}
-	}
+  animate(start, end, speed, callback) {
+    let animation = new PathAnimation(this, start, end, speed, callback);
+    animation.start();
 
-	resume () {
-		if (this.tween) {
-			this.tween.start();
-		}
-	}
+    return animation;
+  }
 
-	getGeometry () {
-		let geometry = new THREE.Geometry();
+  pause() {
+    if ( this.tween ) {
+      this.tween.stop();
+    }
+  }
 
-		let samples = 500;
-		let i = 0;
-		for (let u = 0; u <= 1; u += 1 / samples) {
-			let position = this.spline.getPoint(u);
-			geometry.vertices[i] = new THREE.Vector3(position.x, position.y, position.z);
+  resume() {
+    if ( this.tween ) {
+      this.tween.start();
+    }
+  }
 
-			i++;
-		}
+  getGeometry() {
+    let geometry = new THREE.Geometry();
 
-		if(this.closed){
-			let position = this.spline.getPoint(0);
-			geometry.vertices[i] = new THREE.Vector3(position.x, position.y, position.z);
-		}
+    let samples = 500;
+    let i = 0;
+    for ( let u = 0; u <= 1; u += 1 / samples ) {
+      let position = this.spline.getPoint(u);
+      geometry.vertices[i] = new THREE.Vector3(position.x, position.y, position.z);
 
-		return geometry;
-	}
+      i++;
+    }
 
-	get closed(){
-		return this.spline.closed;
-	}
+    if ( this.closed ) {
+      let position = this.spline.getPoint(0);
+      geometry.vertices[i] = new THREE.Vector3(position.x, position.y, position.z);
+    }
 
-	set closed(value){
-		this.spline.closed = value;
-	}
+    return geometry;
+  }
 
 }
