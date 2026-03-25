@@ -1,0 +1,49 @@
+name: Sync Potree build to PotreeConverter
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-and-sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Potree
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install deps
+        run: yarn install
+
+      - name: Build Potree
+        run: yarn build
+
+      - name: Clone PotreeConverter
+        run: |
+          git clone --branch dev https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/hungtx2001/PotreeConverter.git
+
+      - name: Copy build files
+        run: |
+          rm -rf PotreeConverter/resources/page_template/libs/potree
+          mkdir -p PotreeConverter/resources/page_template/libs/potree
+
+          cp -r build/potree/* PotreeConverter/resources/page_template/libs/potree/
+          cp -r build/shaders PotreeConverter/resources/page_template/libs/
+
+      - name: Commit changes
+        run: |
+          cd PotreeConverter
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add .
+          git commit -m "auto update potree build from dev" || echo "No changes"
+          git push origin dev
