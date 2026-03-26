@@ -1,6 +1,7 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
+import {setVisibilityDirty} from "../Potree_update_visibility.js";
 
 
 export class BinaryLoader {
@@ -131,6 +132,7 @@ export class BinaryLoader {
       node.loading = false;
       node.estimatedSpacing = data.estimatedSpacing;
       Potree.numNodesLoading--;
+      setVisibilityDirty();
     };
 
     let message = {

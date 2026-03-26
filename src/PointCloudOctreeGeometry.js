@@ -2,6 +2,7 @@ import * as THREE from "../libs/three.js/build/three.module.js";
 import {PointCloudTreeNode} from "./PointCloudTree.js";
 import {XHRFactory} from "./XHRFactory.js";
 import {Utils} from "./utils.js";
+import {setVisibilityDirty} from "./Potree_update_visibility.js";
 
 export class PointCloudOctreeGeometry {
 
@@ -213,6 +214,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
 
       }
 
+      setVisibilityDirty();
       node.loadPoints();
     };
     if ( (node.level % node.pcoGeometry.hierarchyStepSize) === 0 ) {

@@ -21,6 +21,10 @@ export class HQSplatRenderer {
     this.gl = viewer.renderer.getContext();
 
     this.initialized = false;
+
+    // Pre-allocated objects to avoid GC pressure
+    this._octreeSize = new THREE.Vector3();
+    this._sizeVec = new THREE.Vector2();
   }
 
   init() {
@@ -58,6 +62,9 @@ export class HQSplatRenderer {
   };
 
   resize(width, height) {
+    if (this._lastW === width && this._lastH === height) return;
+    this._lastW = width;
+    this._lastH = height;
     this.rtDepth.setSize(width, height);
     this.rtAttribute.setSize(width, height);
   }
@@ -107,7 +114,7 @@ export class HQSplatRenderer {
 
     const viewer = this.viewer;
     const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
-    const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
+    const {width, height} = this.viewer.renderer.getSize(this._sizeVec);
 
     viewer.dispatchEvent({type: "render.pass.begin", viewer: viewer});
 
@@ -134,9 +141,12 @@ export class HQSplatRenderer {
       }
     }
 
+    // Cache SphereVolume filter — reused by both depth and attribute passes
+    let clipSpheres = viewer.scene.volumes.filter(v => (v instanceof SphereVolume));
+
     { // DEPTH PASS
       for ( let pointcloud of visiblePointClouds ) {
-        let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
+        let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(this._octreeSize).x;
 
         let material = originalMaterials.get(pointcloud);
         let depthMaterial = this.depthMaterials.get(pointcloud);
@@ -172,13 +182,13 @@ export class HQSplatRenderer {
       }
 
       viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtDepth, {
-        clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
+        clipSpheres: clipSpheres,
       });
     }
 
     { // ATTRIBUTE PASS
       for ( let pointcloud of visiblePointClouds ) {
-        let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
+        let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(this._octreeSize).x;
 
         let material = originalMaterials.get(pointcloud);
         let attributeMaterial = this.attributeMaterials.get(pointcloud);
@@ -242,7 +252,7 @@ export class HQSplatRenderer {
 
       viewer.renderer.setRenderTarget(null);
       viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtAttribute, {
-        clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
+        clipSpheres: clipSpheres,
         //material: this.attributeMaterial,
         blendFunc: [gl.SRC_ALPHA, gl.ONE],
         //depthTest: false,

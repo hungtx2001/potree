@@ -1,6 +1,7 @@
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
 import {PointAttribute, PointAttributes, PointAttributeTypes} from "../../../loader/PointAttributes.js";
 import {OctreeGeometry, OctreeGeometryNode} from "./OctreeGeometry.js";
+import {setVisibilityDirty} from "../../../Potree_update_visibility.js";
 
 // let loadedNodes = new Set();
 
@@ -110,6 +111,7 @@ export class NodeLoader {
         node.loaded = true;
         node.loading = false;
         Potree.numNodesLoading--;
+        setVisibilityDirty();
       };
 
       let pointAttributes = node.octreeGeometry.pointAttributes;

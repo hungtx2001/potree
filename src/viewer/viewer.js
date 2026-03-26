@@ -265,7 +265,8 @@ export class Viewer extends EventDispatcher {
 
         let onPointcloudAdded = (e) => {
           if ( this.scene.pointclouds.length === 1 ) {
-            let speed = e.pointcloud.boundingBox.getSize(new THREE.Vector3()).length();
+            if (!this._octreeSize) this._octreeSize = new THREE.Vector3();
+            let speed = e.pointcloud.boundingBox.getSize(this._octreeSize).length();
             speed = speed / 5;
             this.setMoveSpeed(speed);
           }
@@ -659,6 +660,7 @@ export class Viewer extends EventDispatcher {
   setPointBudget(value) {
     if ( Potree.pointBudget !== value ) {
       Potree.pointBudget = parseInt(value);
+      Potree._maxPointBudget = Potree.pointBudget; // sync adaptive ceiling
       this.dispatchEvent({'type': 'point_budget_changed', 'viewer': this});
     }
   };
@@ -1568,7 +1570,8 @@ export class Viewer extends EventDispatcher {
 
     let distances = [];
 
-    let renderAreaSize = this.renderer.getSize(new THREE.Vector2());
+    if ( !this._annotSizeVec ) this._annotSizeVec = new THREE.Vector2();
+    let renderAreaSize = this.renderer.getSize(this._annotSizeVec);
 
     let viewer = this;
 
@@ -1718,9 +1721,13 @@ export class Viewer extends EventDispatcher {
 
     Potree.pointLoadLimit = Potree.pointBudget * 2;
 
-    const lTarget = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(1000));
+    // Reuse pre-allocated vectors for light direction calc
+    if ( !this._lightTarget ) this._lightTarget = new THREE.Vector3();
+    if ( !this._lightDir ) this._lightDir = new THREE.Vector3();
+    camera.getWorldDirection(this._lightDir);
+    this._lightTarget.copy(camera.position).add(this._lightDir.multiplyScalar(1000));
     this.scene.directionalLight.position.copy(camera.position);
-    this.scene.directionalLight.lookAt(lTarget);
+    this.scene.directionalLight.lookAt(this._lightTarget);
 
 
     for ( let pointcloud of visiblePointClouds ) {
@@ -1916,8 +1923,11 @@ export class Viewer extends EventDispatcher {
         });
       }
 
-      this._previousCamera = this.scene.getActiveCamera().clone();
-      this._previousCamera.rotation.copy(this.scene.getActiveCamera().rotation);
+      // Reuse existing camera object instead of clone() per frame
+      this._previousCamera.position.copy(camera.position);
+      this._previousCamera.rotation.copy(camera.rotation);
+      this._previousCamera.matrixWorld.copy(camera.matrixWorld);
+      this._previousCamera.projectionMatrix.copy(camera.projectionMatrix);
 
     }
 
@@ -1939,10 +1949,12 @@ export class Viewer extends EventDispatcher {
       let clipBoxes = boxes.filter(degenerate).map(box => {
         box.updateMatrixWorld();
 
-        let boxInverse = box.matrixWorld.clone().invert();
-        let boxPosition = box.getWorldPosition(new THREE.Vector3());
+        if (!box._cachedInverse) box._cachedInverse = new THREE.Matrix4();
+        if (!box._cachedPosition) box._cachedPosition = new THREE.Vector3();
+        box._cachedInverse.copy(box.matrixWorld).invert();
+        box.getWorldPosition(box._cachedPosition);
 
-        return {box: box, inverse: boxInverse, position: boxPosition};
+        return {box: box, inverse: box._cachedInverse, position: box._cachedPosition};
       });
 
       let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);

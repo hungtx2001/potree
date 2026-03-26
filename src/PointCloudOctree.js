@@ -956,10 +956,12 @@ export class PointCloudOctree extends PointCloudTree {
       let pc = node.sceneNode;
       let geometry = node.geometryNode.geometry;
 
+      let hasPosition = false;
       for ( let attributeName in geometry.attributes ) {
         let attribute = geometry.attributes[attributeName];
 
         if ( attributeName === 'position' ) {
+          if ( !attribute || !attribute.array ) break;
           let x = attribute.array[3 * hit.pIndex + 0];
           let y = attribute.array[3 * hit.pIndex + 1];
           let z = attribute.array[3 * hit.pIndex + 2];
@@ -968,10 +970,12 @@ export class PointCloudOctree extends PointCloudTree {
           position.applyMatrix4(pc.matrixWorld);
 
           point[attributeName] = position;
+          hasPosition = true;
         } else if ( attributeName === 'indices' ) {
 
         } else {
 
+          if ( !attribute || !attribute.array ) continue;
           let values = attribute.array.slice(attribute.itemSize * hit.pIndex, attribute.itemSize * (hit.pIndex + 1));
 
           if ( attribute.potree ) {
@@ -995,6 +999,7 @@ export class PointCloudOctree extends PointCloudTree {
 
       }
 
+      if (!hasPosition) continue;
       hit.point = point;
     }
 

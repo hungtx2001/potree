@@ -337,8 +337,10 @@ class Shader {
       return;
     }
 
-    let tmp = new Float32Array(value.elements);
-    gl.uniformMatrix4fv(location, false, tmp);
+    // Reuse cached Float32Array to avoid GC pressure
+    if ( !this._mat4tmp ) this._mat4tmp = new Float32Array(16);
+    this._mat4tmp.set(value.elements);
+    gl.uniformMatrix4fv(location, false, this._mat4tmp);
   }
 
   setUniform1f(name, value) {
@@ -584,7 +586,8 @@ export class Renderer {
       gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
 
       let normalized = bufferAttribute.normalized;
-      let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
+      let arrayType = bufferAttribute.array.constructor;
+      let type = this.glTypeMapping.get(arrayType);
 
       if ( attributeLocations[attributeName] === undefined ) {
         //attributeLocation = attributeLocations["aExtra"];
@@ -601,13 +604,20 @@ export class Renderer {
         name: attributeName,
         count: bufferAttribute.count,
         itemSize: bufferAttribute.itemSize,
-        type: geometry.attributes.position.array.constructor,
+        type: arrayType,
         version: 0
       });
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.bindVertexArray(null);
+
+    // Free JS-side typed arrays — data now lives only in GPU VRAM.
+    // Keep 'position' array for CPU-side picking (measure tools).
+    for ( let attributeName in geometry.attributes ) {
+      if ( attributeName === 'position' ) continue;
+      geometry.attributes[attributeName].array = null;
+    }
 
     let disposeHandler = (event) => {
       this.deleteBuffer(geometry);
@@ -628,6 +638,11 @@ export class Renderer {
     for ( let attributeName in geometry.attributes ) {
       let bufferAttribute = geometry.attributes[attributeName];
 
+      // Skip attributes whose JS arrays were freed after GPU upload
+      if ( !bufferAttribute.array ) {
+        continue;
+      }
+
       let normalized = bufferAttribute.normalized;
       let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
@@ -640,7 +655,7 @@ export class Renderer {
           name: attributeName,
           count: bufferAttribute.count,
           itemSize: bufferAttribute.itemSize,
-          type: geometry.attributes.position.array.constructor,
+          type: bufferAttribute.array.constructor,
           version: bufferAttribute.version
         });
       } else {
@@ -706,9 +721,11 @@ export class Renderer {
       view = params.viewOverride;
     }
 
-    let worldView = new THREE.Matrix4();
-
-    let mat4holder = new Float32Array(16);
+    // Reuse pre-allocated objects to reduce GC pressure
+    if ( !this._worldView ) this._worldView = new THREE.Matrix4();
+    if ( !this._mat4holder ) this._mat4holder = new Float32Array(16);
+    let worldView = this._worldView;
+    let mat4holder = this._mat4holder;
 
     let i = 0;
     for ( let node of nodes ) {
@@ -960,7 +977,7 @@ export class Renderer {
         const vbo = webglBuffer.vbos.get(attName);
 
         if ( bufferAttribute !== undefined && vbo !== undefined ) {
-          let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
+          let type = this.glTypeMapping.get(vbo.type);
           let normalized = bufferAttribute.normalized;
 
           gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
@@ -1008,7 +1025,7 @@ export class Renderer {
           if ( attributeLocations[attributeName] !== undefined ) {
             const attributeLocation = attributeLocations[attributeName].location;
 
-            let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
+            let type = this.glTypeMapping.get(vbo.type);
             let normalized = bufferAttribute.normalized;
 
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
@@ -1042,13 +1059,17 @@ export class Renderer {
     let view = camera.matrixWorldInverse;
     let viewInv = camera.matrixWorld;
 
+    // Pre-allocate inverse matrices to avoid per-octree clone+invert
+    if ( !this._projInv ) this._projInv = new THREE.Matrix4();
+    if ( !this._viewInvTmp ) this._viewInvTmp = new THREE.Matrix4();
+
     if ( params.viewOverride ) {
       view = params.viewOverride;
-      viewInv = view.clone().invert();
+      viewInv = this._viewInvTmp.copy(view).invert();
     }
 
     let proj = camera.projectionMatrix;
-    let projInv = proj.clone().invert();
+    let projInv = this._projInv.copy(proj).invert();
     //let worldView = new THREE.Matrix4();
 
     let shader = null;

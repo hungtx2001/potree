@@ -100,7 +100,8 @@ export let lru = new LRU();
 export let pointBudget = 1 * 1000 * 1000;
 export let framenumber = 0;
 export let numNodesLoading = 0;
-export let maxNodesLoading = 4;
+export let maxNodesLoading = 8;
+export let uploadBudgetMs = 5;
 
 export const debug = {};
 
@@ -128,6 +129,15 @@ export {scriptPath, resourcePath};
 
 
 export function loadPointCloud(path, name, callback) {
+  // Warm up worker pool on first load
+  if (!Potree._workersWarmed) {
+    let wp = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
+    let wp2 = Potree.scriptPath + '/workers/2.0/DecoderWorker.js';
+    Potree.workerPool.warmup(wp);
+    Potree.workerPool.warmup(wp2);
+    Potree._workersWarmed = true;
+  }
+
   let loaded = function (e) {
     e.pointcloud.name = name;
     callback(e);
