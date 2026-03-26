@@ -11,7 +11,6 @@ import {Annotation} from "../Annotation.js"
 import {CameraMode, ClipMethod, ClipTask} from "../defines.js"
 import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
 import {Utils} from "../utils.js"
-import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js"
 import {HierarchicalSlider} from "./HierarchicalSlider.js"
 import {OrientedImage} from "../modules/OrientedImages/OrientedImages.js";
 import {Images360} from "../modules/Images360/Images360.js";
@@ -804,7 +803,7 @@ export class Sidebar {
   }
 
   initClippingTool() {
-
+    return; // Clipping disabled
 
     this.viewer.addEventListener("cliptask_changed", (event) => {
       console.log("TODO");
@@ -909,6 +908,8 @@ export class Sidebar {
   }
 
   initFilters() {
+    return; // Filters section hidden
+
     this.initClassificationList();
     this.initReturnFilters();
     this.initGPSTimeFilters();
@@ -1314,15 +1315,15 @@ export class Sidebar {
       }
     });
 
-    this.dom.find('#sldFOV').slider({
-      value: this.viewer.getFOV(),
-      min: 20,
-      max: 100,
-      step: 1,
-      slide: (event, ui) => {
-        this.viewer.setFOV(ui.value);
-      }
-    });
+    // this.dom.find('#sldFOV').slider({
+    //   value: this.viewer.getFOV(),
+    //   min: 20,
+    //   max: 100,
+    //   step: 1,
+    //   slide: (event, ui) => {
+    //     this.viewer.setFOV(ui.value);
+    //   }
+    // });
 
     $('#sldEDLRadius').slider({
       value: this.viewer.getEDLRadius(),
@@ -1344,25 +1345,25 @@ export class Sidebar {
       }
     });
 
-    $('#sldEDLOpacity').slider({
-      value: this.viewer.getEDLOpacity(),
-      min: 0,
-      max: 1,
-      step: 0.01,
-      slide: (event, ui) => {
-        this.viewer.setEDLOpacity(ui.value);
-      }
-    });
+    // $('#sldEDLOpacity').slider({
+    //   value: this.viewer.getEDLOpacity(),
+    //   min: 0,
+    //   max: 1,
+    //   step: 0.01,
+    //   slide: (event, ui) => {
+    //     this.viewer.setEDLOpacity(ui.value);
+    //   }
+    // });
 
     this.viewer.addEventListener('point_budget_changed', (event) => {
       $('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
       sldPointBudget.slider({value: this.viewer.getPointBudget()});
     });
 
-    this.viewer.addEventListener('fov_changed', (event) => {
-      $('#lblFOV')[0].innerHTML = parseInt(this.viewer.getFOV());
-      $('#sldFOV').slider({value: this.viewer.getFOV()});
-    });
+    // this.viewer.addEventListener('fov_changed', (event) => {
+    //   $('#lblFOV')[0].innerHTML = parseInt(this.viewer.getFOV());
+    //   $('#sldFOV').slider({value: this.viewer.getFOV()});
+    // });
 
     this.viewer.addEventListener('use_edl_changed', (event) => {
       $('#chkEDLEnabled')[0].checked = this.viewer.getEDLEnabled();
@@ -1378,27 +1379,27 @@ export class Sidebar {
       $('#sldEDLStrength').slider({value: this.viewer.getEDLStrength()});
     });
 
-    this.viewer.addEventListener('background_changed', (event) => {
-      $("input[name=background][value='" + this.viewer.getBackground() + "']").prop('checked', true);
-    });
+    // this.viewer.addEventListener('background_changed', (event) => {
+    //   $("input[name=background][value='" + this.viewer.getBackground() + "']").prop('checked', true);
+    // });
 
     $('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
-    $('#lblFOV')[0].innerHTML = parseInt(this.viewer.getFOV());
+    // $('#lblFOV')[0].innerHTML = parseInt(this.viewer.getFOV());
     $('#lblEDLRadius')[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
     $('#lblEDLStrength')[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
     $('#chkEDLEnabled')[0].checked = this.viewer.getEDLEnabled();
 
-    {
-      let elBackground = $(`#background_options`);
-      elBackground.selectgroup();
-
-      elBackground.find("input").click((e) => {
-        this.viewer.setBackground(e.target.value);
-      });
-
-      let currentBackground = this.viewer.getBackground();
-      $(`input[name=background_options][value=${currentBackground}]`).trigger("click");
-    }
+    // {
+    //   let elBackground = $(`#background_options`);
+    //   elBackground.selectgroup();
+    //
+    //   elBackground.find("input").click((e) => {
+    //     this.viewer.setBackground(e.target.value);
+    //   });
+    //
+    //   let currentBackground = this.viewer.getBackground();
+    //   $(`input[name=background_options][value=${currentBackground}]`).trigger("click");
+    // }
 
     $('#chkEDLEnabled').click(() => {
       this.viewer.setEDLEnabled($('#chkEDLEnabled').prop("checked"));
@@ -1410,143 +1411,142 @@ export class Sidebar {
     let sldMoveSpeed = $('#sldMoveSpeed');
     let lblMoveSpeed = $('#lblMoveSpeed');
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + '/icons/earth_controls_1.png',
-      '[title]tt.earth_control',
-      () => {
-        this.viewer.setControls(this.viewer.earthControls);
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + '/icons/earth_controls_1.png',
+    //   '[title]tt.earth_control',
+    //   () => {
+    //     this.viewer.setControls(this.viewer.earthControls);
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + '/icons/fps_controls.svg',
-      '[title]tt.flight_control',
-      () => {
-        this.viewer.setControls(this.viewer.fpControls);
-        this.viewer.fpControls.lockElevation = false;
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + '/icons/fps_controls.svg',
+    //   '[title]tt.flight_control',
+    //   () => {
+    //     this.viewer.setControls(this.viewer.fpControls);
+    //     this.viewer.fpControls.lockElevation = false;
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + '/icons/helicopter_controls.svg',
-      '[title]tt.heli_control',
-      () => {
-        this.viewer.setControls(this.viewer.fpControls);
-        this.viewer.fpControls.lockElevation = true;
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + '/icons/helicopter_controls.svg',
+    //   '[title]tt.heli_control',
+    //   () => {
+    //     this.viewer.setControls(this.viewer.fpControls);
+    //     this.viewer.fpControls.lockElevation = true;
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + '/icons/orbit_controls.svg',
-      '[title]tt.orbit_control',
-      () => {
-        this.viewer.setControls(this.viewer.orbitControls);
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + '/icons/orbit_controls.svg',
+    //   '[title]tt.orbit_control',
+    //   () => {
+    //     this.viewer.setControls(this.viewer.orbitControls);
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + '/icons/focus.svg',
-      '[title]tt.focus_control',
-      () => {
-        this.viewer.fitToScreen();
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + '/icons/focus.svg',
+    //   '[title]tt.focus_control',
+    //   () => {
+    //     this.viewer.fitToScreen();
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/navigation_cube.svg",
-      "[title]tt.navigation_cube_control",
-      () => {
-        this.viewer.toggleNavigationCube()
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/navigation_cube.svg",
+    //   "[title]tt.navigation_cube_control",
+    //   () => {
+    //     this.viewer.toggleNavigationCube()
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/images/compas.svg",
-      "[title]tt.compass",
-      () => {
-        const visible = !this.viewer.compass.isVisible();
-        this.viewer.compass.setVisible(visible);
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/images/compas.svg",
+    //   "[title]tt.compass",
+    //   () => {
+    //     const visible = !this.viewer.compass.isVisible();
+    //     this.viewer.compass.setVisible(visible);
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/camera_animation.svg",
-      "[title]tt.camera_animation",
-      () => {
-        const animation = CameraAnimation.defaultFromView(this.viewer);
-
-        viewer.scene.addCameraAnimation(animation);
-      }
-    ));
-
-
-    elNavigation.append("<br>");
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/camera_animation.svg",
+    //   "[title]tt.camera_animation",
+    //   () => {
+    //     const animation = CameraAnimation.defaultFromView(this.viewer);
+    //
+    //     viewer.scene.addCameraAnimation(animation);
+    //   }
+    // ));
 
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/left.svg",
-      "[title]tt.left_view_control",
-      () => {
-        this.viewer.setLeftView()
-      }
-    ));
+    // elNavigation.append("<br>");
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/right.svg",
-      "[title]tt.right_view_control",
-      () => {
-        this.viewer.setRightView()
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/left.svg",
+    //   "[title]tt.left_view_control",
+    //   () => {
+    //     this.viewer.setLeftView()
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/front.svg",
-      "[title]tt.front_view_control",
-      () => {
-        this.viewer.setFrontView()
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/right.svg",
+    //   "[title]tt.right_view_control",
+    //   () => {
+    //     this.viewer.setRightView()
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/back.svg",
-      "[title]tt.back_view_control",
-      () => {
-        this.viewer.setBackView()
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/front.svg",
+    //   "[title]tt.front_view_control",
+    //   () => {
+    //     this.viewer.setFrontView()
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/top.svg",
-      "[title]tt.top_view_control",
-      () => {
-        this.viewer.setTopView()
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/back.svg",
+    //   "[title]tt.back_view_control",
+    //   () => {
+    //     this.viewer.setBackView()
+    //   }
+    // ));
 
-    elNavigation.append(this.createToolIcon(
-      Potree.resourcePath + "/icons/bottom.svg",
-      "[title]tt.bottom_view_control",
-      () => {
-        this.viewer.setBottomView()
-      }
-    ));
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/top.svg",
+    //   "[title]tt.top_view_control",
+    //   () => {
+    //     this.viewer.setTopView()
+    //   }
+    // ));
+
+    // elNavigation.append(this.createToolIcon(
+    //   Potree.resourcePath + "/icons/bottom.svg",
+    //   "[title]tt.bottom_view_control",
+    //   () => {
+    //     this.viewer.setBottomView()
+    //   }
+    // ));
 
 
-    let elCameraProjection = $(`
-			<selectgroup id="camera_projection_options">
-				<option id="camera_projection_options_perspective" value="PERSPECTIVE" data-i18n="navigation.perspective">Perspective</option>
-				<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC" data-i18n="navigation.orthographic">Orthographic</option>
-			</selectgroup>
-		`);
-    elNavigation.append(elCameraProjection);
-    let title = `<span data-i18n="navigation.camera_projection">Camera Projection</span>`;
-    elCameraProjection.selectgroup({title: title});
-    elCameraProjection.find("input").click((e) => {
-      this.viewer.setCameraMode(CameraMode[e.target.value]);
-    });
-    let cameraMode = Object.keys(CameraMode)
-      .filter(key => CameraMode[key] === this.viewer.scene.cameraMode);
-    elCameraProjection.find(`input[value=${cameraMode}]`).trigger("click");
+    // let elCameraProjection = $(`
+    // 		<selectgroup id="camera_projection_options">
+    // 			<option id="camera_projection_options_perspective" value="PERSPECTIVE" data-i18n="navigation.perspective">Perspective</option>
+    // 			<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC" data-i18n="navigation.orthographic">Orthographic</option>
+    // 		</selectgroup>
+    // 	`);
+    // elNavigation.append(elCameraProjection);
+    // let title = `<span data-i18n="navigation.camera_projection">Camera Projection</span>`;
+    // elCameraProjection.selectgroup({title: title});
+    // elCameraProjection.find("input").click((e) => {
+    //   this.viewer.setCameraMode(CameraMode[e.target.value]);
+    // });
+    // let cameraMode = Object.keys(CameraMode)
+    //   .filter(key => CameraMode[key] === this.viewer.scene.cameraMode);
+    // elCameraProjection.find(`input[value=${cameraMode}]`).trigger("click");
 
     let speedRange = new THREE.Vector2(1, 10 * 1000);
 

@@ -15,7 +15,7 @@ export class DistancePanel extends MeasurePanel {
 				<!-- ACTIONS -->
 				<div style="display: flex; margin-top: 12px">
 					<span>
-						<input type="button" name="make_profile" value="profile from measure" />
+						<input type="button" name="make_profile" value="profile from measure" data-i18n="[value]measurements.profile_from_measure" />
 					</span>
 					<span style="flex-grow: 1"></span>
 					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
@@ -68,7 +68,7 @@ export class DistancePanel extends MeasurePanel {
     elDistanceTable.empty();
 
     for ( let i = 0; i < distances.length; i++ ) {
-      let label = (i === 0) ? 'Distances: ' : '';
+      let label = (i === 0) ? '<span data-i18n="measurements.distances">Distances</span>: ' : '';
       let distance = distances[i];
       let elDistance = $(`
 				<tr>
@@ -80,7 +80,7 @@ export class DistancePanel extends MeasurePanel {
 
     let elTotal = $(`
 			<tr>
-				<th>Total: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
+				<th><span data-i18n="measurements.total">Total</span>: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
 			</tr>`);
     elDistanceTable.append(elTotal);
   }

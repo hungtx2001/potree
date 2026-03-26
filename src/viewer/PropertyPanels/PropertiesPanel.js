@@ -116,7 +116,7 @@ export class PropertiesPanel {
 				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
 				<div class="divider">
-					<span>Attribute</span>
+					<span data-i18n="appearance.attribute">Attribute</span>
 				</div>
 
 				<li>
@@ -125,12 +125,12 @@ export class PropertiesPanel {
 
 				<div id="materials.composite_weight_container">
 					<div class="divider">
-						<span>Attribute Weights</span>
+						<span data-i18n="appearance.attribute_weights">Attribute Weights</span>
 					</div>
 
-					<li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
-					<li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
-					<li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
+					<li><span data-i18n="appearance.rgb">RGB</span>: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
+					<li><span data-i18n="appearance.intensity">Intensity</span>: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
+					<li><span data-i18n="appearance.elevation">Elevation</span>: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
 					<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
 					<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
 					<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
@@ -138,31 +138,31 @@ export class PropertiesPanel {
 
 				<div id="materials.rgb_container">
 					<div class="divider">
-						<span>RGB</span>
+						<span data-i18n="appearance.rgb">RGB</span>
 					</div>
 
-					<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
-					<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
-					<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
+					<li><span data-i18n="appearance.gamma">Gamma</span>: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
+					<li><span data-i18n="appearance.brightness">Brightness</span>: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
+					<li><span data-i18n="appearance.contrast">Contrast</span>: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
 				</div>
 
 				<div id="materials.extra_container">
 					<div class="divider">
-						<span>Extra Attribute</span>
+						<span data-i18n="appearance.extra_attribute">Extra Attribute</span>
 					</div>
 
 					<li><span data-i18n="appearance.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
 
 					<li>
 						<selectgroup id="extra_gradient_repeat_option">
-							<option id="extra_gradient_repeat_clamp" value="CLAMP">Clamp</option>
-							<option id="extra_gradient_repeat_repeat" value="REPEAT">Repeat</option>
-							<option id="extra_gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+							<option id="extra_gradient_repeat_clamp" value="CLAMP" data-i18n="appearance.clamp">Clamp</option>
+							<option id="extra_gradient_repeat_repeat" value="REPEAT" data-i18n="appearance.repeat">Repeat</option>
+							<option id="extra_gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT" data-i18n="appearance.mirrored_repeat">Mirrored Repeat</option>
 						</selectgroup>
 					</li>
 
 					<li>
-						<span>Gradient Scheme:</span>
+						<span data-i18n="appearance.gradient_scheme">Gradient Scheme:</span>
 						<div id="extra_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
 						</div>
 					</li>
@@ -170,7 +170,7 @@ export class PropertiesPanel {
 				
 				<div id="materials.matcap_container">
 					<div class="divider">
-						<span>MATCAP</span>
+						<span data-i18n="appearance.matcap">MATCAP</span>
 					</div>
 
 					<li>
@@ -180,7 +180,7 @@ export class PropertiesPanel {
 
 				<div id="materials.color_container">
 					<div class="divider">
-						<span>Color</span>
+						<span data-i18n="appearance.color">Color</span>
 					</div>
 
 					<input id="materials.color.picker" />
@@ -189,21 +189,21 @@ export class PropertiesPanel {
 
 				<div id="materials.elevation_container">
 					<div class="divider">
-						<span>Elevation</span>
+						<span data-i18n="appearance.elevation">Elevation</span>
 					</div>
 
 					<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
 
 					<li>
 						<selectgroup id="gradient_repeat_option">
-							<option id="gradient_repeat_clamp" value="CLAMP">Clamp</option>
-							<option id="gradient_repeat_repeat" value="REPEAT">Repeat</option>
-							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+							<option id="gradient_repeat_clamp" value="CLAMP" data-i18n="appearance.clamp">Clamp</option>
+							<option id="gradient_repeat_repeat" value="REPEAT" data-i18n="appearance.repeat">Repeat</option>
+							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT" data-i18n="appearance.mirrored_repeat">Mirrored Repeat</option>
 						</selectgroup>
 					</li>
 
 					<li>
-						<span>Gradient Scheme:</span>
+						<span data-i18n="appearance.gradient_scheme">Gradient Scheme:</span>
 						<div id="elevation_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
 						</div>
 					</li>
@@ -211,33 +211,33 @@ export class PropertiesPanel {
 
 				<div id="materials.transition_container">
 					<div class="divider">
-						<span>Transition</span>
+						<span data-i18n="appearance.transition">Transition</span>
 					</div>
 
-					<li>transition: <span id="lblTransition"></span> <div id="sldTransition"></div>	</li>
+					<li><span data-i18n="appearance.transition">Transition</span>: <span id="lblTransition"></span> <div id="sldTransition"></div>	</li>
 				</div>
 
 				<div id="materials.intensity_container">
 					<div class="divider">
-						<span>Intensity</span>
+						<span data-i18n="appearance.intensity">Intensity</span>
 					</div>
 
-					<li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
-					<li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
-					<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
-					<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
+					<li><span data-i18n="appearance.range">Range</span>: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
+					<li><span data-i18n="appearance.gamma">Gamma</span>: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
+					<li><span data-i18n="appearance.brightness">Brightness</span>: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
+					<li><span data-i18n="appearance.contrast">Contrast</span>: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
 				</div>
 
 				<div id="materials.gpstime_container">
 					<div class="divider">
-						<span>GPS Time</span>
+						<span data-i18n="appearance.gps_time">GPS Time</span>
 					</div>
 
 				</div>
 				
 				<div id="materials.index_container">
 					<div class="divider">
-						<span>Indices</span>
+						<span data-i18n="appearance.indices">Indices</span>
 					</div>
 				</div>
 

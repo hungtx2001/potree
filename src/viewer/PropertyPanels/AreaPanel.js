@@ -9,7 +9,7 @@ export class AreaPanel extends MeasurePanel {
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
-				<span style="font-weight: bold">Area: </span>
+				<span style="font-weight: bold" data-i18n="measurements.area">Area</span>: 
 				<span id="measurement_area"></span>
 
 				<!-- ACTIONS -->
