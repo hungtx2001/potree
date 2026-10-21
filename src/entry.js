@@ -8,3 +8,5 @@ export const version = {
 };
 
 export const description = "Potree WebGL point cloud library";
+export { Shaders } from './materials/shaders/shaders.js';
+
