@@ -1,6 +1,7 @@
 
 import * as THREE from 'three';
 import {Points} from "./Points.js";
+import {BinaryHeap} from "./utils/BinaryHeap.js";
 
 export class ProfileData {
 	constructor (profile) {

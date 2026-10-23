@@ -1,6 +1,4 @@
-// window = { };
-// document = { };
-// importScripts('/libs/zstd-codec/bundle.js', '/libs/ept/ParseBuffer.js');
+import {parseEpt} from "../loader/ept/ParseBuffer.js";
 
 onmessage = async function(event) {
 	
