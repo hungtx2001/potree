@@ -24,6 +24,11 @@
       "import": "./dist/potree.js",
       "require": "./dist/potree.cjs"
     },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    },
     "./css": "./dist/potree.css"
   },
   "files": [
