@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Potree Core - Pure Three.js Integration (Zero DOM)</title>
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+			background: #111;
+			font-family: sans-serif;
+		}
+		#info {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			color: #fff;
+			background: rgba(0, 0, 0, 0.6);
+			padding: 8px 14px;
+			border-radius: 4px;
+			font-size: 13px;
+			pointer-events: none;
+			z-index: 100;
+		}
+		canvas {
+			width: 100vw;
+			height: 100vh;
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<div id="info">Potree Core - Pure Three.js Canvas Demo (No jQuery, No Sidebar DOM)</div>
+
+	<script type="module">
+		import * as THREE from 'three';
+		import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+		import { PointCloudOctree, PointCloudMaterial, loadPointCloud, updatePointClouds } from '../src/core.js';
+
+		const scene = new THREE.Scene();
+		const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
+		camera.position.set(0, 50, 100);
+
+		const renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		const controls = new OrbitControls(camera, renderer.domElement);
+		controls.enableDamping = true;
+
+		// Lighting
+		const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+		scene.add(ambientLight);
+
+		let pointclouds = [];
+
+		loadPointCloud("../pointclouds/vol_total/cloud.js", "vol_total").then(e => {
+			scene.add(e.pointcloud);
+			pointclouds.push(e.pointcloud);
+		}).catch(err => {
+			console.log("Demo pointcloud notice:", err.message);
+		});
+
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+
+			if (pointclouds.length > 0) {
+				updatePointClouds(pointclouds, camera, renderer);
+			}
+
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+	</script>
+</body>
+</html>
