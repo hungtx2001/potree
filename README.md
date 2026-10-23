@@ -11,40 +11,105 @@
     
 <a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
 
-# Getting Started
+# Modern NPM Package Usage
 
-### Install on your PC
+Potree is packaged as a modern ES Module and CommonJS library with full TypeScript typings.
 
-Install [node.js](http://nodejs.org/)
+### Installation
 
-Install dependencies, as specified in package.json, and create a build in ./build/potree.
+```bash
+npm install potree three
+```
+
+### Usage: Full Viewer
+
+For standard browser applications with the complete Potree UI, sidebar, navigation, and measurement tools:
+
+```javascript
+import { Viewer, loadPointCloud } from 'potree';
+import 'potree/css';
+
+const viewer = new Viewer(document.getElementById('potree_render_area'));
+viewer.setEDLEnabled(true);
+viewer.setFOV(60);
+viewer.setPointBudget(2_000_000);
+
+loadPointCloud('https://example.com/pointclouds/lion/metadata.json').then((e) => {
+  const pointcloud = e.pointcloud;
+  viewer.scene.addPointCloud(pointcloud);
+  viewer.fitToScreen();
+});
+```
+
+### Usage: Headless / Zero-DOM Core (`potree/core`)
+
+For custom Three.js applications, headless rendering, WebGPU/Three.js custom render loops, or frameworks (React Three Fiber, Angular, Vue) where you only need the pointcloud octree streaming engine without any DOM UI or sidebars:
+
+```javascript
+import * as THREE from 'three';
+import { loadPointCloud, updatePointClouds, PointCloudOctree } from 'potree/core';
+
+// Standard Three.js scene setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+
+const pointclouds = [];
+
+loadPointCloud('https://example.com/pointclouds/lion/metadata.json').then((e) => {
+  const pointcloud = e.pointcloud;
+  scene.add(pointcloud);
+  pointclouds.push(pointcloud);
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  
+  // Update LOD streaming and octree nodes
+  updatePointClouds(pointclouds, camera, renderer);
+  
+  renderer.render(scene, camera);
+}
+animate();
+```
+
+---
+
+# Development & Local Setup
+
+### Setup
 
 ```bash
 npm install
 ```
 
-### Run on your PC
+### Local Dev Server
 
-Use the `npm start` command to 
+Start the Vite development server with hot reload:
 
-* create ./build/potree 
-* watch for changes to the source code and automatically create a new build on change
-* start a web server at localhost:1234. 
+```bash
+npm run dev
+```
 
-Go to http://localhost:1234/examples/ to test the examples.
+Visit `http://localhost:5173/examples/modern_viewer.html` or `http://localhost:5173/examples/standalone_core.html`.
 
-### Deploy to a server
+### Build for Production
 
-* Simply upload the Potree folderm with all your point clouds, the build directory, and your html files to a web server.
-* It is not required to install node.js on your webserver. All you need is to host your files online. 
+Bundle the library into `dist/` (ESM + CommonJS + CSS + Web Workers + Source Maps):
+
+```bash
+npm run build
+```
+
+---
 
 ### Convert Point Clouds to Potree Format
 
 Download [PotreeConverter](https://github.com/potree/PotreeConverter) and run it like this:
 
-    ./PotreeConverter.exe C:/pointclouds/data.las -o C:/pointclouds/data_converted
-
-Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_converted. Then, duplicate and rename one of the examples and modify the path in the html file to your own point cloud.
+```bash
+./PotreeConverter.exe C:/pointclouds/data.las -o C:/pointclouds/data_converted
+```
 
 # Downloads
 
