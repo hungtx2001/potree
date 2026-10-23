@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
 import {workerPool, runtime} from "../runtime.js";
+import {LASFile, LASDecoder} from "./laslaz/laslaz.js";
 
 /**
  * laslaz code taken and adapted from plas.io js-laslaz

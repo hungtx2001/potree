@@ -40,45 +40,50 @@ export class GeoPackageLoader{
 	}
 
 	static async loadUrl(url, params){
-
-		await Promise.all([
-			Utils.loadScript(`${runtime.scriptPath}/lazylibs/geopackage/geopackage.js`),
-			Utils.loadScript(`${runtime.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
-		]);
-		
 		const result = await fetch(url);
 		const buffer = await result.arrayBuffer();
 
 		params = params || {};
-
 		params.source = url;
 
 		return GeoPackageLoader.loadBuffer(buffer, params);
 	}
 
 	static async loadBuffer(buffer, params){
-
-		await Promise.all([
-			Utils.loadScript(`${runtime.scriptPath}/lazylibs/geopackage/geopackage.js`),
-			Utils.loadScript(`${runtime.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
-		]);
-
 		params = params || {};
 
 		const resolver = async (resolve) => {
-			
 			let transform = params.transform;
 			if(!transform){
 				transform = {forward: (arg) => arg};
 			}
 
-			const wasmPath = `${runtime.scriptPath}/lazylibs/sql.js/sql-wasm.wasm`;
-			const SQL = await initSqlJs({ locateFile: filename => wasmPath});
-
 			const u8 = new Uint8Array(buffer);
+			let openGeoPackage = typeof geopackage !== 'undefined' ? geopackage.open : null;
+			if (!openGeoPackage) {
+				try {
+					const gpkg = await import('@ngageoint/geopackage');
+					if (gpkg && gpkg.GeoPackageAPI && gpkg.GeoPackageAPI.open) {
+						openGeoPackage = gpkg.GeoPackageAPI.open;
+					}
+				} catch (e) {
+					// Fall through to script loader
+				}
+			}
 
-			const data = await geopackage.open(u8);
-			window.data = data;
+			let data;
+			if (openGeoPackage) {
+				data = await openGeoPackage(u8);
+			} else {
+				await Promise.all([
+					Utils.loadScript(`${runtime.scriptPath}/lazylibs/geopackage/geopackage.js`),
+					Utils.loadScript(`${runtime.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
+				]);
+				const wasmPath = `${runtime.scriptPath}/lazylibs/sql.js/sql-wasm.wasm`;
+				await initSqlJs({ locateFile: filename => wasmPath});
+				data = await geopackage.open(u8);
+			}
+			if (typeof window !== 'undefined') window.data = data;
 
 			const geopackageNode = new THREE.Object3D();
 			geopackageNode.name = params.source;

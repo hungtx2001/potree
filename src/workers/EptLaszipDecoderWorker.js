@@ -1,9 +1,4 @@
-/* global onmessage:true postMessage:false Copc */
-/* exported onmessage */
-// ept-laszip-decoder-worker.js
-//
-
-// importScripts('/libs/copc/index.js');
+import * as Copc from 'copc';
 
 async function readUsingDataView(event) {
 	performance.mark("laslaz-start");

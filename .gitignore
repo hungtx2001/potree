@@ -34,3 +34,4 @@ libs/CesiumUnminified
 /pointclouds/helimap_epalinges
 pointclouds/F
 *.tgz
+.idea/
