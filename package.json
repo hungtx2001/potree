@@ -17,15 +17,15 @@
   "type": "module",
   "main": "./dist/potree.cjs",
   "module": "./dist/potree.js",
-  "types": "./dist/index.d.ts",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./types/index.d.ts",
       "import": "./dist/potree.js",
       "require": "./dist/potree.cjs"
     },
     "./core": {
-      "types": "./dist/core.d.ts",
+      "types": "./types/core.d.ts",
       "import": "./dist/core.js",
       "require": "./dist/core.cjs"
     },
@@ -33,6 +33,7 @@
   },
   "files": [
     "dist",
+    "types",
     "resources",
     "README.md",
     "LICENSE"
