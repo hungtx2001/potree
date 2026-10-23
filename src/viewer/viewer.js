@@ -35,6 +35,8 @@ import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import * as TWEEN from '@tweenjs/tween.js';
 import JSON5 from 'json5';
 import proj4 from 'proj4';
+import sidebarHtml from './sidebar.html?raw';
+import profileHtml from './profile.html?raw';
 
 
 export class Viewer extends EventDispatcher{
@@ -1207,7 +1209,8 @@ export class Viewer extends EventDispatcher{
 
 		let viewer = this;
 		let sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
+
+		const initGuiDom = () => {
 			sidebarContainer.css('width', '300px');
 			sidebarContainer.css('height', '100%');
 
@@ -1222,26 +1225,20 @@ export class Viewer extends EventDispatcher{
 			imgMapToggle.onclick = e => { this.toggleMap(); };
 			imgMapToggle.id = 'potree_map_toggle';
 
-			
-
 			let elButtons = $("#potree_quick_buttons").get(0);
-
-			elButtons.append(imgMenuToggle);
-			elButtons.append(imgMapToggle);
-
+			if (elButtons) {
+				elButtons.append(imgMenuToggle);
+				elButtons.append(imgMapToggle);
+			}
 
 			VRButton.createButton(this.renderer).then(vrButton => {
-
 				if(vrButton == null){
 					console.log("VR not supported or active.");
-
 					return;
 				}
 
 				this.renderer.xr.enabled = true;
-
 				let element = vrButton.element;
-
 				element.style.position = "";
 				element.style.bottom = "";
 				element.style.left = "";
@@ -1253,7 +1250,7 @@ export class Viewer extends EventDispatcher{
 				element.style.textShadow = "black 2px 2px 2px";
 				element.style.display = "block";
 
-				elButtons.append(element);
+				if (elButtons) elButtons.append(element);
 
 				vrButton.onStart(() => {
 					this.dispatchEvent({type: "vr_start"});
@@ -1267,57 +1264,60 @@ export class Viewer extends EventDispatcher{
 			this.mapView = new MapView(this);
 			this.mapView.init();
 
-			i18n.init({
-				lng: 'en',
-				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it','ca'],
-				getAsync: true,
-				debug: false
-			}, function (t) {
-				// Start translation once everything is loaded
-				$('body').i18n();
-			});
+			if (typeof i18n !== 'undefined' && i18n.init) {
+				i18n.init({
+					lng: 'en',
+					resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
+					preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it','ca'],
+					getAsync: true,
+					debug: false
+				}, function (t) {
+					$('body').i18n();
+				});
+			}
 
 			$(() => {
-				//initSidebar(this);
 				let sidebar = new Sidebar(this);
 				sidebar.init();
-
 				this.sidebar = sidebar;
 
-				//if (callback) {
-				//	$(callback);
-				//}
-
-				let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
+				const initProfileDom = () => {
+					let elProfile = $('<div>').html(profileHtml);
 					$(document.body).append(elProfile.children());
 					this.profileWindow = new ProfileWindow(this);
 					this.profileWindowController = new ProfileWindowController(this);
 
-					$('#profile_window').draggable({
-						handle: $('#profile_titlebar'),
-						containment: $(document.body)
-					});
-					$('#profile_window').resizable({
-						containment: $(document.body),
-						handles: 'n, e, s, w'
-					});
+					if ($('#profile_window').draggable) {
+						$('#profile_window').draggable({
+							handle: $('#profile_titlebar'),
+							containment: $(document.body)
+						});
+					}
+					if ($('#profile_window').resizable) {
+						$('#profile_window').resizable({
+							containment: $(document.body),
+							handles: 'n, e, s, w'
+						});
+					}
 
 					$(() => {
 						this.guiLoaded = true;
 						for(let task of this.guiLoadTasks){
 							task();
 						}
-
 					});
-				});
+				};
 
-				
-
+				initProfileDom();
 			});
+		};
 
-			
-		});
+		if (sidebarHtml && sidebarContainer.length > 0) {
+			sidebarContainer.html(sidebarHtml);
+			initGuiDom();
+		} else {
+			sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, initGuiDom);
+		}
 
 		return this.promiseGuiLoaded();
 	}

@@ -5,7 +5,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        potree: resolve(__dirname, 'src/entry.js'),
+        potree: resolve(__dirname, 'src/index.js'),
         core: resolve(__dirname, 'src/core.js'),
       },
       name: 'Potree',
