@@ -1,6 +1,7 @@
 
 
 import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js';
 import {Action} from "./Actions.js";
 import {Utils} from "./utils.js";
 import {EventDispatcher} from "./EventDispatcher.js";

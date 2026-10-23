@@ -14,6 +14,7 @@
  */
 
 import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js';
 import {MOUSE} from "../defines.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";

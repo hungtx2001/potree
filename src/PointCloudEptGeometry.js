@@ -1,6 +1,7 @@
 import {PointCloudTreeNode} from "./PointCloudTree.js";
 import {PointAttributes, PointAttribute, PointAttributeTypes} from "./loader/PointAttributes.js";
 import * as THREE from 'three';
+import proj4 from 'proj4';
 
 class U {
 	static toVector3(v, offset) {

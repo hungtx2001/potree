@@ -32,8 +32,9 @@ import {VRControls} from "../navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../materials/ClassificationScheme.js";
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
-
-import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
+import * as TWEEN from '@tweenjs/tween.js';
+import JSON5 from 'json5';
+import proj4 from 'proj4';
 
 
 export class Viewer extends EventDispatcher{

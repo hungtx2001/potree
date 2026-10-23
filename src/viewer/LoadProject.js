@@ -1,5 +1,6 @@
 
 import * as THREE from 'three';
+import proj4 from 'proj4';
 import {Annotation} from "../Annotation.js";
 import {Measure} from "../utils/Measure.js";
 import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js";
