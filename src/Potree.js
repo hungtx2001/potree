@@ -85,47 +85,26 @@ import {POCLoader} from "./loader/POCLoader.js";
 import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
 import {PointCloudOctree} from "./PointCloudOctree.js";
 import {WorkerPool} from "./WorkerPool.js";
+import {workerPool, lru, runtime} from "./runtime.js";
 
-export const workerPool = new WorkerPool();
+export {workerPool, lru, runtime};
 
 export const version = {
-	major: 1,
-	minor: 8,
-	suffix: '.0'
+	major: 2,
+	minor: 0,
+	suffix: '.0-alpha.1'
 };
 
-export let lru = new LRU();
+export const debug = runtime.debug;
 
-console.log('Potree ' + version.major + '.' + version.minor + version.suffix);
+export let pointBudget = runtime.pointBudget;
+export let framenumber = runtime.framenumber;
+export let numNodesLoading = runtime.numNodesLoading;
+export let maxNodesLoading = runtime.maxNodesLoading;
 
-export let pointBudget = 1 * 1000 * 1000;
-export let framenumber = 0;
-export let numNodesLoading = 0;
-export let maxNodesLoading = 4;
+export const scriptPath = runtime.scriptPath;
+export const resourcePath = runtime.resourcePath;
 
-export const debug = {};
-
-let scriptPath = "";
-
-if (document.currentScript && document.currentScript.src) {
-	scriptPath = new URL(document.currentScript.src + '/..').href;
-	if (scriptPath.slice(-1) === '/') {
-		scriptPath = scriptPath.slice(0, -1);
-	}
-} else if(import.meta){
-	scriptPath = new URL(import.meta.url + "/..").href;
-	if (scriptPath.slice(-1) === '/') {
-		scriptPath = scriptPath.slice(0, -1);
-	}
-}else {
-	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
-}
-
-let resourcePath = scriptPath + '/resources';
-
-// scriptPath: build/potree
-// resourcePath:build/potree/resources
-export {scriptPath, resourcePath};
 
 
 export function loadPointCloud(path, name, callback){
@@ -171,7 +150,7 @@ export function loadPointCloud(path, name, callback){
 				}
 			});
 		} else if (path.indexOf('metadata.json') > 0) {
-			Potree.OctreeLoader.load(path).then(e => {
+			OctreeLoader.load(path).then(e => {
 				let geometry = e.geometry;
 
 				if(!geometry){

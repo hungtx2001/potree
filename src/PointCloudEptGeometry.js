@@ -267,7 +267,7 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
 			parentNode.hasChildren = true;
 
 			const bounds = Bounds.step(parentNode.bounds, step)
-			const node = new Potree.PointCloudCopcGeometryNode(
+			const node = new PointCloudCopcGeometryNode(
 				this.owner,
 				key, 
 				bounds);

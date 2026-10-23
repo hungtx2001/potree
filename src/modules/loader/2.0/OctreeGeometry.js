@@ -1,5 +1,5 @@
-
 import * as THREE from 'three';
+import { runtime } from "../../../runtime.js";
 
 export class OctreeGeometry{
 
@@ -71,7 +71,7 @@ export class OctreeGeometryNode{
 
 	load(){
 
-		if (Potree.numNodesLoading >= Potree.maxNodesLoading) {
+		if (runtime.numNodesLoading >= runtime.maxNodesLoading) {
 			return;
 		}
 
