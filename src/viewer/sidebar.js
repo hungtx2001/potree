@@ -1,5 +1,9 @@
 
 import * as THREE from 'three';
+import $ from 'jquery';
+import 'jquery-ui-dist/jquery-ui.js';
+import 'jstree';
+import 'spectrum-colorpicker2';
 import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 import {DXFExporter} from "../exporter/DXFExporter.js"
 import {Volume, SphereVolume} from "../utils/Volume.js"

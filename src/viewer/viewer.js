@@ -1,5 +1,7 @@
 
 import * as THREE from 'three';
+import $ from 'jquery';
+import 'jquery-ui-dist/jquery-ui.js';
 import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
