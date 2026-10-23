@@ -210,6 +210,7 @@ export function loadPointCloud(path, name, callback){
 
 // add selectgroup
 (function($){
+	if (!$ || !$.fn) return;
 	$.fn.extend({
 		selectgroup: function(args = {}){
 
@@ -278,8 +279,7 @@ export function loadPointCloud(path, name, callback){
 			elGroup.empty();
 			elGroup.append(elFieldset);
 
-
-
 		}
 	});
-})(jQuery);
+})(typeof jQuery !== 'undefined' ? jQuery : (typeof window !== 'undefined' ? window.$ : undefined));
+

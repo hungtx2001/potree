@@ -7,6 +7,9 @@ export default defineConfig({
       entry: {
         potree: resolve(__dirname, 'src/index.js'),
         core: resolve(__dirname, 'src/core.js'),
+        'workers/DecoderWorker': resolve(__dirname, 'src/modules/loader/2.0/DecoderWorker.js'),
+        'workers/DecoderWorker_brotli': resolve(__dirname, 'src/modules/loader/2.0/DecoderWorker_brotli.js'),
+        'workers/BinaryDecoderWorker': resolve(__dirname, 'src/workers/BinaryDecoderWorker.js'),
       },
       name: 'Potree',
       formats: ['es', 'cjs'],
@@ -28,6 +31,12 @@ export default defineConfig({
       output: {
         globals: {
           three: 'THREE',
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'potree.css';
+          }
+          return assetInfo.name || '[name][extname]';
         },
       },
     },

@@ -1,8 +1,15 @@
 
-let ftCanvas = document.createElement('canvas');
-
 export const Features = (function () {
+	if (typeof document === 'undefined') {
+		return {
+			SHADER_INTERPOLATION: { isSupported: () => false },
+			SHADER_SPLATS: { isSupported: () => false },
+			SHADER_EDL: { isSupported: () => false },
+			precision: 'highp'
+		};
+	}
 
+	let ftCanvas = document.createElement('canvas');
 	let gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
 	if (gl === null){ 
 		return null; 

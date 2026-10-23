@@ -40,6 +40,23 @@ export const runtime = {
 	}
 };
 
+// Register default module worker factories
+if (typeof Worker !== 'undefined') {
+	try {
+		workerPool.registerWorkerFactory('DecoderWorker', () => {
+			return new Worker(new URL('./modules/loader/2.0/DecoderWorker.js', import.meta.url), { type: 'module' });
+		});
+		workerPool.registerWorkerFactory('DecoderWorker_brotli', () => {
+			return new Worker(new URL('./modules/loader/2.0/DecoderWorker_brotli.js', import.meta.url), { type: 'module' });
+		});
+		workerPool.registerWorkerFactory('BinaryDecoderWorker', () => {
+			return new Worker(new URL('./workers/BinaryDecoderWorker.js', import.meta.url), { type: 'module' });
+		});
+	} catch (e) {
+		// Ignore if import.meta.url or Worker not supported
+	}
+}
+
 // Global compatibility bridge for window.Potree
 if (typeof window !== 'undefined') {
 	window.Potree = window.Potree || {};

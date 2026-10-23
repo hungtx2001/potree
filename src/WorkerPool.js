@@ -22,10 +22,19 @@ export class WorkerPool{
 
 		if (this.workers[key].length === 0){
 			let worker;
-			if (this.workerFactories[key]) {
-				worker = this.workerFactories[key]();
-			} else {
-				const target = this.workerUrls[key] || key;
+			const baseName = typeof key === 'string' ? key.split('/').pop().replace(/\.c?js$/, '') : '';
+			const factory = this.workerFactories[key] || this.workerFactories[baseName];
+
+			if (factory) {
+				try {
+					worker = factory();
+				} catch (err) {
+					// Fall through to URL
+				}
+			}
+
+			if (!worker) {
+				const target = this.workerUrls[key] || this.workerUrls[baseName] || key;
 				try {
 					worker = new Worker(target, { type: 'module' });
 				} catch (e) {
