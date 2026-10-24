@@ -34,6 +34,11 @@
       "import": "./dist/react.js",
       "require": "./dist/react.cjs"
     },
+    "./cesium": {
+      "types": "./dist/cesium.d.ts",
+      "import": "./dist/cesium.js",
+      "require": "./dist/cesium.cjs"
+    },
     "./css": "./dist/potree.css"
   },
   "files": [
@@ -50,16 +55,9 @@
     "preview": "vite preview"
   },
   "peerDependencies": {
-    "three": ">=0.124.0",
-    "jquery": ">=3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "jquery": {
-      "optional": true
-    }
+    "three": ">=0.124.0"
   },
   "devDependencies": {
-    "@types/jquery": "^4.0.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",

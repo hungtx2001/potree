@@ -40,6 +40,7 @@ export default defineConfig({
         potree: resolve(__dirname, 'src/Potree.js'),
         core: resolve(__dirname, 'src/core.ts'),
         react: resolve(__dirname, 'src/react/index.ts'),
+        cesium: resolve(__dirname, 'src/cesium/index.ts'),
         'workers/DecoderWorker': resolve(__dirname, 'src/modules/loader/2.0/DecoderWorker.js'),
         'workers/DecoderWorker_brotli': resolve(__dirname, 'src/modules/loader/2.0/DecoderWorker_brotli.js'),
         'workers/BinaryDecoderWorker': resolve(__dirname, 'src/workers/BinaryDecoderWorker.js'),

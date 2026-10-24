@@ -1311,14 +1311,6 @@ export class Viewer extends EventDispatcher{
 			this.mapView = new MapView(this);
 			this.mapView.init();
 
-			import("./sidebar.js").then(({ Sidebar }) => {
-				let sidebar = new Sidebar(this);
-				sidebar.init(sidebarContainer);
-				this.sidebar = sidebar;
-			}).catch(err => {
-				console.warn("Could not load legacy Sidebar:", err);
-			});
-
 			this.profileWindow = new ProfileWindow(this);
 			this.profileWindowController = new ProfileWindowController(this);
 
