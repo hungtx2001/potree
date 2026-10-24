@@ -180,7 +180,10 @@
 	background-color: var(--bg-dark-color);
 }
 
-a:hover, a:visited, a:link, a:active{
+.potree_container a:hover, 
+.potree_container a:visited, 
+.potree_container a:link, 
+.potree_container a:active{
 	color: 				#ccccff;
 	text-decoration: 	none;
 }
@@ -303,15 +306,13 @@ a:hover, a:visited, a:link, a:active{
 }
 
 
-canvas { 
+.potree_container canvas { 
 	width: 100%; 
-	height: 100% 
+	height: 100%;
 }
 
-body{ 
-	margin: 	0; 
-	padding: 	0;
-	position:	absolute;
+.potree_container { 
+	position:	relative;
 	width: 		100%;
 	height: 	100%;
 	overflow:	hidden;

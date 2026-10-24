@@ -84,6 +84,7 @@ export {FirstPersonControls} from "./navigation/FirstPersonControls.js";
 export {EarthControls} from "./navigation/EarthControls.js";
 export {DeviceOrientationControls} from "./navigation/DeviceOrientationControls.js";
 export {VRControls} from "./navigation/VRControls.js";
+export {CesiumControls} from "./navigation/CesiumControls.ts";
 
 import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
@@ -98,6 +99,10 @@ import {PointCloudArena4D} from "./arena4d/PointCloudArena4D.js";
 import {PointCloudArena4DGeometry} from "./arena4d/PointCloudArena4DGeometry.js";
 import {WorkerPool} from "./WorkerPool.js";
 import {workerPool, lru, runtime} from "./runtime.js";
+import * as THREE from 'three';
+import { Viewer } from "./viewer/viewer.js";
+import { CesiumControls } from "./navigation/CesiumControls.ts";
+import { PointSizeType, PointShape, CameraMode, ClipTask, ClipMethod } from "./defines.ts";
 
 export {workerPool, lru, runtime};
 
@@ -214,4 +219,28 @@ export function loadPointCloud(path, name, callback){
 		return promise;
 	}
 };
+
+// Dual-mode compatibility: auto-attach to window.Potree in browser environments
+if (typeof window !== 'undefined') {
+	const w = window;
+	w.Potree = w.Potree || {};
+	w.Potree.Viewer = Viewer;
+	w.Potree.loadPointCloud = loadPointCloud;
+	w.Potree.CesiumControls = CesiumControls;
+	w.Potree.PointSizeType = PointSizeType;
+	w.Potree.PointShape = PointShape;
+	w.Potree.CameraMode = CameraMode;
+	w.Potree.ClipTask = ClipTask;
+	w.Potree.ClipMethod = ClipMethod;
+	w.Potree.runtime = runtime;
+	w.Potree.workerPool = workerPool;
+	w.Potree.lru = lru;
+	w.Potree.version = version;
+	w.Potree.scriptPath = scriptPath;
+	w.Potree.resourcePath = resourcePath;
+	if (!w.THREE) {
+		w.THREE = THREE;
+	}
+}
+
 

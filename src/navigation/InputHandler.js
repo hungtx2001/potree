@@ -23,6 +23,7 @@ export class InputHandler extends EventDispatcher {
 		this.interactiveObjects = new Set();
 		this.inputListeners = [];
 		this.blacklist = new Set();
+		this.cesiumControls = null;
 
 		this.drag = null;
 		this.mouse = new THREE.Vector2(0, 0);
@@ -366,6 +367,10 @@ export class InputHandler extends EventDispatcher {
 			this.drag = null;
 		}
 
+		if (this.cesiumControls) {
+			this.cesiumControls.setToolActive(false);
+		}
+
 		if(!consumed){
 			if (e.button === THREE.MOUSE.LEFT) {
 				if (noMovement) {
@@ -539,6 +544,14 @@ export class InputHandler extends EventDispatcher {
 				this.drag[key] = args[key];
 			}
 		}
+
+		if (this.cesiumControls && object) {
+			this.cesiumControls.setToolActive(true);
+		}
+	}
+
+	setCesiumMode (cesiumControls) {
+		this.cesiumControls = cesiumControls;
 	}
 
 	getMousePointCloudIntersection (mouse) {

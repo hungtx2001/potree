@@ -32,6 +32,7 @@ export const runtime = {
 	numNodesLoading: 0,
 	maxNodesLoading: 4,
 	pointBudget: 1_000_000,
+	uploadBudgetMs: 5,
 	get pointLoadLimit() {
 		return lru.pointLoadLimit;
 	},

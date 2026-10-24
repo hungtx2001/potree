@@ -7,6 +7,25 @@ import {runtime, lru} from "./runtime.js";
 
 const pointcloudTransformVersion = new Map();
 
+// --- Camera-dirty visibility cache variables ---
+const _cachedCameraMatrix = new THREE.Matrix4();
+const _cachedProjectionMatrix = new THREE.Matrix4();
+let _cachedPointBudget = 0;
+let _cachedPointcloudCount = 0;
+let _cachedResult = null;
+export let visibilityDirty = true;
+
+export function markVisibilityDirty() {
+	visibilityDirty = true;
+}
+
+// Scratch objects for clipping boxes (zero GC)
+let _cbPcWorldInv = null;
+let _cbPx, _cbNx, _cbPy, _cbNy, _cbPz, _cbNz;
+let _cbPxN, _cbNxN, _cbPyN, _cbNyN, _cbPzN, _cbNzN;
+let _cbPxPlane, _cbNxPlane, _cbPyPlane, _cbNyPlane, _cbPzPlane, _cbNzPlane;
+let _cbFrustum = null;
+
 export function updatePointClouds(pointclouds, camera, renderer){
 
 	for (let pointcloud of pointclouds) {
@@ -106,6 +125,22 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 
 export function updateVisibility(pointclouds, camera, renderer){
 
+	// --- Camera-dirty visibility cache ---
+	// Skip full octree traversal if camera hasn't moved and no new point cloud loaded
+	const cameraChanged = !_cachedCameraMatrix.equals(camera.matrixWorldInverse)
+		|| !_cachedProjectionMatrix.equals(camera.projectionMatrix);
+	const configChanged = _cachedPointBudget !== runtime.pointBudget
+		|| _cachedPointcloudCount !== pointclouds.length;
+
+	if (!cameraChanged && !configChanged && !visibilityDirty && _cachedResult) {
+		for (let node of _cachedResult.visibleNodes) {
+			if (node.isTreeNode && node.isTreeNode()) {
+				lru.touch(node.geometryNode);
+			}
+		}
+		return _cachedResult;
+	}
+
 	let numVisibleNodes = 0;
 	let numVisiblePoints = 0;
 
@@ -124,6 +159,7 @@ export function updateVisibility(pointclouds, camera, renderer){
 	let priorityQueue = s.priorityQueue;
 
 	let loadedToGPUThisFrame = 0;
+	let uploadStartTime = performance.now();
 	
 	let domWidth = renderer.domElement.clientWidth;
 	let domHeight = renderer.domElement.clientHeight;
@@ -195,48 +231,45 @@ export function updateVisibility(pointclouds, camera, renderer){
 
 			for(let clipBox of clipBoxes){
 
-				let pcWorldInverse = pointcloud.matrixWorld.clone().invert();
-				let toPCObject = pcWorldInverse.multiply(clipBox.box.matrixWorld);
+				if (!_cbPcWorldInv) {
+					_cbPcWorldInv = new THREE.Matrix4();
+					_cbPx = new THREE.Vector3(); _cbNx = new THREE.Vector3();
+					_cbPy = new THREE.Vector3(); _cbNy = new THREE.Vector3();
+					_cbPz = new THREE.Vector3(); _cbNz = new THREE.Vector3();
+					_cbPxN = new THREE.Vector3(); _cbNxN = new THREE.Vector3();
+					_cbPyN = new THREE.Vector3(); _cbNyN = new THREE.Vector3();
+					_cbPzN = new THREE.Vector3(); _cbNzN = new THREE.Vector3();
+					_cbPxPlane = new THREE.Plane(); _cbNxPlane = new THREE.Plane();
+					_cbPyPlane = new THREE.Plane(); _cbNyPlane = new THREE.Plane();
+					_cbPzPlane = new THREE.Plane(); _cbNzPlane = new THREE.Plane();
+					_cbFrustum = new THREE.Frustum();
+				}
 
-				let px = new THREE.Vector3(+0.5, 0, 0).applyMatrix4(pcWorldInverse);
-				let nx = new THREE.Vector3(-0.5, 0, 0).applyMatrix4(pcWorldInverse);
-				let py = new THREE.Vector3(0, +0.5, 0).applyMatrix4(pcWorldInverse);
-				let ny = new THREE.Vector3(0, -0.5, 0).applyMatrix4(pcWorldInverse);
-				let pz = new THREE.Vector3(0, 0, +0.5).applyMatrix4(pcWorldInverse);
-				let nz = new THREE.Vector3(0, 0, -0.5).applyMatrix4(pcWorldInverse);
+				_cbPcWorldInv.copy(pointcloud.matrixWorld).invert();
 
-				let pxN = new THREE.Vector3().subVectors(nx, px).normalize();
-				let nxN = pxN.clone().multiplyScalar(-1);
-				let pyN = new THREE.Vector3().subVectors(ny, py).normalize();
-				let nyN = pyN.clone().multiplyScalar(-1);
-				let pzN = new THREE.Vector3().subVectors(nz, pz).normalize();
-				let nzN = pzN.clone().multiplyScalar(-1);
+				_cbPx.set(+0.5, 0, 0).applyMatrix4(_cbPcWorldInv);
+				_cbNx.set(-0.5, 0, 0).applyMatrix4(_cbPcWorldInv);
+				_cbPy.set(0, +0.5, 0).applyMatrix4(_cbPcWorldInv);
+				_cbNy.set(0, -0.5, 0).applyMatrix4(_cbPcWorldInv);
+				_cbPz.set(0, 0, +0.5).applyMatrix4(_cbPcWorldInv);
+				_cbNz.set(0, 0, -0.5).applyMatrix4(_cbPcWorldInv);
 
-				let pxPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pxN, px);
-				let nxPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nxN, nx);
-				let pyPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pyN, py);
-				let nyPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nyN, ny);
-				let pzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pzN, pz);
-				let nzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nzN, nz);
+				_cbPxN.subVectors(_cbNx, _cbPx).normalize();
+				_cbNxN.copy(_cbPxN).multiplyScalar(-1);
+				_cbPyN.subVectors(_cbNy, _cbPy).normalize();
+				_cbNyN.copy(_cbPyN).multiplyScalar(-1);
+				_cbPzN.subVectors(_cbNz, _cbPz).normalize();
+				_cbNzN.copy(_cbPzN).multiplyScalar(-1);
 
-				//if(window.debugdraw !== undefined && window.debugdraw === true && node.name === "r60"){
+				_cbPxPlane.setFromNormalAndCoplanarPoint(_cbPxN, _cbPx);
+				_cbNxPlane.setFromNormalAndCoplanarPoint(_cbNxN, _cbNx);
+				_cbPyPlane.setFromNormalAndCoplanarPoint(_cbPyN, _cbPy);
+				_cbNyPlane.setFromNormalAndCoplanarPoint(_cbNyN, _cbNy);
+				_cbPzPlane.setFromNormalAndCoplanarPoint(_cbPzN, _cbPz);
+				_cbNzPlane.setFromNormalAndCoplanarPoint(_cbNzN, _cbNz);
 
-				//	Potree.utils.debugPlane(viewer.scene.scene, pxPlane, 1, 0xFF0000);
-				//	Potree.utils.debugPlane(viewer.scene.scene, nxPlane, 1, 0x990000);
-				//	Potree.utils.debugPlane(viewer.scene.scene, pyPlane, 1, 0x00FF00);
-				//	Potree.utils.debugPlane(viewer.scene.scene, nyPlane, 1, 0x009900);
-				//	Potree.utils.debugPlane(viewer.scene.scene, pzPlane, 1, 0x0000FF);
-				//	Potree.utils.debugPlane(viewer.scene.scene, nzPlane, 1, 0x000099);
-
-				//	Potree.utils.debugBox(viewer.scene.scene, box, new THREE.Matrix4(), 0x00FF00);
-				//	Potree.utils.debugBox(viewer.scene.scene, box, pointcloud.matrixWorld, 0xFF0000);
-				//	Potree.utils.debugBox(viewer.scene.scene, clipBox.box.boundingBox, clipBox.box.matrixWorld, 0xFF0000);
-
-				//	window.debugdraw = false;
-				//}
-
-				let frustum = new THREE.Frustum(pxPlane, nxPlane, pyPlane, nyPlane, pzPlane, nzPlane);
-				let intersects = frustum.intersectsBox(box);
+				_cbFrustum.set(_cbPxPlane, _cbNxPlane, _cbPyPlane, _cbNyPlane, _cbPzPlane, _cbNzPlane);
+				let intersects = _cbFrustum.intersectsBox(box);
 
 				if(intersects){
 					numIntersecting++;
@@ -297,7 +330,8 @@ export function updateVisibility(pointclouds, camera, renderer){
 		pointcloud.numVisiblePoints += node.getNumPoints();
 
 		if (node.isGeometryNode() && (!parent || parent.isTreeNode())) {
-			if (node.isLoaded() && loadedToGPUThisFrame < 2) {
+			let uploadBudgetMs = runtime.uploadBudgetMs || 5;
+			if (node.isLoaded() && (performance.now() - uploadStartTime) < uploadBudgetMs) {
 				node = pointcloud.toTreeNode(node, parent);
 				loadedToGPUThisFrame++;
 			} else {
@@ -407,10 +441,18 @@ export function updateVisibility(pointclouds, camera, renderer){
 		unloadedGeometry[i].load();
 	}
 
-	return {
+	_cachedCameraMatrix.copy(camera.matrixWorldInverse);
+	_cachedProjectionMatrix.copy(camera.projectionMatrix);
+	_cachedPointBudget = runtime.pointBudget;
+	_cachedPointcloudCount = pointclouds.length;
+	visibilityDirty = false;
+
+	_cachedResult = {
 		visibleNodes: visibleNodes,
 		numVisiblePoints: numVisiblePoints,
 		lowestSpacing: lowestSpacing
 	};
+
+	return _cachedResult;
 };
 
