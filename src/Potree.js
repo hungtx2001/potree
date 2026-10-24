@@ -63,8 +63,13 @@ export * from "./utils/Compass.js";
 
 export * from "./viewer/viewer.js";
 export * from "./viewer/Scene.js";
-export * from "./viewer/HierarchicalSlider.js";
 export * from "./viewer/store/PotreeStore.js";
+export * from "./viewer/ui/components/ToggleGroup.js";
+export * from "./viewer/ui/components/ModernSlider.js";
+export * from "./viewer/ui/components/ModernColorPicker.js";
+export * from "./viewer/ui/components/SceneTree.js";
+export * from "./viewer/ui/FloatingToolbar.js";
+export * from "./viewer/ui/icons.js";
 
 export * from "./modules/OrientedImages/OrientedImages.js";
 export * from "./modules/Images360/Images360.js";
@@ -209,78 +214,6 @@ export function loadPointCloud(path, name, callback){
 };
 
 
-// add selectgroup
-(function($){
-	if (!$ || !$.fn) return;
-	$.fn.extend({
-		selectgroup: function(args = {}){
-
-			let elGroup = $(this);
-			let rootID = elGroup.prop("id");
-			let groupID = `${rootID}`;
-			let groupTitle = (args.title !== undefined) ? args.title : "";
-
-			let elButtons = [];
-			elGroup.find("option").each((index, value) => {
-				let buttonID = $(value).prop("id");
-				let label = $(value).html();
-				let optionValue = $(value).prop("value");
-
-				let elButton = $(`
-					<span style="flex-grow: 1; display: inherit">
-					<label for="${buttonID}" class="ui-button" style="width: 100%; padding: .4em .1em">${label}</label>
-					<input type="radio" name="${groupID}" id="${buttonID}" value="${optionValue}" style="display: none"/>
-					</span>
-				`);
-				let elLabel = elButton.find("label");
-				let elInput = elButton.find("input");
-
-				elInput.change( () => {
-					elGroup.find("label").removeClass("ui-state-active");
-					elGroup.find("label").addClass("ui-state-default");
-					if(elInput.is(":checked")){
-						elLabel.addClass("ui-state-active");
-					}else{
-						//elLabel.addClass("ui-state-default");
-					}
-				});
-
-				elButtons.push(elButton);
-			});
-
-			let elFieldset = $(`
-				<fieldset style="border: none; margin: 0px; padding: 0px">
-					<legend>${groupTitle}</legend>
-					<span style="display: flex">
-
-					</span>
-				</fieldset>
-			`);
-
-			let elButtonContainer = elFieldset.find("span");
-			for(let elButton of elButtons){
-				elButtonContainer.append(elButton);
-			}
-
-			elButtonContainer.find("label").each( (index, value) => {
-				$(value).css("margin", "0px");
-				$(value).css("border-radius", "0px");
-				$(value).css("border", "1px solid black");
-				$(value).css("border-left", "none");
-			});
-			elButtonContainer.find("label:first").each( (index, value) => {
-				$(value).css("border-radius", "4px 0px 0px 4px");
-
-			});
-			elButtonContainer.find("label:last").each( (index, value) => {
-				$(value).css("border-radius", "0px 4px 4px 0px");
-				$(value).css("border-left", "none");
-			});
-
-			elGroup.empty();
-			elGroup.append(elFieldset);
-
-		}
-	});
-})(typeof jQuery !== 'undefined' ? jQuery : (typeof window !== 'undefined' ? window.$ : undefined));
+// Install modern selectgroup / ToggleGroup jQuery bridge
+ToggleGroup.installJQueryPlugin(typeof jQuery !== 'undefined' ? jQuery : (typeof window !== 'undefined' ? window.$ : undefined));
 

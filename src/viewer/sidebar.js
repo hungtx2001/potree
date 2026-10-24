@@ -1,9 +1,15 @@
 
 import * as THREE from 'three';
 import $ from 'jquery';
-import 'jquery-ui-dist/jquery-ui.js';
-import 'jstree';
-import 'spectrum-colorpicker2';
+import { ModernSlider } from './ui/components/ModernSlider.js';
+import { ToggleGroup } from './ui/components/ToggleGroup.js';
+import { ModernColorPicker } from './ui/components/ModernColorPicker.js';
+import { SceneTree } from './ui/components/SceneTree.js';
+
+ModernSlider.installJQueryPlugin($);
+ToggleGroup.installJQueryPlugin($);
+ModernColorPicker.installJQueryPlugin($);
+SceneTree.installJQueryPlugin($);
 import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 import {DXFExporter} from "../exporter/DXFExporter.js"
 import {Volume, SphereVolume} from "../utils/Volume.js"

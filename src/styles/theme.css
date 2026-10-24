@@ -408,3 +408,287 @@
 	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
 }
 
+/* ==========================================================================
+   Modern Toggle Group (Segmented Pill Control)
+   ========================================================================== */
+.potree-toggle-group {
+	margin: 8px 0;
+	width: 100%;
+}
+
+.potree-toggle-group-title {
+	font-size: var(--potree-font-xs);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.6px;
+	color: var(--potree-text-muted);
+	margin-bottom: 6px;
+	padding: 0 2px;
+}
+
+.potree-toggle-track {
+	display: flex;
+	background: rgba(0, 0, 0, 0.28);
+	border: 1px solid var(--potree-border);
+	border-radius: var(--potree-radius-md);
+	padding: 3px;
+	gap: 2px;
+}
+
+.potree-toggle-item {
+	flex: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	background: transparent;
+	border: none;
+	border-radius: var(--potree-radius-sm);
+	color: var(--potree-text-secondary);
+	font-family: var(--potree-font-family);
+	font-size: var(--potree-font-xs);
+	font-weight: 500;
+	padding: 6px 8px;
+	cursor: pointer;
+	transition: all var(--potree-transition-fast);
+	outline: none;
+	user-select: none;
+}
+
+.potree-toggle-item:hover {
+	color: var(--potree-text-primary);
+	background: rgba(255, 255, 255, 0.05);
+}
+
+.potree-toggle-item.active {
+	background: var(--potree-accent-gradient);
+	color: #ffffff;
+	font-weight: 600;
+	box-shadow: 0 2px 8px -2px var(--potree-accent-glow);
+}
+
+/* ==========================================================================
+   Modern Slider & Dual Range Slider
+   ========================================================================== */
+.potree-slider-wrapper {
+	position: relative;
+	width: 100%;
+	height: 28px;
+	display: flex;
+	align-items: center;
+}
+
+.potree-slider-track {
+	position: absolute;
+	width: 100%;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: var(--potree-radius-full);
+	overflow: hidden;
+}
+
+.potree-slider-fill {
+	position: absolute;
+	height: 100%;
+	background: var(--potree-accent-gradient);
+	border-radius: var(--potree-radius-full);
+	box-shadow: 0 0 8px var(--potree-accent-glow);
+	pointer-events: none;
+}
+
+.potree-range-input {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	-webkit-appearance: none;
+	appearance: none;
+	background: transparent;
+	outline: none;
+	cursor: pointer;
+	z-index: 2;
+}
+
+.potree-range-input::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border-radius: var(--potree-radius-full);
+	background: var(--potree-accent);
+	box-shadow: 0 0 10px var(--potree-accent-glow), 0 2px 4px rgba(0, 0, 0, 0.3);
+	cursor: pointer;
+	border: 2px solid #ffffff;
+	transition: transform var(--potree-transition-fast), box-shadow var(--potree-transition-fast);
+}
+
+.potree-range-input::-webkit-slider-thumb:hover {
+	transform: scale(1.25);
+	box-shadow: 0 0 14px var(--potree-accent);
+}
+
+.potree-range-input::-moz-range-thumb {
+	width: 16px;
+	height: 16px;
+	border-radius: var(--potree-radius-full);
+	background: var(--potree-accent);
+	box-shadow: 0 0 10px var(--potree-accent-glow), 0 2px 4px rgba(0, 0, 0, 0.3);
+	cursor: pointer;
+	border: 2px solid #ffffff;
+	transition: transform var(--potree-transition-fast), box-shadow var(--potree-transition-fast);
+}
+
+/* Dual-handle range adjustments */
+.potree-slider-range .potree-range-input {
+	pointer-events: none;
+}
+
+.potree-slider-range .potree-range-input::-webkit-slider-thumb {
+	pointer-events: auto;
+}
+
+.potree-slider-range .potree-range-input::-moz-range-thumb {
+	pointer-events: auto;
+}
+
+/* ==========================================================================
+   Modern Color Picker
+   ========================================================================== */
+.potree-colorpicker-wrapper {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.potree-colorpicker-swatch {
+	width: 28px;
+	height: 28px;
+	border-radius: var(--potree-radius-sm);
+	border: 2px solid rgba(255, 255, 255, 0.2);
+	box-shadow: var(--potree-shadow-sm);
+	cursor: pointer;
+	transition: transform var(--potree-transition-fast), border-color var(--potree-transition-fast);
+}
+
+.potree-colorpicker-swatch:hover {
+	transform: scale(1.1);
+	border-color: var(--potree-accent);
+	box-shadow: 0 0 10px var(--potree-accent-glow);
+}
+
+.potree-colorpicker-input {
+	opacity: 0;
+	position: absolute;
+	pointer-events: none;
+	width: 0;
+	height: 0;
+}
+
+/* ==========================================================================
+   Modern Scene Tree
+   ========================================================================== */
+.potree-scene-tree {
+	width: 100%;
+	user-select: none;
+	font-family: var(--potree-font-family);
+	font-size: var(--potree-font-sm);
+}
+
+.potree-tree-node {
+	display: flex;
+	flex-direction: column;
+}
+
+.potree-tree-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 8px;
+	border-radius: var(--potree-radius-sm);
+	cursor: pointer;
+	transition: background var(--potree-transition-fast), color var(--potree-transition-fast);
+	color: var(--potree-text-secondary);
+}
+
+.potree-tree-header:hover {
+	background: var(--potree-surface-hover);
+	color: var(--potree-text-primary);
+}
+
+.potree-tree-header.selected {
+	background: var(--potree-surface-active);
+	color: var(--potree-accent);
+	box-shadow: inset 2px 0 0 0 var(--potree-accent);
+}
+
+.potree-tree-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	cursor: pointer;
+	color: var(--potree-text-muted);
+}
+
+.potree-tree-toggle:hover {
+	color: var(--potree-text-primary);
+}
+
+.potree-tree-eye {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	background: transparent;
+	border: none;
+	border-radius: var(--potree-radius-sm);
+	color: var(--potree-text-muted);
+	cursor: pointer;
+	transition: all var(--potree-transition-fast);
+}
+
+.potree-tree-eye:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--potree-text-primary);
+}
+
+.potree-tree-eye.active {
+	color: var(--potree-accent);
+}
+
+.potree-tree-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	color: var(--potree-text-muted);
+}
+
+.potree-tree-icon img {
+	width: 16px;
+	height: 16px;
+	filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+}
+
+.potree-tree-label {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+.potree-tree-children {
+	padding-left: 18px;
+	border-left: 1px dashed var(--potree-border);
+	margin-left: 9px;
+	transition: max-height var(--potree-transition-slow) ease;
+}
+
+.potree-tree-children.collapsed {
+	display: none;
+}
+
