@@ -62,6 +62,13 @@ export enum LengthUnits {
 	INCH = 'in',
 }
 
+export const MOUSE = {
+	LEFT: 0b0001,
+	RIGHT: 0b0010,
+	MIDDLE: 0b0100,
+} as const;
+export type MOUSE = (typeof MOUSE)[keyof typeof MOUSE];
+
 export enum TreeType {
 	OCTREE = 0,
 	KDTREE = 1,
