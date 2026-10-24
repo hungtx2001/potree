@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { PotreeStore } from '../viewer/store/PotreeStore.js';
+import { Viewer } from '../viewer/viewer.js';
+import { loadPointCloud } from '../core.js';
 
 /**
  * React hook to reactively subscribe to PotreeStore state
@@ -42,6 +44,7 @@ export function usePotree(
 	options: UsePotreeOptions = {}
 ) {
 	const viewerRef = useRef<any>(null);
+	const [viewer, setViewer] = useState<any>(null);
 	const [isReady, setIsReady] = useState(false);
 	const [pointcloud, setPointcloud] = useState<any>(null);
 
@@ -49,45 +52,33 @@ export function usePotree(
 		const container = containerRef.current;
 		if (!container) return;
 
-		let isMounted = true;
+		const instance = new Viewer(container);
+		viewerRef.current = instance;
+		setViewer(instance);
+		setIsReady(true);
 
-		// Dynamically import Viewer and loadPointCloud to avoid bundling cycles
-		Promise.all([
-			import('../viewer/viewer.js'),
-			import('../core.js')
-		]).then(([{ Viewer }, { loadPointCloud }]) => {
-			if (!isMounted || !containerRef.current) return;
+		if (options.onViewerReady) {
+			options.onViewerReady(instance);
+		}
 
-			const viewer = new Viewer(containerRef.current);
-			viewerRef.current = viewer;
-			setIsReady(true);
+		if (options.pointcloudUrl) {
+			loadPointCloud(options.pointcloudUrl, options.pointcloudName || 'pointcloud')
+				.then((res) => {
+					if (!res.pointcloud) return;
+					instance.scene.addPointCloud(res.pointcloud);
+					instance.fitToScreen();
+					setPointcloud(res.pointcloud);
 
-			if (options.onViewerReady) {
-				options.onViewerReady(viewer);
-			}
-
-			if (options.pointcloudUrl) {
-				loadPointCloud(options.pointcloudUrl, options.pointcloudName || 'pointcloud')
-					.then((res) => {
-						if (!isMounted || !res.pointcloud) return;
-						viewer.scene.addPointCloud(res.pointcloud);
-						viewer.fitToScreen();
-						setPointcloud(res.pointcloud);
-
-						if (options.onPointcloudLoaded) {
-							options.onPointcloudLoaded(res.pointcloud);
-						}
-					})
-					.catch((err) => {
-						console.error('[usePotree] Failed to load point cloud:', err);
-					});
-			}
-		}).catch((err) => {
-			console.error('[usePotree] Failed to initialize viewer:', err);
-		});
+					if (options.onPointcloudLoaded) {
+						options.onPointcloudLoaded(res.pointcloud);
+					}
+				})
+				.catch((err) => {
+					console.error('[usePotree] Failed to load point cloud:', err);
+				});
+		}
 
 		return () => {
-			isMounted = false;
 			if (viewerRef.current) {
 				try {
 					if (typeof viewerRef.current.destroy === 'function') {
@@ -97,12 +88,14 @@ export function usePotree(
 					console.warn('[usePotree] Cleanup warning:', e);
 				}
 				viewerRef.current = null;
+				setViewer(null);
+				setIsReady(false);
 			}
 		};
 	}, [containerRef]);
 
 	return {
-		viewer: viewerRef.current,
+		viewer,
 		isReady,
 		pointcloud,
 	};

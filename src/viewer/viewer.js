@@ -1224,9 +1224,6 @@ export class Viewer extends EventDispatcher{
 		if (this.renderer) {
 			this.renderer.setAnimationLoop(null);
 			this.renderer.dispose();
-			if (typeof this.renderer.forceContextLoss === 'function') {
-				this.renderer.forceContextLoss();
-			}
 			this.renderer.domElement?.remove();
 		}
 
@@ -1420,67 +1417,63 @@ export class Viewer extends EventDispatcher{
 
 		console.log(`initializing three.js ${THREE.REVISION}`);
 
-		let width = this.renderArea.clientWidth;
-		let height = this.renderArea.clientHeight;
-
-		let contextAttributes = {
-			alpha: true,
-			depth: true,
-			stencil: false,
-			antialias: false,
-			//premultipliedAlpha: _premultipliedAlpha,
-			preserveDrawingBuffer: true,
-			powerPreference: "high-performance",
-		};
-
-		// let contextAttributes = {
-		// 	alpha: false,
-		// 	preserveDrawingBuffer: true,
-		// };
-
-		// let contextAttributes = {
-		// 	alpha: false,
-		// 	preserveDrawingBuffer: true,
-		// };
+		let width = this.renderArea?.clientWidth || 800;
+		let height = this.renderArea?.clientHeight || 600;
 
 		let canvas = document.createElement("canvas");
-
-		let context = canvas.getContext('webgl', contextAttributes );
 
 		this.renderer = new THREE.WebGLRenderer({
 			alpha: true, 
 			premultipliedAlpha: false,
 			canvas: canvas,
-			context: context});
+			powerPreference: "high-performance",
+			preserveDrawingBuffer: true,
+		});
 		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
-		this.renderArea.appendChild(this.renderer.domElement);
-		this.renderer.domElement.tabIndex = '2222';
+
+		if (this.renderArea) {
+			this.renderArea.appendChild(this.renderer.domElement);
+		}
+
+		this.renderer.domElement.tabIndex = 2222;
 		this.renderer.domElement.style.position = 'absolute';
 		this.renderer.domElement.addEventListener('mousedown', () => {
 			this.renderer.domElement.focus();
 		});
-		//this.renderer.domElement.focus();
 
-		// NOTE: If extension errors occur, pass the string into this.renderer.extensions.get(x) before enabling
-		// enable frag_depth extension for the interpolation shader, if available
 		let gl = this.renderer.getContext();
-		gl.getExtension('EXT_frag_depth');
-		gl.getExtension('WEBGL_depth_texture');
-		gl.getExtension('WEBGL_color_buffer_float'); 	// Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
-		
-		if(gl.createVertexArray == null){
-			let extVAO = gl.getExtension('OES_vertex_array_object');
+		if (gl) {
+			gl.getExtension('EXT_frag_depth');
+			gl.getExtension('WEBGL_depth_texture');
+			gl.getExtension('WEBGL_color_buffer_float');
+			gl.getExtension('EXT_color_buffer_float');
 
-			if(!extVAO){
-				throw new Error("OES_vertex_array_object extension not supported");
+			if (gl.createVertexArray == null) {
+				let extVAO = gl.getExtension('OES_vertex_array_object');
+				if (extVAO) {
+					gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+					gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+				}
 			}
-
-			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
-			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
 		}
-		
+
+		if (typeof ResizeObserver !== 'undefined' && this.renderArea) {
+			this._resizeObserver = new ResizeObserver(() => {
+				if (!this.renderArea || !this.renderer) return;
+				const w = this.renderArea.clientWidth;
+				const h = this.renderArea.clientHeight;
+				if (w > 0 && h > 0) {
+					this.renderer.setSize(w, h);
+					if (this.scene?.cameraP) {
+						this.scene.cameraP.aspect = w / h;
+						this.scene.cameraP.updateProjectionMatrix();
+					}
+				}
+			});
+			this._resizeObserver.observe(this.renderArea);
+		}
 	}
 
 	updateAnnotations () {
