@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 
 import {Utils} from "../utils.js";
+import {runtime} from "../runtime.js";
 
 export class Compass{
 
@@ -50,7 +51,8 @@ export class Compass{
 
 	createElement(){
 		const style = `style="position: absolute; top: 10px; right: 10px; z-index: 10000; width: 64px;"`;
-		const img = $(`<img src="${Potree.resourcePath}/images/compas.svg" ${style} />`);
+		const res = runtime.resourcePath || './resources';
+		const img = $(`<img src="${res}/images/compas.svg" ${style} />`);
 
 		return img;
 	}

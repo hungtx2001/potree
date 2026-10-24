@@ -19,12 +19,25 @@ if (typeof document !== 'undefined' && document.currentScript && document.curren
 	} catch (e) {}
 }
 
+export const version = {
+	major: 2,
+	minor: 0,
+	suffix: '.0-alpha.1'
+};
+
 export const runtime = {
 	workerPool,
 	lru,
+	version,
 	numNodesLoading: 0,
 	maxNodesLoading: 4,
 	pointBudget: 1_000_000,
+	get pointLoadLimit() {
+		return lru.pointLoadLimit;
+	},
+	set pointLoadLimit(v) {
+		lru.pointLoadLimit = v;
+	},
 	framenumber: 0,
 	debug: {},
 	scriptPath: defaultScriptPath,

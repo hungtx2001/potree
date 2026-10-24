@@ -1,10 +1,13 @@
 
+import { runtime } from "../runtime.js";
+
 export class Message{
 
 	constructor(content){
 		this.content = content;
 
-		let closeIcon = `${exports.resourcePath}/icons/close.svg`;
+		const res = runtime.resourcePath || './resources';
+		let closeIcon = `${res}/icons/close.svg`;
 
 		this.element = $(`
 			<div class="potree_message">

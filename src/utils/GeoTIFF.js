@@ -363,3 +363,5 @@ exports.Exporter = Exporter;
 return exports;
 
 }({}));
+
+export { GeoTIFF };

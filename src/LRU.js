@@ -1,5 +1,3 @@
-
-
 class LRUItem{
 
 	constructor(node){
@@ -16,7 +14,7 @@ class LRUItem{
  */
 class LRU{
 
-	constructor(){
+	constructor(pointLoadLimit = 1_000_000){
 		// the least recently used item
 		this.first = null;
 		// the most recently used item
@@ -25,6 +23,7 @@ class LRU{
 		this.items = {};
 		this.elements = 0;
 		this.numPoints = 0;
+		this.pointLoadLimit = pointLoadLimit;
 	}
 
 	size(){
@@ -140,7 +139,7 @@ class LRU{
 			return;
 		}
 
-		while (this.numPoints > Potree.pointLoadLimit) {
+		while (this.numPoints > this.pointLoadLimit) {
 			let element = this.first;
 			let node = element.node;
 			this.disposeDescendants(node);

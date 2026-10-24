@@ -83,7 +83,6 @@ export class GeoPackageLoader{
 				await initSqlJs({ locateFile: filename => wasmPath});
 				data = await geopackage.open(u8);
 			}
-			if (typeof window !== 'undefined') window.data = data;
 
 			const geopackageNode = new THREE.Object3D();
 			geopackageNode.name = params.source;

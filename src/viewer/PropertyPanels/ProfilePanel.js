@@ -1,12 +1,13 @@
 
 import * as THREE from 'three';
 import {MeasurePanel} from "./MeasurePanel.js";
+import {runtime} from "../../runtime.js";
 
 export class ProfilePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
-		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		let removeIconPath = runtime.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
@@ -167,7 +168,8 @@ export class ProfilePanel extends MeasurePanel{
 
 			let transform = new THREE.Matrix4().multiplyMatrices(matrixWorld, negateOffset);
 
-			let path = `${window.location.pathname}/../${pointcloud.pcoGeometry.url}`;
+			let basePath = typeof window !== 'undefined' ? window.location.pathname : '';
+			let path = basePath ? `${basePath}/../${pointcloud.pcoGeometry.url}` : pointcloud.pcoGeometry.url;
 
 			let arg = {
 				path: path,

@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import {Utils} from "../../utils.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
+import {runtime} from "../../runtime.js";
 
 import {MeasurePanel} from "./MeasurePanel.js";
 
@@ -9,8 +10,8 @@ export class VolumePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
-		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
-		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		let copyIconPath = runtime.resourcePath + '/icons/copy.svg';
+		let removeIconPath = runtime.resourcePath + '/icons/remove.svg';
 
 		let lblLengthText = new Map([
 			[BoxVolume, "length"],
@@ -223,7 +224,8 @@ export class VolumePanel extends MeasurePanel{
 
 			let transform = new THREE.Matrix4().multiplyMatrices(matrixWorld, negateOffset);
 
-			let path = `${window.location.pathname}/../${pointcloud.pcoGeometry.url}`;
+			let basePath = typeof window !== 'undefined' ? window.location.pathname : '';
+			let path = basePath ? `${basePath}/../${pointcloud.pcoGeometry.url}` : pointcloud.pcoGeometry.url;
 
 			let arg = {
 				path: path,

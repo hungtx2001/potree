@@ -17,9 +17,10 @@
 
 	<script type="module">
 		import * as THREE from 'three';
-		import { Viewer, loadPointCloud } from '../src/index.js';
+		import { Viewer, loadPointCloud, $ } from '../src/index.js';
 
-		window.viewer = new Viewer(document.getElementById("potree_render_area"));
+		const viewer = new Viewer(document.getElementById("potree_render_area"));
+		window.viewer = viewer; // Optional for debugging in devtools console
 
 		viewer.setEDLEnabled(false);
 		viewer.setFOV(60);

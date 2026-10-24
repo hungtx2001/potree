@@ -7,6 +7,8 @@ import {Volume} from "./utils/Volume.js";
 import {Profile} from "./utils/Profile.js";
 import {Measure} from "./utils/Measure.js";
 import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
+import * as shapefile from 'shapefile';
+import {runtime} from "./runtime.js";
 
 export class Utils {
 	static async loadShapefileFeatures (file, callback) {
@@ -284,7 +286,8 @@ export class Utils {
 	static loadSkybox (path) {
 		let parent = new THREE.Object3D("skybox_root");
 
-		let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
+		const aspect = typeof window !== 'undefined' && window.innerHeight ? (window.innerWidth / window.innerHeight) : 1;
+		let camera = new THREE.PerspectiveCamera(75, aspect, 1, 100000);
 		camera.up.set(0, 0, 1);
 		let scene = new THREE.Scene();
 
@@ -741,7 +744,7 @@ export class Utils {
 	}
 
 	static setParameter (name, value) {
-		// value = encodeURIComponent(value);
+		if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
 		name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
 		let regex = new RegExp('([\\?&])(' + name + '=([^&#]*))');
@@ -830,26 +833,27 @@ export class Utils {
 	}
 
 	static getMeasurementIcon(measurement){
+		const res = runtime.resourcePath || './resources';
 		if (measurement instanceof Measure) {
 			if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
-				return `${Potree.resourcePath}/icons/distance.svg`;
+				return `${res}/icons/distance.svg`;
 			} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
-				return `${Potree.resourcePath}/icons/area.svg`;
+				return `${res}/icons/area.svg`;
 			} else if (measurement.maxMarkers === 1) {
-				return `${Potree.resourcePath}/icons/point.svg`;
+				return `${res}/icons/point.svg`;
 			} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
-				return `${Potree.resourcePath}/icons/angle.png`;
+				return `${res}/icons/angle.png`;
 			} else if (measurement.showHeight) {
-				return `${Potree.resourcePath}/icons/height.svg`;
+				return `${res}/icons/height.svg`;
 			} else {
-				return `${Potree.resourcePath}/icons/distance.svg`;
+				return `${res}/icons/distance.svg`;
 			}
 		} else if (measurement instanceof Profile) {
-			return `${Potree.resourcePath}/icons/profile.svg`;
+			return `${res}/icons/profile.svg`;
 		} else if (measurement instanceof Volume) {
-			return `${Potree.resourcePath}/icons/volume.svg`;
+			return `${res}/icons/volume.svg`;
 		} else if (measurement instanceof PolygonClipVolume) {
-			return `${Potree.resourcePath}/icons/clip-polygon.svg`;
+			return `${res}/icons/clip-polygon.svg`;
 		}
 	}
 

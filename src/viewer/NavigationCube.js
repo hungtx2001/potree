@@ -1,5 +1,6 @@
 
 import * as THREE from 'three';
+import { runtime } from '../runtime.js';
 
 export class NavigationCube extends THREE.Object3D {
 
@@ -14,8 +15,9 @@ export class NavigationCube extends THREE.Object3D {
 				depthWrite: true,
 				side: THREE.DoubleSide
 			});
+			const res = runtime.resourcePath || './resources';
 			new THREE.TextureLoader().load(
-				exports.resourcePath + '/textures/navigation/' + img,
+				res + '/textures/navigation/' + img,
 				function(texture) {
 					texture.anisotropy = viewer.renderer.capabilities.getMaxAnisotropy();
 					material.map = texture;
@@ -80,8 +82,9 @@ export class NavigationCube extends THREE.Object3D {
 			}
 			
 			this.pickedFace = null;
+			let width = this.viewer?.renderArea?.clientWidth || (typeof window !== 'undefined' ? window.innerWidth : 0);
 			let mouse = new THREE.Vector2();
-			mouse.x = event.clientX - (window.innerWidth - this.width);
+			mouse.x = event.clientX - (width - this.width);
 			mouse.y = event.clientY;
 
 			if(mouse.x < 0 || mouse.y > this.width) return;

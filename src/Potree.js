@@ -21,6 +21,8 @@ export * from "./utils.js";
 export * from "./Version.js";
 export * from "./WorkerPool.js";
 export * from "./XHRFactory.js";
+export * from "./arena4d/PointCloudArena4D.js";
+export * from "./arena4d/PointCloudArena4DGeometry.js";
 export * from "./viewer/SaveProject.js";
 export * from "./viewer/LoadProject.js";
 
@@ -84,16 +86,14 @@ import {OctreeLoader} from "./modules/loader/2.0/OctreeLoader.js";
 import {POCLoader} from "./loader/POCLoader.js";
 import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
 import {PointCloudOctree} from "./PointCloudOctree.js";
+import {PointCloudArena4D} from "./arena4d/PointCloudArena4D.js";
+import {PointCloudArena4DGeometry} from "./arena4d/PointCloudArena4DGeometry.js";
 import {WorkerPool} from "./WorkerPool.js";
 import {workerPool, lru, runtime} from "./runtime.js";
 
 export {workerPool, lru, runtime};
 
-export const version = {
-	major: 2,
-	minor: 0,
-	suffix: '.0-alpha.1'
-};
+export const version = runtime.version;
 
 export const debug = runtime.debug;
 
