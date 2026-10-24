@@ -30,7 +30,7 @@ import {EarthControls} from "../navigation/EarthControls.js";
 import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
 import {VRControls} from "../navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
-import { ClassificationScheme } from "../materials/ClassificationScheme.js";
+import { ClassificationScheme } from "../core/materials/ClassificationScheme.js";
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import * as TWEEN from '@tweenjs/tween.js';
 import JSON5 from 'json5';

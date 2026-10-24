@@ -62,6 +62,11 @@ export enum LengthUnits {
 	INCH = 'in',
 }
 
+export enum TreeType {
+	OCTREE = 0,
+	KDTREE = 1,
+}
+
 export { PointAttribute, PointAttributes, PointAttributeTypes, type PointAttributeType } from './loader/PointAttributes.js';
 
 export interface LoadPointCloudResult {

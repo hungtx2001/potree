@@ -17,9 +17,8 @@ import { MeasurementPanel } from './MeasurementPanel.js';
 import { ClassificationFilterPanel } from './ClassificationFilterPanel.js';
 import { PointCloudPropertyPanel } from './PointCloudPropertyPanel.js';
 import { SelectedObjectInspector } from './SelectedObjectInspector.js';
-import { GeoJSONExporter } from '../exporter/GeoJSONExporter.js';
-import { DXFExporter } from '../exporter/DXFExporter.js';
 import { PointCloudOctree } from '../PointCloudOctree.js';
+import { Exporters } from '../core/tools/Exporters.js';
 
 export interface PotreeSidebarProps {
 	viewer?: Viewer | null;
@@ -135,19 +134,11 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 		if (allItems.length === 0) return;
 
 		if (type === 'geojson') {
-			const json = GeoJSONExporter.toString(allItems);
-			const blob = new Blob([json], { type: 'application/json' });
-			const link = document.createElement('a');
-			link.href = URL.createObjectURL(blob);
-			link.download = 'measurements.geojson';
-			link.click();
+			const json = Exporters.toGeoJSON(allItems as any);
+			Exporters.downloadFile('measurements.geojson', json, 'application/json');
 		} else if (type === 'dxf') {
-			const dxf = DXFExporter.toString(allItems);
-			const blob = new Blob([dxf], { type: 'application/dxf' });
-			const link = document.createElement('a');
-			link.href = URL.createObjectURL(blob);
-			link.download = 'measurements.dxf';
-			link.click();
+			const dxf = Exporters.toDXF(allItems as any);
+			Exporters.downloadFile('measurements.dxf', dxf, 'application/dxf');
 		}
 	};
 

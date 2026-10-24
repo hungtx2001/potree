@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import {PointCloudTree, PointCloudTreeNode} from "./PointCloudTree.js";
 import {PointCloudOctreeGeometryNode} from "./PointCloudOctreeGeometry.js";
 import {Utils} from "./utils.js";
-import {PointCloudMaterial} from "./materials/PointCloudMaterial.js";
+import {PointCloudMaterial} from "./core/materials/PointCloudMaterial.js";
 import {ProfileRequest} from "./ProfileRequest.js";
 import {PointShape, ClipTask} from "./defines.js";
 import {runtime} from "./runtime.js";

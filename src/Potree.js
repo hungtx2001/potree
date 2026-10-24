@@ -28,12 +28,7 @@ export * from "./arena4d/PointCloudArena4DGeometry.js";
 export * from "./viewer/SaveProject.js";
 export * from "./viewer/LoadProject.js";
 
-export * from "./materials/ClassificationScheme.js";
-export * from "./materials/EyeDomeLightingMaterial.js";
-export * from "./materials/Gradients.js";
-export * from "./materials/NormalizationEDLMaterial.js";
-export * from "./materials/NormalizationMaterial.js";
-export * from "./materials/PointCloudMaterial.js";
+export * from "./core/materials/index.js";
 
 export * from "./loader/POCLoader.js";
 export * from "./modules/loader/2.0/OctreeLoader.js";

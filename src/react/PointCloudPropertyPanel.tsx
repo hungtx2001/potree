@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { PointCloudOctree } from '../PointCloudOctree.js';
 import { PointSizeType, PointShape } from '../defines.js';
-import { Gradients } from '../materials/Gradients.js';
+import { Gradients } from '../core/materials/Gradients.js';
 
 export interface PointCloudPropertyPanelProps {
 	pointcloud: PointCloudOctree | null;

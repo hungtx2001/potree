@@ -3,13 +3,10 @@ import * as THREE from 'three';
 
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
-import {DXFProfileExporter} from "../exporter/DXFProfileExporter.js";
-import {CSVExporter} from "../exporter/CSVExporter.js";
-import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import {PointCloudTree} from "../PointCloudTree.js";
 import {Renderer} from "../PotreeRenderer.js";
-import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+import {PointCloudMaterial} from "../core/materials/PointCloudMaterial.js";
 import {PointSizeType} from "../defines.js";
 import {runtime} from "../runtime.js";
 

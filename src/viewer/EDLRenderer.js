@@ -1,7 +1,7 @@
 
 import * as THREE from 'three';
 import {PointCloudSM} from "../utils/PointCloudSM.js";
-import {EyeDomeLightingMaterial} from "../materials/EyeDomeLightingMaterial.js";
+import {EyeDomeLightingMaterial} from "../core/materials/EyeDomeLightingMaterial.js";
 import {SphereVolume} from "../utils/Volume.js";
 import {Utils} from "../utils.js";
 import {runtime} from "../runtime.js";
