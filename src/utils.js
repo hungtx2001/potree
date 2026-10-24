@@ -1083,16 +1083,18 @@ export class Utils {
 
 }
 
-Utils.screenPass = new function () {
-	this.screenScene = new THREE.Scene();
-	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 1));
-	this.screenQuad.material.depthTest = true;
-	this.screenQuad.material.depthWrite = true;
-	this.screenQuad.material.transparent = true;
-	this.screenScene.add(this.screenQuad);
-	this.camera = new THREE.Camera();
+export class ScreenPass {
+	constructor() {
+		this.screenScene = new THREE.Scene();
+		this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 1));
+		this.screenQuad.material.depthTest = true;
+		this.screenQuad.material.depthWrite = true;
+		this.screenQuad.material.transparent = true;
+		this.screenScene.add(this.screenQuad);
+		this.camera = new THREE.Camera();
+	}
 
-	this.render = function (renderer, material, target) {
+	render(renderer, material, target) {
 		this.screenQuad.material = material;
 
 		if (typeof target === 'undefined') {
@@ -1100,5 +1102,8 @@ Utils.screenPass = new function () {
 		} else {
 			renderer.render(this.screenScene, this.camera, target);
 		}
-	};
-}();
+	}
+}
+
+Utils.screenPass = new ScreenPass();
+

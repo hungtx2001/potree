@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-import * as d3 from 'd3';
+
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
 import {DXFProfileExporter} from "../exporter/DXFProfileExporter.js";
@@ -13,6 +13,57 @@ import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
 import {PointSizeType} from "../defines.js";
 import {runtime} from "../runtime.js";
 
+
+class ProfileScale {
+	constructor(domain = [0, 1], range = [0, 1]) {
+		this._domain = domain;
+		this._range = range;
+	}
+
+	domain(d) {
+		if (d === undefined) return this._domain;
+		this._domain = d;
+		return this;
+	}
+
+	range(r) {
+		if (r === undefined) return this._range;
+		this._range = r;
+		return this;
+	}
+
+	apply(val) {
+		const [d0, d1] = this._domain;
+		const [r0, r1] = this._range;
+		if (d1 === d0) return r0;
+		return ((val - d0) / (d1 - d0)) * (r1 - r0) + r0;
+	}
+
+	invert(pixel) {
+		const [d0, d1] = this._domain;
+		const [r0, r1] = this._range;
+		if (r1 === r0) return d0;
+		return ((pixel - r0) / (r1 - r0)) * (d1 - d0) + d0;
+	}
+
+	ticks(count = 10) {
+		const [d0, d1] = this._domain;
+		const span = d1 - d0;
+		if (span === 0) return [d0];
+		const rawStep = span / Math.max(1, count);
+		const mag = Math.pow(10, Math.floor(Math.log10(Math.abs(rawStep)) || 0));
+		let step = mag;
+		if (rawStep / mag >= 5) step = 5 * mag;
+		else if (rawStep / mag >= 2) step = 2 * mag;
+
+		const start = Math.ceil(d0 / step) * step;
+		const ticks = [];
+		for (let val = start; val <= d1 + step * 0.001; val += step) {
+			ticks.push(Number(val.toFixed(2)));
+		}
+		return ticks;
+	}
+}
 
 function copyMaterial(source, target){
 
@@ -239,7 +290,7 @@ export class ProfileWindow extends EventDispatcher {
 		this.viewer = viewer;
 		this.elRoot = $('#profile_window');
 		this.renderArea = this.elRoot.find('#profileCanvasContainer');
-		this.svg = d3.select('svg#profileSVG');
+		this.svg = document.querySelector('svg#profileSVG');
 		this.mouseIsDown = false;
 
 		this.projectedBox = new THREE.Box3();
@@ -698,44 +749,89 @@ export class ProfileWindow extends EventDispatcher {
 	}
 
 	initSVG () {
-		let width = this.renderArea[0].clientWidth;
-		let height = this.renderArea[0].clientHeight;
-		let marginLeft = this.renderArea[0].offsetLeft;
+		let container = (this.renderArea && this.renderArea[0]) ? this.renderArea[0] : this.renderArea;
+		if (!container) return;
+		let width = container.clientWidth || 300;
+		let height = container.clientHeight || 200;
 
-		this.svg.selectAll('*').remove();
+		this.scaleX = new ProfileScale(
+			[this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x],
+			[0, width]
+		);
+		this.scaleY = new ProfileScale(
+			[this.camera.bottom + this.camera.position.z, this.camera.top + this.camera.position.z],
+			[height, 0]
+		);
 
-		this.scaleX = d3.scale.linear()
-			.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
-			.range([0, width]);
-		this.scaleY = d3.scale.linear()
-			.domain([this.camera.bottom + this.camera.position.z, this.camera.top + this.camera.position.z])
-			.range([height, 0]);
+		this.renderAxes();
+	}
 
-		this.xAxis = d3.svg.axis()
-			.scale(this.scaleX)
-			.orient('bottom')
-			.innerTickSize(-height)
-			.outerTickSize(1)
-			.tickPadding(10)
-			.ticks(width / 50);
+	renderAxes() {
+		let container = (this.renderArea && this.renderArea[0]) ? this.renderArea[0] : this.renderArea;
+		const svgEl = this.svg instanceof Element ? this.svg : document.querySelector('svg#profileSVG');
+		if (!container || !svgEl || !this.scaleX || !this.scaleY) return;
 
-		this.yAxis = d3.svg.axis()
-			.scale(this.scaleY)
-			.orient('left')
-			.innerTickSize(-width)
-			.outerTickSize(1)
-			.tickPadding(10)
-			.ticks(height / 20);
+		let width = container.clientWidth || 300;
+		let height = container.clientHeight || 200;
+		let marginLeft = container.offsetLeft || 0;
 
-		this.elXAxis = this.svg.append('g')
-			.attr('class', 'x axis')
-			.attr('transform', `translate(${marginLeft}, ${height})`)
-			.call(this.xAxis);
+		svgEl.innerHTML = '';
 
-		this.elYAxis = this.svg.append('g')
-			.attr('class', 'y axis')
-			.attr('transform', `translate(${marginLeft}, 0)`)
-			.call(this.yAxis);
+		const xTicks = this.scaleX.ticks(Math.max(2, Math.floor(width / 70)));
+		const yTicks = this.scaleY.ticks(Math.max(2, Math.floor(height / 35)));
+		const xmlns = 'http://www.w3.org/2000/svg';
+
+		const gX = document.createElementNS(xmlns, 'g');
+		gX.setAttribute('class', 'x axis');
+		gX.setAttribute('transform', `translate(${marginLeft}, 0)`);
+
+		for (const tick of xTicks) {
+			const x = this.scaleX.apply(tick);
+			const line = document.createElementNS(xmlns, 'line');
+			line.setAttribute('x1', String(x));
+			line.setAttribute('x2', String(x));
+			line.setAttribute('y1', '0');
+			line.setAttribute('y2', String(height));
+			line.setAttribute('stroke', 'rgba(255, 255, 255, 0.15)');
+			line.setAttribute('stroke-dasharray', '2,2');
+			gX.appendChild(line);
+
+			const text = document.createElementNS(xmlns, 'text');
+			text.setAttribute('x', String(x));
+			text.setAttribute('y', String(height - 4));
+			text.setAttribute('text-anchor', 'middle');
+			text.setAttribute('fill', '#aaa');
+			text.setAttribute('font-size', '10px');
+			text.textContent = tick.toFixed(1);
+			gX.appendChild(text);
+		}
+
+		const gY = document.createElementNS(xmlns, 'g');
+		gY.setAttribute('class', 'y axis');
+		gY.setAttribute('transform', `translate(${marginLeft}, 0)`);
+
+		for (const tick of yTicks) {
+			const y = this.scaleY.apply(tick);
+			const line = document.createElementNS(xmlns, 'line');
+			line.setAttribute('x1', '0');
+			line.setAttribute('x2', String(width));
+			line.setAttribute('y1', String(y));
+			line.setAttribute('y2', String(y));
+			line.setAttribute('stroke', 'rgba(255, 255, 255, 0.15)');
+			line.setAttribute('stroke-dasharray', '2,2');
+			gY.appendChild(line);
+
+			const text = document.createElementNS(xmlns, 'text');
+			text.setAttribute('x', '4');
+			text.setAttribute('y', String(y - 2));
+			text.setAttribute('fill', '#aaa');
+			text.setAttribute('font-size', '10px');
+			text.textContent = tick.toFixed(1);
+			gY.appendChild(text);
+		}
+
+		svgEl.appendChild(gX);
+		svgEl.appendChild(gY);
 	}
 
 	addPoints (pointcloud, points) {
@@ -852,28 +948,7 @@ export class ProfileWindow extends EventDispatcher {
 		this.scaleY.domain([this.camera.bottom + this.camera.position.z, this.camera.top + this.camera.position.z])
 			.range([height, 0]);
 
-		let marginLeft = this.renderArea[0].offsetLeft;
-
-		this.xAxis.scale(this.scaleX)
-			.orient('bottom')
-			.innerTickSize(-height)
-			.outerTickSize(1)
-			.tickPadding(10)
-			.ticks(width / 50);
-		this.yAxis.scale(this.scaleY)
-			.orient('left')
-			.innerTickSize(-width)
-			.outerTickSize(1)
-			.tickPadding(10)
-			.ticks(height / 20);
-
-
-		this.elXAxis
-			.attr('transform', `translate(${marginLeft}, ${height})`)
-			.call(this.xAxis);
-		this.elYAxis
-			.attr('transform', `translate(${marginLeft}, 0)`)
-			.call(this.yAxis);
+		this.renderAxes();
 	}
 
 	requestScaleUpdate(){

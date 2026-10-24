@@ -60,6 +60,13 @@ export declare class SceneTree {
 	static installJQueryPlugin($: any): void;
 }
 
+export declare class CesiumControls {
+	constructor(viewer: Viewer, cesiumViewer: any, projection: string, cesiumLib?: any);
+	setToolActive(active: boolean): void;
+	flyToPointCloud(duration?: number): Promise<void>;
+	destroy(): void;
+}
+
 export declare class Viewer {
 	constructor(domElement: HTMLElement, args?: Record<string, any>);
 	renderArea: HTMLElement;
@@ -67,6 +74,7 @@ export declare class Viewer {
 	renderer: THREE.WebGLRenderer;
 	store: PotreeStore;
 	floatingToolbar?: FloatingToolbar;
+	cesiumControls?: CesiumControls;
 	setEDLEnabled(enabled: boolean): void;
 	setFOV(fov: number): void;
 	setPointBudget(budget: number): void;
@@ -77,4 +85,8 @@ export declare class Viewer {
 	toggleSidebar(): void;
 	setLanguage(lang: string): void;
 	fitToScreen(factor?: number): void;
+	setCesiumViewer(cesiumViewer: any, projection: string, cesiumLib?: any): CesiumControls;
+	_lockProjectionZone(projection: string): void;
+	destroy(): void;
 }
+

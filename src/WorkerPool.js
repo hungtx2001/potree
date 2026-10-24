@@ -1,4 +1,6 @@
 
+import { createBlobDecoderWorker } from './workers/embeddedWorkers.js';
+
 export class WorkerPool{
 	constructor(){
 		this.workers = {};
@@ -29,12 +31,30 @@ export class WorkerPool{
 				try {
 					worker = factory();
 				} catch (err) {
-					// Fall through to URL
+					// Fall through to URL or embedded
 				}
 			}
 
 			if (!worker) {
-				const target = this.workerUrls[key] || this.workerUrls[baseName] || key;
+				const target = this.workerUrls[key] || this.workerUrls[baseName];
+				if (target) {
+					try {
+						worker = new Worker(target, { type: 'module' });
+					} catch (e) {
+						try {
+							worker = new Worker(target);
+						} catch (err) {}
+					}
+				}
+			}
+
+			// Embedded in-memory worker fallback (zero-config, zero-404, offline)
+			if (!worker && (baseName === 'DecoderWorker' || key === 'DecoderWorker')) {
+				worker = createBlobDecoderWorker();
+			}
+
+			if (!worker) {
+				const target = key;
 				try {
 					worker = new Worker(target, { type: 'module' });
 				} catch (e) {

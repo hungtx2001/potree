@@ -58,7 +58,6 @@ export default defineConfig({
         'three/examples/jsm/webxr/XRControllerModelFactory.js',
         '@tweenjs/tween.js',
         'proj4',
-        'd3',
         'json5',
         'jquery',
         'copc',
