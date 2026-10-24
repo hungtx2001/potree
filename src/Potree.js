@@ -64,6 +64,7 @@ export * from "./utils/Compass.js";
 export * from "./viewer/viewer.js";
 export * from "./viewer/Scene.js";
 export * from "./viewer/HierarchicalSlider.js";
+export * from "./viewer/store/PotreeStore.js";
 
 export * from "./modules/OrientedImages/OrientedImages.js";
 export * from "./modules/Images360/Images360.js";

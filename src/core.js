@@ -45,6 +45,7 @@ export * from "./utils/PolygonClipVolume.js";
 export * from "./TextSprite.js";
 export * from "./XHRFactory.js";
 export * from "./Version.js";
+export * from "./viewer/store/PotreeStore.js";
 
 import { OctreeLoader } from "./modules/loader/2.0/OctreeLoader.js";
 import { POCLoader } from "./loader/POCLoader.js";

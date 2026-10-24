@@ -13,3 +13,4 @@ export * from './Potree.js';
 export { jQuery, jQuery as $ };
 export { FloatingToolbar } from './viewer/ui/FloatingToolbar.js';
 export { icons, getIcon } from './viewer/ui/icons.js';
+export { PotreeStore } from './viewer/store/PotreeStore.js';

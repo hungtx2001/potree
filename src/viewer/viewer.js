@@ -45,6 +45,7 @@ import { saveProject } from "./SaveProject.js";
 import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
 import { FloatingToolbar } from "./ui/FloatingToolbar.js";
+import { PotreeStore } from "./store/PotreeStore.js";
 
 
 export class Viewer extends EventDispatcher{
@@ -53,6 +54,7 @@ export class Viewer extends EventDispatcher{
 		super();
 
 		this.renderArea = domElement;
+		this.store = new PotreeStore();
 		this.guiLoaded = false;
 		this.guiLoadTasks = [];
 
@@ -481,6 +483,7 @@ export class Viewer extends EventDispatcher{
 		}
 
 		this.background = bg;
+		this.store.setState({ background: bg });
 		this.dispatchEvent({'type': 'background_changed', 'viewer': this});
 	}
 
@@ -580,6 +583,7 @@ export class Viewer extends EventDispatcher{
 	setPointBudget (value) {
 		if (runtime.pointBudget !== value) {
 			runtime.pointBudget = parseInt(value);
+			this.store.setState({ pointBudget: parseInt(value) });
 			this.dispatchEvent({'type': 'point_budget_changed', 'viewer': this});
 		}
 	};
@@ -615,6 +619,7 @@ export class Viewer extends EventDispatcher{
 
 		if (this.useEDL !== value) {
 			this.useEDL = value;
+			this.store.setState({ edlEnabled: value });
 			this.dispatchEvent({'type': 'use_edl_changed', 'viewer': this});
 		}
 	};
@@ -659,6 +664,7 @@ export class Viewer extends EventDispatcher{
 	setFOV (value) {
 		if (this.fov !== value) {
 			this.fov = value;
+			this.store.setState({ fov: value });
 			this.dispatchEvent({'type': 'fov_changed', 'viewer': this});
 		}
 	};
@@ -990,6 +996,8 @@ export class Viewer extends EventDispatcher{
 		for(let pointcloud of this.scene.pointclouds) {
 			pointcloud.material.useOrthographicCamera = mode == CameraMode.ORTHOGRAPHIC;
 		}
+
+		this.store.setState({ cameraMode: mode === CameraMode.PERSPECTIVE ? 'perspective' : 'orthographic' });
 	}
 
 	getProjection(){
@@ -1171,8 +1179,10 @@ export class Viewer extends EventDispatcher{
 
 		if (isVisible) {
 			renderArea.css('left', '0px');
+			this.store.setState({ sidebarOpen: false });
 		} else {
 			renderArea.css('left', '300px');
+			this.store.setState({ sidebarOpen: true });
 		}
 	};
 
