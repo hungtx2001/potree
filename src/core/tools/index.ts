@@ -1,5 +1,5 @@
 export { MeasurementEngine, type DistanceResult, type AreaResult, type AngleResult, type VolumeResult } from './MeasurementEngine.js';
-export { Exporters, type ExportablePoint } from './Exporters.js';
+export { Exporters, type ExportablePoint, type ExportableMeasurement } from './Exporters.js';
 export { Measure } from '../../utils/Measure.js';
 export { MeasuringTool } from '../../utils/MeasuringTool.js';
 export { Profile } from '../../utils/Profile.js';

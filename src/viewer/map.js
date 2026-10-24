@@ -103,9 +103,39 @@ export class MapView{
 		}
 
 		this.elMap = this.viewer.renderArea?.querySelector('#potree_map') || document.getElementById('potree_map');
-		if (this.elMap && typeof (window).$ !== 'undefined' && typeof (window).$(this.elMap)?.draggable === 'function') {
-			(window).$(this.elMap).draggable({ handle: this.elMap.querySelector('#potree_map_header') || undefined });
-			(window).$(this.elMap).resizable();
+		if (this.elMap) {
+			const header = this.elMap.querySelector('#potree_map_header');
+			if (header) {
+				let isDragging = false;
+				let startX = 0;
+				let startY = 0;
+				let initialLeft = 0;
+				let initialTop = 0;
+				header.style.cursor = 'move';
+				header.addEventListener('pointerdown', (e) => {
+					isDragging = true;
+					startX = e.clientX;
+					startY = e.clientY;
+					const rect = this.elMap.getBoundingClientRect();
+					initialLeft = rect.left;
+					initialTop = rect.top;
+					header.setPointerCapture?.(e.pointerId);
+				});
+				header.addEventListener('pointermove', (e) => {
+					if (!isDragging) return;
+					const dx = e.clientX - startX;
+					const dy = e.clientY - startY;
+					this.elMap.style.left = `${initialLeft + dx}px`;
+					this.elMap.style.top = `${initialTop + dy}px`;
+					this.elMap.style.position = 'absolute';
+				});
+				const stopDrag = (e) => {
+					isDragging = false;
+					header.releasePointerCapture?.(e.pointerId);
+				};
+				header.addEventListener('pointerup', stopDrag);
+				header.addEventListener('pointercancel', stopDrag);
+			}
 		}
 
 		this.elTooltip = document.createElement('div');
