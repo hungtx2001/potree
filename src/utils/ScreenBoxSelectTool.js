@@ -35,10 +35,11 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 
 		this.importance = 10;
 
-		let selectionBox = $(`<div style="position: absolute; border: 2px solid white; pointer-events: none; border-style:dashed"></div>`);
-		$(domElement.parentElement).append(selectionBox);
-		selectionBox.css("right", "10px");
-		selectionBox.css("bottom", "10px");
+		let selectionBox = document.createElement('div');
+		selectionBox.style.cssText = "position: absolute; border: 2px solid white; pointer-events: none; border-style: dashed; right: 10px; bottom: 10px;";
+		if (domElement.parentElement) {
+			domElement.parentElement.appendChild(selectionBox);
+		}
 
 		let drag = e =>{
 
@@ -51,10 +52,10 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 			box2D.expandByPoint(mStart);
 			box2D.expandByPoint(mEnd);
 
-			selectionBox.css("left", `${box2D.min.x}px`);
-			selectionBox.css("top", `${box2D.min.y}px`);
-			selectionBox.css("width", `${box2D.max.x - box2D.min.x}px`);
-			selectionBox.css("height", `${box2D.max.y - box2D.min.y}px`);
+			selectionBox.style.left = `${box2D.min.x}px`;
+			selectionBox.style.top = `${box2D.min.y}px`;
+			selectionBox.style.width = `${box2D.max.x - box2D.min.x}px`;
+			selectionBox.style.height = `${box2D.max.y - box2D.min.y}px`;
 
 			let camera = e.viewer.scene.getActiveCamera();
 			let size = e.viewer.renderer.getSize(new THREE.Vector2());
@@ -79,7 +80,7 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 		let drop = e => {
 			this.importance = 0;
 
-			$(selectionBox).remove();
+			selectionBox.remove();
 
 			this.viewer.inputHandler.deselectAll();
 			this.viewer.inputHandler.toggleSelection(volume);

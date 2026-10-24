@@ -150,15 +150,15 @@ export class ClipVolume extends THREE.Object3D{
 				this.arrowZ.visible = false; 				
 			});
 			this.addEventListener("select", e => { 
-				let scene_header = $("#" + this.name + " .scene_header");
-				if(!scene_header.next().is(":visible")) {
-					scene_header.click();
+				let el = document.querySelector("#" + this.name + " .scene_header");
+				if(el && el.nextElementSibling && el.nextElementSibling.style.display === 'none') {
+					el.click();
 				}
 			});
 			this.addEventListener("deselect", e => { 
-				let scene_header = $("#" + this.name + " .scene_header");
-				if(scene_header.next().is(":visible")) {
-					scene_header.click();
+				let el = document.querySelector("#" + this.name + " .scene_header");
+				if(el && el.nextElementSibling && el.nextElementSibling.style.display !== 'none') {
+					el.click();
 				}
 			});
 		}

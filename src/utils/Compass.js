@@ -25,24 +25,23 @@ export class Compass{
 			const projection = viewer.getProjection();
 			const azimuth = Utils.computeAzimuth(p1, p2, projection);
 			
-			this.dom.css("transform", `rotateZ(${-azimuth}rad)`);
+			this.dom.style.transform = `rotateZ(${-azimuth}rad)`;
 		});
 
-		this.dom.click( () => {
+		this.dom.addEventListener('click', () => {
 			viewer.setTopView();
 		});
 
-		const renderArea = $(viewer.renderArea);
-		renderArea.append(this.dom);
+		if (viewer.renderArea) {
+			viewer.renderArea.appendChild(this.dom);
+		}
 
 		this.setVisible(this.visible);
 	}
 
 	setVisible(visible){
 		this.visible = visible;
-
-		const value = visible ? "" : "none";
-		this.dom.css("display", value);
+		this.dom.style.display = visible ? "" : "none";
 	}
 
 	isVisible(){
@@ -50,10 +49,10 @@ export class Compass{
 	}
 
 	createElement(){
-		const style = `style="position: absolute; top: 10px; right: 10px; z-index: 10000; width: 64px;"`;
+		const img = document.createElement('img');
+		img.style.cssText = "position: absolute; top: 10px; right: 10px; z-index: 10000; width: 64px; cursor: pointer;";
 		const res = runtime.resourcePath || './resources';
-		const img = $(`<img src="${res}/images/compas.svg" ${style} />`);
-
+		img.src = `${res}/images/compas.svg`;
 		return img;
 	}
 

@@ -7,32 +7,31 @@ export class Message{
 		this.content = content;
 
 		const res = runtime.resourcePath || './resources';
-		let closeIcon = `${res}/icons/close.svg`;
 
-		this.element = $(`
-			<div class="potree_message">
-				<span name="content_container" style="flex-grow: 1; padding: 5px"></span>
-				<img name="close" src="${closeIcon}" class="button-icon" style="width: 16px; height: 16px;">
-			</div>`);
+		this.element = document.createElement('div');
+		this.element.className = 'potree_message';
 
-		this.elClose = this.element.find("img[name=close]");
+		this.elContainer = document.createElement('span');
+		this.elContainer.style.cssText = 'flex-grow: 1; padding: 5px;';
+		this.element.appendChild(this.elContainer);
 
-		this.elContainer = this.element.find("span[name=content_container]");
+		this.elClose = document.createElement('img');
+		this.elClose.src = `${res}/icons/close.svg`;
+		this.elClose.className = 'button-icon';
+		this.elClose.style.cssText = 'width: 16px; height: 16px; cursor: pointer;';
+		this.element.appendChild(this.elClose);
 
-		if(typeof content === "string"){
-			this.elContainer.append($(`<span>${content}</span>`));
-		}else{
-			this.elContainer.append(content);
-		}
-
+		this.setMessage(content);
 	}
 
 	setMessage(content){
-		this.elContainer.empty();
+		this.elContainer.replaceChildren();
 		if(typeof content === "string"){
-			this.elContainer.append($(`<span>${content}</span>`));
-		}else{
-			this.elContainer.append(content);
+			const span = document.createElement('span');
+			span.textContent = content;
+			this.elContainer.appendChild(span);
+		}else if(content instanceof HTMLElement){
+			this.elContainer.appendChild(content);
 		}
 	}
 
