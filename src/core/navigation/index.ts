@@ -6,3 +6,5 @@ export { VRControls } from './VRControls.js';
 export { GeoControls } from './GeoControls.js';
 export { InputHandler } from './InputHandler.js';
 export { CesiumControls, type CesiumProjection } from './CesiumControls.js';
+export { View } from './View.js';
+export { NavigationCube } from './NavigationCube.js';

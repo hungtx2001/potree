@@ -1,5 +1,9 @@
 export { MeasurementEngine, type DistanceResult, type AreaResult, type AngleResult, type VolumeResult } from './MeasurementEngine.js';
 export { Exporters, type ExportablePoint, type ExportableMeasurement } from './Exporters.js';
+export { TextSprite } from './TextSprite.js';
+export { Action } from './Actions.js';
+export { AnimationPath, PathAnimation } from './AnimationPath.js';
+export { ProfileRequest, ProfileData } from './ProfileRequest.js';
 export { Measure } from '../../utils/Measure.js';
 export { MeasuringTool } from '../../utils/MeasuringTool.js';
 export { Profile } from '../../utils/Profile.js';

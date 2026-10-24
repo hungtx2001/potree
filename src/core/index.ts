@@ -14,13 +14,11 @@ export * from './materials/index.js';
 export * from './tools/index.js';
 
 // Core Octree & Geometry
-export { PointCloudOctree, PointCloudOctreeNode } from '../PointCloudOctree.js';
-export { PointCloudOctreeGeometry, PointCloudOctreeGeometryNode } from '../PointCloudOctreeGeometry.js';
-export { PointCloudTree, PointCloudTreeNode } from '../PointCloudTree.js';
-export { Points } from '../Points.js';
-export { Renderer, Renderer as PotreeRenderer } from '../PotreeRenderer.js';
-export { updatePointClouds } from '../Potree_update_visibility.js';
-export { runtime, workerPool, lru } from '../runtime.js';
+export * from './octree/index.js';
+
+// Core Rendering & Visibility
+export * from './rendering/index.js';
+export * from './runtime/index.js';
 
 // Headless Navigation
 export * from './navigation/index.js';
@@ -33,10 +31,11 @@ export { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.j
 export { Viewer } from '../viewer/viewer.js';
 export { Scene } from '../viewer/Scene.js';
 export { PotreeStore } from '../viewer/store/PotreeStore.js';
-export { Utils } from '../utils.js';
+// Core Utilities & Math
+export * from './utils/index.js';
 
 import { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.js';
-import { PointCloudOctree } from '../PointCloudOctree.js';
+import { PointCloudOctree } from './octree/PointCloudOctree.js';
 import type { LoadPointCloudResult } from './types.js';
 
 export const version = {

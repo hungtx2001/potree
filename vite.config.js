@@ -34,6 +34,9 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
+  worker: {
+    plugins: () => [resolveJsToTs()],
+  },
   build: {
     lib: {
       entry: {
