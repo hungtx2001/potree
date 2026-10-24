@@ -224,7 +224,15 @@ export function loadPointCloud(path, name, callback){
 if (typeof window !== 'undefined') {
 	const w = window;
 	w.Potree = w.Potree || {};
-	w.Potree.Viewer = Viewer;
+	try {
+		Object.defineProperty(w.Potree, 'Viewer', {
+			get() { return Viewer; },
+			configurable: true,
+			enumerable: true
+		});
+	} catch (_) {
+		w.Potree.Viewer = Viewer;
+	}
 	w.Potree.loadPointCloud = loadPointCloud;
 	w.Potree.CesiumControls = CesiumControls;
 	w.Potree.PointSizeType = PointSizeType;

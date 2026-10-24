@@ -29,36 +29,43 @@ export class OrientedImageControls extends EventDispatcher{
 
 		this.shear = [0, 0];
 
-		// const style = ``;
-		this.elUp =    $(`<input type="button" value="🡅" style="position: absolute; top: 10px; left: calc(50%); z-index: 1000" />`);
-		this.elRight = $(`<input type="button" value="🡆" style="position: absolute; top: calc(50%); right: 10px; z-index: 1000" />`);
-		this.elDown =  $(`<input type="button" value="🡇" style="position: absolute; bottom: 10px; left: calc(50%); z-index: 1000" />`);
-		this.elLeft =  $(`<input type="button" value="🡄" style="position: absolute; top: calc(50%); left: 10px; z-index: 1000" />`);
-		this.elExit = $(`<input type="button" value="Back to 3D view" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000" />`);
+		const createBtn = (val, style) => {
+			const btn = document.createElement('input');
+			btn.type = 'button';
+			btn.value = val;
+			btn.style.cssText = style;
+			return btn;
+		};
 
-		this.elExit.click( () => {
+		this.elUp = createBtn("🡅", "position: absolute; top: 10px; left: calc(50%); z-index: 1000");
+		this.elRight = createBtn("🡆", "position: absolute; top: calc(50%); right: 10px; z-index: 1000");
+		this.elDown = createBtn("🡇", "position: absolute; bottom: 10px; left: calc(50%); z-index: 1000");
+		this.elLeft = createBtn("🡄", "position: absolute; top: calc(50%); left: 10px; z-index: 1000");
+		this.elExit = createBtn("Back to 3D view", "position: absolute; bottom: 10px; right: 10px; z-index: 1000");
+
+		this.elExit.addEventListener('click', () => {
 			this.release();
 		});
 
-		this.elUp.click(() => {
+		this.elUp.addEventListener('click', () => {
 			const fovY = viewer.getFOV();
 			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
 			this.shear[1] += 0.1 * top;
 		});
 
-		this.elRight.click(() => {
+		this.elRight.addEventListener('click', () => {
 			const fovY = viewer.getFOV();
 			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
 			this.shear[0] += 0.1 * top;
 		});
 
-		this.elDown.click(() => {
+		this.elDown.addEventListener('click', () => {
 			const fovY = viewer.getFOV();
 			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
 			this.shear[1] -= 0.1 * top;
 		});
 
-		this.elLeft.click(() => {
+		this.elLeft.addEventListener('click', () => {
 			const fovY = viewer.getFOV();
 			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
 			this.shear[0] -= 0.1 * top;
@@ -93,16 +100,17 @@ export class OrientedImageControls extends EventDispatcher{
 		this.viewer.scene.overrideCamera = this.shearCam;
 
 		const elCanvas = this.viewer.renderer.domElement;
-		const elRoot = $(elCanvas.parentElement);
+		const elRoot = elCanvas?.parentElement;
 
 		this.shear = [0, 0];
 
-
-		elRoot.append(this.elUp);
-		elRoot.append(this.elRight);
-		elRoot.append(this.elDown);
-		elRoot.append(this.elLeft);
-		elRoot.append(this.elExit);
+		if (elRoot) {
+			elRoot.appendChild(this.elUp);
+			elRoot.appendChild(this.elRight);
+			elRoot.appendChild(this.elDown);
+			elRoot.appendChild(this.elLeft);
+			elRoot.appendChild(this.elExit);
+		}
 	}
 
 	release(){
@@ -110,11 +118,11 @@ export class OrientedImageControls extends EventDispatcher{
 
 		this.viewer.scene.overrideCamera = null;
 
-		this.elUp.detach();
-		this.elRight.detach();
-		this.elDown.detach();
-		this.elLeft.detach();
-		this.elExit.detach();
+		this.elUp.remove();
+		this.elRight.remove();
+		this.elDown.remove();
+		this.elLeft.remove();
+		this.elExit.remove();
 
 		this.viewer.setFOV(this.originalFOV);
 		this.viewer.setControls(this.originalControls);

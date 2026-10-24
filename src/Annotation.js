@@ -49,26 +49,55 @@ export class Annotation extends EventDispatcher {
 		const res = runtime.resourcePath || './resources';
 		let iconClose = res + '/icons/close.svg';
 
-		this.domElement = $(`
-			<div class="annotation" oncontextmenu="return false;">
-				<div class="annotation-titlebar">
-					<span class="annotation-label"></span>
-				</div>
-				<div class="annotation-description">
-					<span class="annotation-description-close">
-						<img src="${iconClose}" width="16px">
-					</span>
-					<span class="annotation-description-content">${this._description}</span>
-				</div>
+		const container = document.createElement('div');
+		container.className = 'annotation';
+		container.oncontextmenu = () => false;
+		container.innerHTML = `
+			<div class="annotation-titlebar">
+				<span class="annotation-label"></span>
 			</div>
-		`);
+			<div class="annotation-description">
+				<span class="annotation-description-close">
+					<img src="${iconClose}" width="16px">
+				</span>
+				<span class="annotation-description-content">${this._description}</span>
+			</div>
+		`.trim();
 
-		this.elTitlebar = this.domElement.find('.annotation-titlebar');
-		this.elTitle = this.elTitlebar.find('.annotation-label');
-		this.elTitle.append(this._title);
-		this.elDescription = this.domElement.find('.annotation-description');
-		this.elDescriptionClose = this.elDescription.find('.annotation-description-close');
-		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		const attachElHelpers = (el) => {
+			if (!el) return el;
+			el[0] = el;
+			el.find = (sel) => el.querySelector(sel);
+			el.empty = () => { el.innerHTML = ''; };
+			el.append = (child) => {
+				if (typeof child === 'string') el.insertAdjacentHTML('beforeend', child);
+				else el.appendChild(child);
+			};
+			el.css = (prop, val) => {
+				if (val !== undefined) {
+					const styleKey = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+					el.style[styleKey] = val;
+					return el;
+				}
+				return el.style[prop];
+			};
+			el.show = () => { el.style.display = ''; };
+			el.hide = () => { el.style.display = 'none'; };
+			el.fadeIn = (duration = 200) => {
+				el.style.opacity = '0';
+				el.style.display = '';
+				el.style.transition = `opacity ${duration}ms ease`;
+				requestAnimationFrame(() => { el.style.opacity = '1'; });
+			};
+			return el;
+		};
+
+		this.domElement = attachElHelpers(container);
+		this.elTitlebar = attachElHelpers(this.domElement.querySelector('.annotation-titlebar'));
+		this.elTitle = attachElHelpers(this.elTitlebar.querySelector('.annotation-label'));
+		this.elTitle.textContent = this._title;
+		this.elDescription = attachElHelpers(this.domElement.querySelector('.annotation-description'));
+		this.elDescriptionClose = attachElHelpers(this.elDescription.querySelector('.annotation-description-close'));
 
 		this.clickTitle = () => {
 			if(this.hasView()){
@@ -77,7 +106,7 @@ export class Annotation extends EventDispatcher {
 			this.dispatchEvent({type: 'click', target: this});
 		};
 
-		this.elTitle.click(this.clickTitle);
+		this.elTitle.addEventListener('click', this.clickTitle);
 
 		this.actions = this.actions.map(a => {
 			if (a instanceof Action) {
@@ -95,27 +124,24 @@ export class Annotation extends EventDispatcher {
 			a => a.showIn === undefined || a.showIn.includes('scene'));
 
 		for (let action of actions) {
-			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
-			this.elTitlebar.append(elButton);
-			elButton.click(() => action.onclick({annotation: this}));
+			let elButton = document.createElement('img');
+			elButton.src = action.icon;
+			elButton.className = 'annotation-action-icon';
+			this.elTitlebar.appendChild(elButton);
+			elButton.addEventListener('click', () => action.onclick({annotation: this}));
 		}
 
-		this.elDescriptionClose.hover(
-			e => this.elDescriptionClose.css('opacity', '1'),
-			e => this.elDescriptionClose.css('opacity', '0.5')
-		);
-		this.elDescriptionClose.click(e => this.setHighlighted(false));
-		// this.elDescriptionContent.html(this._description);
+		this.elDescriptionClose.addEventListener('mouseenter', () => { this.elDescriptionClose.style.opacity = '1'; });
+		this.elDescriptionClose.addEventListener('mouseleave', () => { this.elDescriptionClose.style.opacity = '0.5'; });
+		this.elDescriptionClose.addEventListener('click', () => this.setHighlighted(false));
 
-		this.domElement.mouseenter(e => this.setHighlighted(true));
-		this.domElement.mouseleave(e => this.setHighlighted(false));
-
-		this.domElement.on('touchstart', e => {
+		this.domElement.addEventListener('mouseenter', () => this.setHighlighted(true));
+		this.domElement.addEventListener('mouseleave', () => this.setHighlighted(false));
+		this.domElement.addEventListener('touchstart', () => {
 			this.setHighlighted(!this.isHighlighted);
 		});
 
 		this.display = false;
-		//this.display = true;
 
 	}
 
@@ -124,20 +150,23 @@ export class Annotation extends EventDispatcher {
 			return;
 		}
 
-		let domElement = $(`
-			<div style="position: absolute; left: 300; top: 200; pointer-events: none">
-				<svg width="300" height="600">
-					<line x1="0" y1="0" x2="1200" y2="200" style="stroke: black; stroke-width:2" />
-					<circle cx="50" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
-					<circle cx="150" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
-				</svg>
-			</div>
-		`);
+		let domElement = document.createElement('div');
+		domElement.style.position = 'absolute';
+		domElement.style.left = '300px';
+		domElement.style.top = '200px';
+		domElement.style.pointerEvents = 'none';
+		domElement.innerHTML = `
+			<svg width="300" height="600">
+				<line x1="0" y1="0" x2="1200" y2="200" style="stroke: black; stroke-width:2" />
+				<circle cx="50" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
+				<circle cx="150" cy="50" r="4" stroke="black" stroke-width="2" fill="gray" />
+			</svg>
+		`.trim();
 		
-		let svg = domElement.find("svg")[0];
-		let elLine = domElement.find("line")[0];
-		let elStart = domElement.find("circle")[0];
-		let elEnd = domElement.find("circle")[1];
+		let svg = domElement.querySelector("svg");
+		let elLine = domElement.querySelector("line");
+		let elStart = domElement.querySelectorAll("circle")[0];
+		let elEnd = domElement.querySelectorAll("circle")[1];
 
 		let setCoordinates = (start, end) => {
 			elStart.setAttribute("cx", `${start.x}`);
@@ -166,58 +195,72 @@ export class Annotation extends EventDispatcher {
 				start.x = start.x - xa;
 			}
 
-			domElement.css("left", `${start.x}px`);
-			domElement.css("top", `${start.y}px`);
+			domElement.style.left = `${start.x}px`;
+			domElement.style.top = `${start.y}px`;
 
 		};
 
-		$(viewer.renderArea).append(domElement);
+		if (viewer.renderArea) {
+			viewer.renderArea.appendChild(domElement);
+		}
 
 
 		let annotationStartPos = this.position.clone();
 		let annotationStartOffset = this.offset.clone();
 
-		$(this.domElement).draggable({
-			start: (event, ui) => {
-				annotationStartPos = this.position.clone();
-				annotationStartOffset = this.offset.clone();
-				$(this.domElement).find(".annotation-titlebar").css("pointer-events", "none");
+		let isDragging = false;
+		let dragStartMouse = { x: 0, y: 0 };
 
-				console.log($(this.domElement).find(".annotation-titlebar"));
-			},
-			stop: () => {
-				$(this.domElement).find(".annotation-titlebar").css("pointer-events", "");
-			},
-			drag: (event, ui ) => {
-				let renderAreaWidth = viewer.renderer.getSize(new THREE.Vector2()).width;
-				//let renderAreaHeight = viewer.renderer.getSize().height;
+		const onMouseDown = (event) => {
+			if (event.button !== 0) return;
+			isDragging = true;
+			annotationStartPos = this.position.clone();
+			annotationStartOffset = this.offset.clone();
+			dragStartMouse = { x: event.clientX, y: event.clientY };
+			const titlebar = this.domElement.querySelector(".annotation-titlebar");
+			if (titlebar) titlebar.style.pointerEvents = "none";
 
-				let diff = {
-					x: ui.originalPosition.left - ui.position.left, 
-					y: ui.originalPosition.top - ui.position.top
+			const onMouseMove = (moveEvent) => {
+				if (!isDragging) return;
+				const renderAreaWidth = viewer.renderer.getSize(new THREE.Vector2()).width;
+				const diff = {
+					x: dragStartMouse.x - moveEvent.clientX,
+					y: dragStartMouse.y - moveEvent.clientY
 				};
-
-				let nDiff = {
+				const nDiff = {
 					x: -(diff.x / renderAreaWidth) * 2,
 					y: (diff.y / renderAreaWidth) * 2
 				};
 
-				let camera = viewer.scene.getActiveCamera();
-				let oldScreenPos = new THREE.Vector3()
+				const camera = viewer.scene.getActiveCamera();
+				const oldScreenPos = new THREE.Vector3()
 					.addVectors(annotationStartPos, annotationStartOffset)
 					.project(camera);
 
-				let newScreenPos = oldScreenPos.clone();
+				const newScreenPos = oldScreenPos.clone();
 				newScreenPos.x += nDiff.x;
 				newScreenPos.y += nDiff.y;
 
-				let newPos = newScreenPos.clone();
+				const newPos = newScreenPos.clone();
 				newPos.unproject(camera);
 
-				let newOffset = new THREE.Vector3().subVectors(newPos, this.position);
+				const newOffset = new THREE.Vector3().subVectors(newPos, this.position);
 				this.offset.copy(newOffset);
-			}
-		});
+			};
+
+			const onMouseUp = () => {
+				isDragging = false;
+				const titlebar = this.domElement.querySelector(".annotation-titlebar");
+				if (titlebar) titlebar.style.pointerEvents = "";
+				window.removeEventListener('mousemove', onMouseMove);
+				window.removeEventListener('mouseup', onMouseUp);
+			};
+
+			window.addEventListener('mousemove', onMouseMove);
+			window.addEventListener('mouseup', onMouseUp);
+		};
+
+		this.domElement.addEventListener('mousedown', onMouseDown);
 
 		let updateCallback = () => {
 			let position = this.position;

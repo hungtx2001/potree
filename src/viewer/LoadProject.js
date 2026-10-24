@@ -6,7 +6,7 @@ import {Measure} from "../utils/Measure.js";
 import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js";
 import {Utils} from "../utils.js";
 import {PointSizeType} from "../defines.js";
-import {loadPointCloud as apiLoadPointCloud} from "../Potree.js";
+import {loadPointCloud as apiLoadPointCloud} from "../core.js";
 import {OrientedImageLoader} from "../modules/OrientedImages/OrientedImages.js";
 import {GeoPackageLoader} from "../loader/GeoPackageLoader.js";
 import {Profile} from "../utils/Profile.js";
