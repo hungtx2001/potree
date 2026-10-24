@@ -73,12 +73,7 @@ export * from "./modules/CameraAnimation/CameraAnimation.js";
 
 export * from "./modules/loader/2.0/OctreeLoader.js";
 
-export {OrbitControls} from "./navigation/OrbitControls.js";
-export {FirstPersonControls} from "./navigation/FirstPersonControls.js";
-export {EarthControls} from "./navigation/EarthControls.js";
-export {DeviceOrientationControls} from "./navigation/DeviceOrientationControls.js";
-export {VRControls} from "./navigation/VRControls.js";
-export {CesiumControls} from "./navigation/CesiumControls.ts";
+export * from "./core/navigation/index.js";
 
 import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
@@ -95,7 +90,7 @@ import {WorkerPool} from "./WorkerPool.js";
 import {workerPool, lru, runtime} from "./runtime.js";
 import * as THREE from 'three';
 import { Viewer } from "./viewer/viewer.js";
-import { CesiumControls } from "./navigation/CesiumControls.ts";
+import { CesiumControls } from "./core/navigation/CesiumControls.ts";
 import { PointSizeType, PointShape, CameraMode, ClipTask, ClipMethod } from "./defines.ts";
 
 export {workerPool, lru, runtime};

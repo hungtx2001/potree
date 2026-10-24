@@ -5,6 +5,7 @@
 
 // Types & Enums
 export * from './types.js';
+export { EventDispatcher, type EventRecord, type EventListener } from './EventDispatcher.js';
 
 // Materials & Shaders
 export * from './materials/index.js';
@@ -22,7 +23,7 @@ export { updatePointClouds } from '../Potree_update_visibility.js';
 export { runtime, workerPool, lru } from '../runtime.js';
 
 // Headless Navigation
-export * from '../navigation/index.js';
+export * from './navigation/index.js';
 export { OrientedImageControls } from '../modules/OrientedImages/OrientedImageControls.js';
 
 // Loaders

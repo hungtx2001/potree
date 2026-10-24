@@ -4,9 +4,9 @@
  */
 
 import * as THREE from 'three';
-import { EventDispatcher } from '../EventDispatcher.js';
-import type { Viewer } from '../viewer/viewer.js';
-import type { Scene } from '../viewer/Scene.js';
+import { EventDispatcher } from '../../EventDispatcher.js';
+import type { Viewer } from '../../viewer/viewer.js';
+import type { Scene } from '../../viewer/Scene.js';
 
 export interface CesiumProjection {
 	toMap: {

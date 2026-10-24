@@ -1,7 +1,7 @@
 
 import * as THREE from 'three';
 import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
-import { CesiumControls } from "../navigation/CesiumControls.ts";
+import { CesiumControls } from "../core/navigation/CesiumControls.ts";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
 import {EDLRenderer} from "./EDLRenderer.js";
@@ -21,14 +21,14 @@ import {MeasuringTool} from "../utils/MeasuringTool.js";
 import {ProfileTool} from "../utils/ProfileTool.js";
 import {VolumeTool} from "../utils/VolumeTool.js";
 
-import {InputHandler} from "../navigation/InputHandler.js";
+import {InputHandler} from "../core/navigation/InputHandler.js";
 import {NavigationCube} from "./NavigationCube.js";
 import {Compass} from "../utils/Compass.js";
-import {OrbitControls} from "../navigation/OrbitControls.js";
-import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
-import {EarthControls} from "../navigation/EarthControls.js";
-import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
-import {VRControls} from "../navigation/VRControls.js";
+import {OrbitControls} from "../core/navigation/OrbitControls.js";
+import {FirstPersonControls} from "../core/navigation/FirstPersonControls.js";
+import {EarthControls} from "../core/navigation/EarthControls.js";
+import {DeviceOrientationControls} from "../core/navigation/DeviceOrientationControls.js";
+import {VRControls} from "../core/navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../core/materials/ClassificationScheme.js";
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';

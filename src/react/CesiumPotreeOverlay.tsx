@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Viewer } from '../viewer/viewer.js';
-import type { CesiumControls } from '../navigation/CesiumControls.js';
+import type { CesiumControls } from '../core/navigation/CesiumControls.js';
 
 export interface CesiumPotreeOverlayProps {
 	cesiumViewer: any;
