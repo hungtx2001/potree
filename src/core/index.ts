@@ -22,10 +22,7 @@ export { updatePointClouds } from '../Potree_update_visibility.js';
 export { runtime, workerPool, lru } from '../runtime.js';
 
 // Headless Navigation
-export { OrbitControls } from '../navigation/OrbitControls.js';
-export { FirstPersonControls } from '../navigation/FirstPersonControls.js';
-export { EarthControls } from '../navigation/EarthControls.js';
-export { DeviceOrientationControls } from '../navigation/DeviceOrientationControls.js';
+export * from '../navigation/index.js';
 export { OrientedImageControls } from '../modules/OrientedImages/OrientedImageControls.js';
 
 // Loaders
