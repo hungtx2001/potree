@@ -44,6 +44,7 @@ import { updatePointClouds } from "../Potree_update_visibility.js";
 import { saveProject } from "./SaveProject.js";
 import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
+import { FloatingToolbar } from "./ui/FloatingToolbar.js";
 
 
 export class Viewer extends EventDispatcher{
@@ -1232,6 +1233,10 @@ export class Viewer extends EventDispatcher{
 			if (elButtons) {
 				elButtons.append(imgMenuToggle);
 				elButtons.append(imgMapToggle);
+			}
+
+			if (!this.floatingToolbar) {
+				this.floatingToolbar = new FloatingToolbar(this);
 			}
 
 			VRButton.createButton(this.renderer).then(vrButton => {

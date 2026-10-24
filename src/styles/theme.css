@@ -1,0 +1,410 @@
+/**
+ * Potree Modern Design System & CSS Token Architecture
+ * Replaces 2014 Paletton palette with sleek dark/light mode glassmorphism
+ */
+
+:root, [data-theme="dark"] {
+	/* Color Palette - Sleek Modern Dark (Default) */
+	--potree-bg-root: #0b0f19;
+	--potree-bg: rgba(15, 23, 42, 0.82);
+	--potree-bg-solid: #0f172a;
+	--potree-surface: rgba(30, 41, 59, 0.72);
+	--potree-surface-hover: rgba(51, 65, 85, 0.85);
+	--potree-surface-active: rgba(71, 85, 105, 0.9);
+	--potree-surface-glass: rgba(15, 23, 42, 0.65);
+
+	/* Accent & Glow */
+	--potree-accent: #38bdf8;
+	--potree-accent-hover: #0ea5e9;
+	--potree-accent-active: #0284c7;
+	--potree-accent-glow: rgba(56, 189, 248, 0.28);
+	--potree-accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+	--potree-success: #10b981;
+	--potree-warning: #f59e0b;
+	--potree-danger: #ef4444;
+
+	/* Typography Colors */
+	--potree-text-primary: #f8fafc;
+	--potree-text-secondary: #cbd5e1;
+	--potree-text-muted: #94a3b8;
+	--potree-text-inverse: #0f172a;
+
+	/* Borders & Dividers */
+	--potree-border: rgba(255, 255, 255, 0.08);
+	--potree-border-subtle: rgba(255, 255, 255, 0.04);
+	--potree-border-hover: rgba(56, 189, 248, 0.4);
+	--potree-border-focus: rgba(56, 189, 248, 0.8);
+
+	/* Shadows & Blurs */
+	--potree-glass-blur: blur(20px);
+	--potree-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
+	--potree-shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.4);
+	--potree-shadow-lg: 0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 1px 1px var(--potree-border);
+	--potree-shadow-glow: 0 0 24px -2px var(--potree-accent-glow);
+
+	/* Legacy variable compatibility bridge */
+	--color-0: var(--potree-bg-solid);
+	--color-1: var(--potree-text-muted);
+	--color-2: var(--potree-surface);
+	--color-3: var(--potree-accent-active);
+	--color-4: var(--potree-accent);
+	--bg-color: var(--potree-bg);
+	--bg-color-2: var(--potree-surface);
+	--bg-light-color: var(--potree-surface-hover);
+	--bg-dark-color: var(--potree-bg-solid);
+	--bg-hover-color: var(--potree-surface-hover);
+	--font-color: var(--potree-text-secondary);
+	--font-color-2: var(--potree-text-primary);
+	--border-color: var(--potree-border);
+}
+
+[data-theme="light"] {
+	/* Color Palette - Modern Clean Light */
+	--potree-bg-root: #f1f5f9;
+	--potree-bg: rgba(255, 255, 255, 0.88);
+	--potree-bg-solid: #ffffff;
+	--potree-surface: rgba(248, 250, 252, 0.85);
+	--potree-surface-hover: rgba(241, 245, 249, 0.95);
+	--potree-surface-active: #e2e8f0;
+	--potree-surface-glass: rgba(255, 255, 255, 0.75);
+
+	/* Accent */
+	--potree-accent: #0284c7;
+	--potree-accent-hover: #0369a1;
+	--potree-accent-active: #075985;
+	--potree-accent-glow: rgba(2, 132, 199, 0.2);
+	--potree-accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+	--potree-success: #059669;
+	--potree-warning: #d97706;
+	--potree-danger: #dc2626;
+
+	/* Typography */
+	--potree-text-primary: #0f172a;
+	--potree-text-secondary: #334155;
+	--potree-text-muted: #64748b;
+	--potree-text-inverse: #f8fafc;
+
+	/* Borders */
+	--potree-border: rgba(15, 23, 42, 0.08);
+	--potree-border-subtle: rgba(15, 23, 42, 0.04);
+	--potree-border-hover: rgba(2, 132, 199, 0.4);
+	--potree-border-focus: rgba(2, 132, 199, 0.8);
+
+	/* Shadows */
+	--potree-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+	--potree-shadow-md: 0 6px 18px -2px rgba(0, 0, 0, 0.1);
+	--potree-shadow-lg: 0 16px 36px -6px rgba(0, 0, 0, 0.12), 0 0 1px 1px var(--potree-border);
+	--potree-shadow-glow: 0 0 20px -2px var(--potree-accent-glow);
+
+	/* Legacy bridge */
+	--color-0: var(--potree-bg-solid);
+	--color-1: var(--potree-text-muted);
+	--color-2: var(--potree-surface);
+	--color-3: var(--potree-accent-active);
+	--color-4: var(--potree-accent);
+	--bg-color: var(--potree-bg);
+	--bg-color-2: var(--potree-surface);
+	--bg-light-color: var(--potree-surface-hover);
+	--bg-dark-color: var(--potree-bg-solid);
+	--bg-hover-color: var(--potree-surface-hover);
+	--font-color: var(--potree-text-secondary);
+	--font-color-2: var(--potree-text-primary);
+	--border-color: var(--potree-border);
+}
+
+/* Global Typography & Sizing */
+:root {
+	--potree-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	--potree-radius-xs: 4px;
+	--potree-radius-sm: 8px;
+	--potree-radius-md: 12px;
+	--potree-radius-lg: 16px;
+	--potree-radius-xl: 24px;
+	--potree-radius-full: 9999px;
+	--potree-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+	--potree-transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	--potree-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Styles */
+.potree_container {
+	font-family: var(--potree-font-family);
+	color: var(--potree-text-primary);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Modern Glassmorphism Cards & Panels */
+.potree-glass {
+	background: var(--potree-surface-glass);
+	backdrop-filter: var(--potree-glass-blur);
+	-webkit-backdrop-filter: var(--potree-glass-blur);
+	border: 1px solid var(--potree-border);
+	box-shadow: var(--potree-shadow-lg);
+}
+
+.potree-glass-card {
+	background: var(--potree-surface);
+	backdrop-filter: var(--potree-glass-blur);
+	-webkit-backdrop-filter: var(--potree-glass-blur);
+	border: 1px solid var(--potree-border);
+	border-radius: var(--potree-radius-md);
+	box-shadow: var(--potree-shadow-md);
+	transition: all var(--potree-transition-base);
+}
+
+.potree-glass-card:hover {
+	border-color: var(--potree-border-hover);
+	box-shadow: var(--potree-shadow-lg), var(--potree-shadow-glow);
+}
+
+/* Modern Buttons */
+.potree-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 8px 14px;
+	font-family: var(--potree-font-family);
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--potree-text-primary);
+	background: var(--potree-surface);
+	border: 1px solid var(--potree-border);
+	border-radius: var(--potree-radius-sm);
+	cursor: pointer;
+	outline: none;
+	transition: all var(--potree-transition-fast);
+	user-select: none;
+}
+
+.potree-btn:hover {
+	background: var(--potree-surface-hover);
+	border-color: var(--potree-border-hover);
+	transform: translateY(-1px);
+}
+
+.potree-btn:active {
+	transform: translateY(0);
+	background: var(--potree-surface-active);
+}
+
+.potree-btn-primary {
+	background: var(--potree-accent-gradient);
+	color: #ffffff;
+	border: none;
+	box-shadow: 0 2px 10px -2px var(--potree-accent-glow);
+}
+
+.potree-btn-primary:hover {
+	filter: brightness(1.1);
+	box-shadow: 0 4px 16px -2px var(--potree-accent-glow);
+}
+
+.potree-btn-icon {
+	padding: 8px;
+	border-radius: var(--potree-radius-sm);
+	width: 36px;
+	height: 36px;
+}
+
+/* Modern Sliders */
+.potree-range-slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 6px;
+	background: var(--potree-surface-active);
+	border-radius: var(--potree-radius-full);
+	outline: none;
+	transition: all var(--potree-transition-fast);
+}
+
+.potree-range-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border-radius: var(--potree-radius-full);
+	background: var(--potree-accent);
+	box-shadow: 0 0 10px var(--potree-accent-glow);
+	cursor: pointer;
+	border: 2px solid #ffffff;
+	transition: transform var(--potree-transition-fast), box-shadow var(--potree-transition-fast);
+}
+
+.potree-range-slider::-webkit-slider-thumb:hover {
+	transform: scale(1.2);
+	box-shadow: 0 0 14px var(--potree-accent);
+}
+
+.potree-range-slider::-moz-range-thumb {
+	width: 16px;
+	height: 16px;
+	border-radius: var(--potree-radius-full);
+	background: var(--potree-accent);
+	box-shadow: 0 0 10px var(--potree-accent-glow);
+	cursor: pointer;
+	border: 2px solid #ffffff;
+	transition: transform var(--potree-transition-fast), box-shadow var(--potree-transition-fast);
+}
+
+/* Modern Custom Scrollbars */
+.potree-scrollbar::-webkit-scrollbar,
+#potree_sidebar_container::-webkit-scrollbar,
+#potree_description::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+.potree-scrollbar::-webkit-scrollbar-track,
+#potree_sidebar_container::-webkit-scrollbar-track,
+#potree_description::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.potree-scrollbar::-webkit-scrollbar-thumb,
+#potree_sidebar_container::-webkit-scrollbar-thumb,
+#potree_description::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.15);
+	border-radius: var(--potree-radius-full);
+	transition: background var(--potree-transition-fast);
+}
+
+.potree-scrollbar::-webkit-scrollbar-thumb:hover,
+#potree_sidebar_container::-webkit-scrollbar-thumb:hover,
+#potree_description::-webkit-scrollbar-thumb:hover {
+	background: var(--potree-accent);
+}
+
+/* Modern Toast Notification */
+.potree_message {
+	background: var(--potree-surface-glass) !important;
+	backdrop-filter: var(--potree-glass-blur) !important;
+	-webkit-backdrop-filter: var(--potree-glass-blur) !important;
+	border: 1px solid var(--potree-border) !important;
+	border-radius: var(--potree-radius-md) !important;
+	box-shadow: var(--potree-shadow-lg) !important;
+	color: var(--potree-text-primary) !important;
+	font-family: var(--potree-font-family) !important;
+	font-size: 13px !important;
+	animation: potreeFadeSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes potreeFadeSlideIn {
+	from {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+/* Modern Floating Toolbar */
+.potree-floating-toolbar {
+	position: absolute;
+	top: 16px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 5px 8px;
+	border-radius: var(--potree-radius-full);
+	z-index: 1000;
+	box-shadow: var(--potree-shadow-lg), 0 0 25px -5px rgba(0, 0, 0, 0.4);
+	animation: potreeToolbarDrop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	user-select: none;
+}
+
+@keyframes potreeToolbarDrop {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -16px) scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, 0) scale(1);
+	}
+}
+
+.potree-toolbar-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 34px;
+	height: 34px;
+	padding: 0 6px;
+	border: none;
+	background: transparent;
+	color: var(--potree-text-secondary);
+	border-radius: var(--potree-radius-full);
+	cursor: pointer;
+	transition: all var(--potree-transition-fast);
+	outline: none;
+}
+
+.potree-toolbar-btn:hover {
+	background: var(--potree-surface-hover);
+	color: var(--potree-accent);
+	transform: scale(1.08);
+}
+
+.potree-toolbar-btn:active {
+	transform: scale(0.95);
+}
+
+.potree-toolbar-label {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	padding: 0 4px;
+}
+
+.potree-toolbar-divider {
+	width: 1px;
+	height: 18px;
+	background: var(--potree-border);
+	margin: 0 4px;
+}
+
+/* Modern Sidebar Overrides */
+#potree_sidebar_container {
+	background: var(--potree-surface-glass) !important;
+	backdrop-filter: var(--potree-glass-blur) !important;
+	-webkit-backdrop-filter: var(--potree-glass-blur) !important;
+	border-right: 1px solid var(--potree-border) !important;
+	box-shadow: var(--potree-shadow-lg) !important;
+	color: var(--potree-text-primary) !important;
+	transition: transform var(--potree-transition-slow), width var(--potree-transition-slow) !important;
+}
+
+.potree_sidebar_brand {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 18px !important;
+	margin: 0 !important;
+	border-bottom: 1px solid var(--potree-border);
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	color: var(--potree-text-primary) !important;
+}
+
+.potree_sidebar_brand a {
+	color: var(--potree-accent) !important;
+	text-decoration: none !important;
+	transition: color var(--potree-transition-fast);
+}
+
+.potree_sidebar_brand a:hover {
+	color: var(--potree-accent-hover) !important;
+}
+
+/* Modern Navigation Cube Container */
+#potree_nav_cube_container {
+	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+}
+
