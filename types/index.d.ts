@@ -9,8 +9,21 @@ export declare class Scene {
 	cameraO: THREE.OrthographicCamera;
 	camera: THREE.Camera;
 	pointclouds: PointCloudOctree[];
+	measurements: any[];
+	volumes: any[];
+	profiles: any[];
+	annotations: any;
 	addPointCloud(pointcloud: PointCloudOctree): void;
 	removePointCloud(pointcloud: PointCloudOctree): void;
+	addMeasurement(measurement: any): void;
+	removeMeasurement(measurement: any): void;
+	addVolume(volume: any): void;
+	removeVolume(volume: any): void;
+	addProfile(profile: any): void;
+	removeProfile(profile: any): void;
+	addEventListener(type: string, listener: (e: any) => void): void;
+	removeEventListener(type: string, listener: (e: any) => void): void;
+	dispatchEvent(event: any): void;
 }
 
 export declare class FloatingToolbar {
