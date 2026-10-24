@@ -178,19 +178,20 @@ animate();
 
 ---
 
-### 4. Cesium Geospatial Integration
+### 4. Cesium Geospatial Integration (`potree/cesium`)
 
 Potree 2.0 features zero-jitter Cesium camera synchronization using UTM/EPSG projected coordinates:
 
 ```typescript
-import { Viewer } from 'potree';
+import { CesiumControls, CesiumPotreeOverlay } from 'potree/cesium';
 import * as Cesium from 'cesium';
 
-const cesiumViewer = new Cesium.Viewer('cesiumContainer', { ... });
-const potreeViewer = new Viewer(document.getElementById('potreeContainer'));
-
-// Activate bi-directional camera synchronization & UTM projection locking
-potreeViewer.setCesiumViewer(cesiumViewer);
+// In React:
+<CesiumPotreeOverlay
+  cesiumViewer={cesiumViewer}
+  projection="+proj=utm +zone=48 +datum=WGS84 +units=m +no_defs"
+  pointCloudUrls={['https://your-server.com/pointclouds/metadata.json']}
+/>
 ```
 
 ---
