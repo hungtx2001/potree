@@ -1,5 +1,5 @@
 /**
- * Potree Modern Vector SVG Icon System
+ * Potree Modern Vector SVG Icon System (TypeScript)
  * Crisp, lightweight, zero-dependency inline SVGs
  */
 
@@ -24,13 +24,16 @@ export const icons = {
 	chevronDown: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
 	chevronRight: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
 	focus: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>`,
+	folder: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
 };
+
+export type IconName = keyof typeof icons;
 
 /**
  * Render an SVG icon with customized size and class
  */
-export function getIcon(name, size = 18, className = '') {
-	const raw = icons[name] || icons.settings;
+export function getIcon(name: IconName | string, size = 18, className = ''): string {
+	const raw = (icons as any)[name] || icons.settings;
 	if (size === 20 && !className) return raw;
 	return raw
 		.replace(/width="20"/, `width="${size}"`)

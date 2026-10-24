@@ -43,7 +43,7 @@ import { updatePointClouds } from "../Potree_update_visibility.js";
 import { saveProject } from "./SaveProject.js";
 import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
-import { FloatingToolbar } from "./ui/FloatingToolbar.js";
+import { FloatingToolbar } from "./ui/FloatingToolbar.ts";
 import { PotreeStore } from "./store/PotreeStore.js";
 
 

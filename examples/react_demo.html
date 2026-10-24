@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree 2.0 - Declarative React 19 UI Suite</title>
+
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+	<!-- Potree Modern Glassmorphic Design System -->
+	<link rel="stylesheet" type="text/css" href="../dist/potree.css">
+
+	<style>
+		:root {
+			--app-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100vw;
+			height: 100vh;
+			overflow: hidden;
+			background-color: #07090e;
+			color: #f1f5f9;
+			font-family: var(--app-font);
+			-webkit-font-smoothing: antialiased;
+		}
+
+		#root {
+			width: 100%;
+			height: 100%;
+			position: relative;
+		}
+
+		.app-container {
+			display: flex;
+			width: 100%;
+			height: 100%;
+			position: relative;
+		}
+
+		.viewer-area {
+			flex: 1;
+			position: relative;
+			height: 100%;
+			background: radial-gradient(circle at 50% 50%, #151a26 0%, #07090e 100%);
+		}
+
+		/* Modern Glassmorphic Floating Panel */
+		.control-panel {
+			position: absolute;
+			top: 20px;
+			left: 20px;
+			width: 340px;
+			max-height: calc(100vh - 40px);
+			overflow-y: auto;
+			background: rgba(15, 23, 42, 0.75);
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			border-radius: 16px;
+			padding: 20px;
+			box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+			z-index: 1000;
+			display: flex;
+			flex-direction: column;
+			gap: 18px;
+			transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		}
+
+		.panel-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+			padding-bottom: 12px;
+		}
+
+		.panel-title {
+			font-size: 14px;
+			font-weight: 700;
+			letter-spacing: -0.01em;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			color: #fff;
+		}
+
+		.panel-badge {
+			font-size: 10px;
+			padding: 2px 7px;
+			border-radius: 20px;
+			background: rgba(99, 102, 241, 0.2);
+			color: #818cf8;
+			font-weight: 600;
+			border: 1px solid rgba(99, 102, 241, 0.3);
+		}
+
+		.control-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.control-label {
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: #94a3b8;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.control-value {
+			color: #38bdf8;
+			font-family: monospace;
+			font-size: 11px;
+		}
+
+		/* HUD Stats */
+		.stats-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
+			background: rgba(0, 0, 0, 0.25);
+			border: 1px solid rgba(255, 255, 255, 0.05);
+			border-radius: 10px;
+			padding: 10px;
+		}
+
+		.stat-item {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.stat-name {
+			font-size: 10px;
+			color: #64748b;
+			text-transform: uppercase;
+		}
+
+		.stat-val {
+			font-size: 12px;
+			font-weight: 600;
+			color: #e2e8f0;
+			font-family: monospace;
+		}
+
+		/* Custom scrollbar */
+		.control-panel::-webkit-scrollbar {
+			width: 6px;
+		}
+		.control-panel::-webkit-scrollbar-track {
+			background: transparent;
+		}
+		.control-panel::-webkit-scrollbar-thumb {
+			background: rgba(255, 255, 255, 0.15);
+			border-radius: 3px;
+		}
+	</style>
+
+	<!-- Import Map for React & Dependencies -->
+	<script type="importmap">
+	{
+		"imports": {
+			"react": "https://esm.sh/react@19.0.0",
+			"react-dom": "https://esm.sh/react-dom@19.0.0",
+			"react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+			"react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
+			"three": "https://esm.sh/three@0.124.0",
+			"@tweenjs/tween.js": "https://esm.sh/@tweenjs/tween.js@18.6.4",
+			"d3": "https://esm.sh/d3@3.5.17",
+			"proj4": "https://esm.sh/proj4@2.8.0",
+			"copc": "https://esm.sh/copc@0.0.9"
+		}
+	}
+	</script>
+</head>
+<body>
+	<div id="root"></div>
+
+	<script type="module">
+		import React, { useState, useEffect } from 'react';
+		import ReactDOM from 'react-dom/client';
+		import { 
+			PotreeViewer, 
+			ToggleGroup, 
+			ModernSlider, 
+			ColorPicker, 
+			SceneTree 
+		} from '../dist/react.js';
+
+		function App() {
+			const [viewer, setViewer] = useState(null);
+			const [budget, setBudget] = useState(1500000);
+			const [fov, setFov] = useState(60);
+			const [camMode, setCamMode] = useState('perspective');
+			const [theme, setTheme] = useState('dark');
+			const [edlEnabled, setEdlEnabled] = useState(true);
+			const [pointColor, setPointColor] = useState('#38bdf8');
+
+			// Scene tree items demo
+			const [sceneItems, setSceneItems] = useState([
+				{ id: 'cloud_1', label: 'Lion Point Cloud (LAS)', visible: true, count: '1.4M pts' },
+				{ id: 'cloud_2', label: 'Surrounding Terrain', visible: true, count: '650K pts' },
+				{ id: 'measure_1', label: 'Distance Height (34.2m)', visible: true },
+				{ id: 'clip_1', label: 'Bounding Section Box', visible: false },
+			]);
+
+			const handleViewerReady = (v) => {
+				setViewer(v);
+				v.setPointBudget(budget);
+				v.setFOV(fov);
+				v.setEDLEnabled(edlEnabled);
+				v.setBackground("skybox");
+				v.setDescription("Potree 2.0 Declarative React UI");
+				console.log("Potree Viewer mounted successfully with React 19!");
+			};
+
+			const handleBudgetChange = (val) => {
+				setBudget(val);
+				if (viewer) viewer.setPointBudget(val);
+			};
+
+			const handleFovChange = (val) => {
+				setFov(val);
+				if (viewer) viewer.setFOV(val);
+			};
+
+			const handleCamChange = (val) => {
+				setCamMode(val);
+				if (viewer) {
+					if (val === 'ortho') {
+						viewer.setCameraMode(0); // ORTHOGRAPHIC
+					} else {
+						viewer.setCameraMode(1); // PERSPECTIVE
+					}
+				}
+			};
+
+			const handleThemeChange = (val) => {
+				setTheme(val);
+				document.documentElement.setAttribute('data-theme', val);
+			};
+
+			const handleToggleVisibility = (id) => {
+				setSceneItems(prev => prev.map(item => 
+					item.id === id ? { ...item, visible: !item.visible } : item
+				));
+			};
+
+			return React.createElement('div', { className: 'app-container' },
+				// Main 3D Canvas with overlay React toolbar
+				React.createElement('div', { className: 'viewer-area' },
+					React.createElement(PotreeViewer, {
+						onViewerReady: handleViewerReady,
+						toolbar: true
+					})
+				),
+
+				// Declarative Glassmorphism Control Panel
+				React.createElement('aside', { className: 'control-panel' },
+					React.createElement('div', { className: 'panel-header' },
+						React.createElement('div', { className: 'panel-title' },
+							'⚡ Potree React 19 Suite'
+						),
+						React.createElement('span', { className: 'panel-badge' }, 'v2.0-Alpha')
+					),
+
+					// Camera Toggle
+					React.createElement('div', { className: 'control-group' },
+						React.createElement('div', { className: 'control-label' }, 'Projection Mode'),
+						React.createElement(ToggleGroup, {
+							options: [
+								{ value: 'perspective', label: 'Perspective' },
+								{ value: 'ortho', label: 'Orthographic' },
+							],
+							value: camMode,
+							onChange: handleCamChange
+						})
+					),
+
+					// Point Budget Slider
+					React.createElement('div', { className: 'control-group' },
+						React.createElement('div', { className: 'control-label' },
+							'Point Budget',
+							React.createElement('span', { className: 'control-value' }, `${(budget / 1000000).toFixed(1)}M`)
+						),
+						React.createElement(ModernSlider, {
+							min: 100000,
+							max: 10000000,
+							step: 100000,
+							value: budget,
+							onChange: handleBudgetChange
+						})
+					),
+
+					// FOV Slider
+					React.createElement('div', { className: 'control-group' },
+						React.createElement('div', { className: 'control-label' },
+							'Field of View',
+							React.createElement('span', { className: 'control-value' }, `${fov}°`)
+						),
+						React.createElement(ModernSlider, {
+							min: 30,
+							max: 120,
+							step: 1,
+							value: fov,
+							onChange: handleFovChange
+						})
+					),
+
+					// Theme Toggle
+					React.createElement('div', { className: 'control-group' },
+						React.createElement('div', { className: 'control-label' }, 'Interface Theme'),
+						React.createElement(ToggleGroup, {
+							options: [
+								{ value: 'dark', label: 'Dark' },
+								{ value: 'light', label: 'Light' },
+							],
+							value: theme,
+							onChange: handleThemeChange
+						})
+					),
+
+					// Accent Color Picker
+					React.createElement('div', { className: 'control-group' },
+						React.createElement('div', { className: 'control-label' }, 'Accent Tint'),
+						React.createElement(ColorPicker, {
+							value: pointColor,
+							onChange: setPointColor
+						})
+					),
+
+					// Scene Tree
+					React.createElement('div', { className: 'control-group' },
+						React.createElement('div', { className: 'control-label' }, 'Scene Hierarchy'),
+						React.createElement(SceneTree, {
+							items: sceneItems,
+							onToggleVisibility: handleToggleVisibility
+						})
+					),
+
+					// Realtime Stats
+					React.createElement('div', { className: 'stats-grid' },
+						React.createElement('div', { className: 'stat-item' },
+							React.createElement('span', { className: 'stat-name' }, 'Engine'),
+							React.createElement('span', { className: 'stat-val' }, 'WebGL 2.0')
+						),
+						React.createElement('div', { className: 'stat-item' },
+							React.createElement('span', { className: 'stat-name' }, 'Framework'),
+							React.createElement('span', { className: 'stat-val' }, 'React 19 TSX')
+						),
+						React.createElement('div', { className: 'stat-item' },
+							React.createElement('span', { className: 'stat-name' }, 'EDL Shading'),
+							React.createElement('span', { className: 'stat-val' }, edlEnabled ? 'ACTIVE' : 'OFF')
+						),
+						React.createElement('div', { className: 'stat-item' },
+							React.createElement('span', { className: 'stat-name' }, 'Status'),
+							React.createElement('span', { className: 'stat-val' }, viewer ? 'ONLINE' : 'CONNECTING')
+						)
+					)
+				)
+			);
+		}
+
+		const root = ReactDOM.createRoot(document.getElementById('root'));
+		root.render(React.createElement(App));
+	</script>
+</body>
+</html>

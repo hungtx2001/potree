@@ -1,12 +1,45 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { existsSync } from 'fs';
+import react from '@vitejs/plugin-react';
+import dts from 'vite-plugin-dts';
+
+function resolveJsToTs() {
+  return {
+    name: 'resolve-js-to-ts',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      if (importer && source.startsWith('.') && source.endsWith('.js')) {
+        const tsPath = resolve(dirname(importer), source.replace(/\.js$/, '.ts'));
+        if (existsSync(tsPath)) {
+          return tsPath;
+        }
+        const tsxPath = resolve(dirname(importer), source.replace(/\.js$/, '.tsx'));
+        if (existsSync(tsxPath)) {
+          return tsxPath;
+        }
+      }
+      return null;
+    },
+  };
+}
 
 export default defineConfig({
+  plugins: [
+    resolveJsToTs(),
+    react(),
+    dts({
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+      outDir: 'dist/types',
+      insertTypesEntry: true,
+    }),
+  ],
   build: {
     lib: {
       entry: {
-        potree: resolve(__dirname, 'src/index.js'),
-        core: resolve(__dirname, 'src/core.js'),
+        potree: resolve(__dirname, 'src/Potree.js'),
+        core: resolve(__dirname, 'src/core.ts'),
+        react: resolve(__dirname, 'src/react/index.ts'),
         'workers/DecoderWorker': resolve(__dirname, 'src/modules/loader/2.0/DecoderWorker.js'),
         'workers/DecoderWorker_brotli': resolve(__dirname, 'src/modules/loader/2.0/DecoderWorker_brotli.js'),
         'workers/BinaryDecoderWorker': resolve(__dirname, 'src/workers/BinaryDecoderWorker.js'),
@@ -30,11 +63,16 @@ export default defineConfig({
         'jquery',
         'copc',
         'i18next',
-        '@ngageoint/geopackage'
+        '@ngageoint/geopackage',
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
       ],
       output: {
         globals: {
           three: 'THREE',
+          react: 'React',
+          'react-dom': 'ReactDOM',
         },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith('.css')) {

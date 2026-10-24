@@ -1,3 +1,5 @@
+import './styles/theme.css';
+import './viewer/potree.css';
 
 export * from "./Actions.js";
 export * from "./AnimationPath.js";
@@ -68,7 +70,7 @@ export * from "./viewer/ui/components/ToggleGroup.js";
 export * from "./viewer/ui/components/ModernSlider.js";
 export * from "./viewer/ui/components/ModernColorPicker.js";
 export * from "./viewer/ui/components/SceneTree.js";
-export * from "./viewer/ui/FloatingToolbar.js";
+export * from "./viewer/ui/FloatingToolbar.ts";
 export * from "./viewer/ui/icons.js";
 
 export * from "./modules/OrientedImages/OrientedImages.js";

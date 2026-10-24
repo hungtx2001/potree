@@ -1,31 +1,56 @@
 /**
- * Modern Vanilla JS Scene Tree Component
+ * Modern Vanilla TypeScript Scene Tree Component
  * Replaces legacy jstree with a sleek, responsive, glassmorphism tree view.
  * Zero external dependencies. Uses crisp SVG icons for visibility toggle, folder expand, and selection.
  */
 
 import { icons } from '../icons.js';
 
-export class SceneTree {
-	/**
-	 * @param {Object} options
-	 * @param {HTMLElement|string} [options.container]
-	 * @param {Function} [options.onSelect]
-	 * @param {Function} [options.onDeselect]
-	 * @param {Function} [options.onToggleVisibility]
-	 * @param {Function} [options.onDoubleClick]
-	 * @param {Function} [options.onDelete]
-	 */
-	constructor(options = {}) {
-		this.options = options;
-		this.nodes = new Map(); // id -> nodeData
-		this.selectedNodeId = null;
+export interface SceneTreeNodeData {
+	id?: string;
+	text?: string;
+	icon?: string | null;
+	data?: any;
+}
 
+export interface SceneTreeNode {
+	id: string;
+	parentId: string | null;
+	text: string;
+	icon: string | null;
+	data: any;
+	checked: boolean;
+	children: string[];
+	element: HTMLElement | null;
+	header?: HTMLElement;
+	toggleEl?: HTMLElement;
+	eyeEl?: HTMLButtonElement;
+	childrenContainer: HTMLElement | null;
+}
+
+export interface SceneTreeOptions {
+	container?: HTMLElement | string | { jquery: any; [key: number]: HTMLElement };
+	onSelect?: (node: SceneTreeNode) => void;
+	onDeselect?: (node: SceneTreeNode | null) => void;
+	onToggleVisibility?: (node: SceneTreeNode, visible: boolean) => void;
+	onDoubleClick?: (node: SceneTreeNode) => void;
+	onDelete?: (node: SceneTreeNode) => void;
+}
+
+export class SceneTree {
+	public options: SceneTreeOptions;
+	public nodes: Map<string, SceneTreeNode> = new Map();
+	public selectedNodeId: string | null = null;
+	public element: HTMLElement;
+
+	constructor(options: SceneTreeOptions = {}) {
+		this.options = options;
 		this.element = this._render();
 		if (options.container) {
-			const target = typeof options.container === 'string'
+			const anyContainer = options.container as any;
+			const target: HTMLElement | null = typeof options.container === 'string'
 				? document.querySelector(options.container)
-				: (options.container.jquery ? options.container[0] : options.container);
+				: (anyContainer.jquery ? anyContainer[0] : (anyContainer as HTMLElement));
 			if (target) {
 				target.innerHTML = '';
 				target.appendChild(this.element);
@@ -33,25 +58,19 @@ export class SceneTree {
 		}
 	}
 
-	_render() {
+	private _render(): HTMLElement {
 		const root = document.createElement('div');
 		root.className = 'potree-scene-tree';
 		return root;
 	}
 
-	/**
-	 * Creates a node in the tree
-	 * @param {string} parentId - '#' for root
-	 * @param {Object} data - { id, text, icon, data }
-	 * @returns {string} nodeId
-	 */
-	createNode(parentId, data = {}) {
-		const id = data.id || `tree_node_${Math.random().toString(36).substr(2, 9)}`;
+	public createNode(parentId: string, data: SceneTreeNodeData = {}): string {
+		const id = data.id || `tree_node_${Math.random().toString(36).substring(2, 9)}`;
 		const text = data.text || '';
 		const icon = data.icon || null;
 		const userData = data.data || null;
 
-		const node = {
+		const node: SceneTreeNode = {
 			id,
 			parentId: parentId === '#' ? null : parentId,
 			text,
@@ -60,7 +79,7 @@ export class SceneTree {
 			checked: true,
 			children: [],
 			element: null,
-			childrenContainer: null
+			childrenContainer: null,
 		};
 
 		this.nodes.set(id, node);
@@ -129,12 +148,13 @@ export class SceneTree {
 			toggleEl.innerHTML = isCollapsed ? icons.chevronRight : icons.chevronDown;
 		});
 
-		header.addEventListener('click', (e) => {
+		header.addEventListener('click', () => {
 			this.selectNode(id);
 		});
 
 		header.addEventListener('dblclick', (e) => {
-			if (e.target.closest('.potree-tree-eye') || e.target.closest('.potree-tree-toggle')) return;
+			const target = e.target as HTMLElement;
+			if (target.closest('.potree-tree-eye') || target.closest('.potree-tree-toggle')) return;
 			if (typeof this.options.onDoubleClick === 'function') {
 				this.options.onDoubleClick(node);
 			}
@@ -154,7 +174,7 @@ export class SceneTree {
 			this.element.appendChild(nodeEl);
 		} else {
 			const parentNode = this.nodes.get(node.parentId);
-			if (parentNode) {
+			if (parentNode && parentNode.childrenContainer && parentNode.toggleEl) {
 				parentNode.children.push(id);
 				parentNode.childrenContainer.appendChild(nodeEl);
 				parentNode.toggleEl.style.visibility = 'visible';
@@ -171,15 +191,15 @@ export class SceneTree {
 		return id;
 	}
 
-	toggleNodeVisibility(id) {
+	public toggleNodeVisibility(id: string): void {
 		const node = this.nodes.get(id);
 		if (!node) return;
 		this.setNodeVisibility(id, !node.checked);
 	}
 
-	setNodeVisibility(id, visible) {
+	public setNodeVisibility(id: string, visible: boolean): void {
 		const node = this.nodes.get(id);
-		if (!node) return;
+		if (!node || !node.eyeEl) return;
 		node.checked = visible;
 		if (visible) {
 			node.eyeEl.classList.add('active');
@@ -200,20 +220,20 @@ export class SceneTree {
 		}
 	}
 
-	checkNode(id) {
+	public checkNode(id: string): void {
 		this.setNodeVisibility(id, true);
 	}
 
-	uncheckNode(id) {
+	public uncheckNode(id: string): void {
 		this.setNodeVisibility(id, false);
 	}
 
-	selectNode(id) {
+	public selectNode(id: string): void {
 		if (this.selectedNodeId === id) return;
 
 		this.deselectAll();
 		const node = this.nodes.get(id);
-		if (!node) return;
+		if (!node || !node.header) return;
 
 		this.selectedNodeId = id;
 		node.header.classList.add('selected');
@@ -224,21 +244,21 @@ export class SceneTree {
 		this.element.dispatchEvent(new CustomEvent('select_node', { detail: { node } }));
 	}
 
-	deselectAll() {
+	public deselectAll(): void {
 		if (this.selectedNodeId) {
 			const prev = this.nodes.get(this.selectedNodeId);
 			if (prev && prev.header) {
 				prev.header.classList.remove('selected');
 			}
 			if (typeof this.options.onDeselect === 'function') {
-				this.options.onDeselect(prev);
+				this.options.onDeselect(prev || null);
 			}
 			this.element.dispatchEvent(new CustomEvent('deselect_node', { detail: { node: prev } }));
 			this.selectedNodeId = null;
 		}
 	}
 
-	deleteNode(id) {
+	public deleteNode(id: string): void {
 		const node = this.nodes.get(id);
 		if (!node) return;
 
@@ -247,12 +267,12 @@ export class SceneTree {
 		}
 
 		// Recursively remove children
-		[...node.children].forEach(childId => this.deleteNode(childId));
+		[...node.children].forEach((childId) => this.deleteNode(childId));
 
 		if (node.parentId) {
 			const parent = this.nodes.get(node.parentId);
-			if (parent) {
-				parent.children = parent.children.filter(cid => cid !== id);
+			if (parent && parent.toggleEl) {
+				parent.children = parent.children.filter((cid) => cid !== id);
 				if (parent.children.length === 0) {
 					parent.toggleEl.style.visibility = 'hidden';
 				}
@@ -271,23 +291,23 @@ export class SceneTree {
 		this.element.dispatchEvent(new CustomEvent('delete_node', { detail: { node } }));
 	}
 
-	getNode(id) {
+	public getNode(id: string): SceneTreeNode | null {
 		return this.nodes.get(id) || null;
 	}
 
-	getJson(id) {
+	public getJson(id: string): any {
 		const node = this.nodes.get(id);
 		if (!node) return null;
 		return {
 			id: node.id,
 			text: node.text,
 			data: node.data,
-			children: node.children.map(cid => this.getJson(cid))
+			children: node.children.map((cid) => this.getJson(cid)),
 		};
 	}
 
-	openAll() {
-		this.nodes.forEach(n => {
+	public openAll(): void {
+		this.nodes.forEach((n) => {
 			if (n.childrenContainer) {
 				n.childrenContainer.classList.remove('collapsed');
 				if (n.toggleEl) n.toggleEl.innerHTML = icons.chevronDown;
@@ -295,10 +315,9 @@ export class SceneTree {
 		});
 	}
 
-	destroy() {
+	public destroy(): void {
 		if (this.element && this.element.parentNode) {
 			this.element.parentNode.removeChild(this.element);
 		}
 	}
 }
-

@@ -1,45 +1,67 @@
 /**
- * Modern Segmented Toggle Group Component
- * Pure vanilla JS, glassmorphism design, accessible, zero-dependency.
+ * Modern Segmented Toggle Group Component (TypeScript)
+ * Pure vanilla TS, glassmorphism design, accessible, zero-dependency.
  */
 
+export interface ToggleOption {
+	value: string;
+	label: string;
+	id?: string;
+	icon?: string;
+}
+
+export interface ToggleGroupOptions {
+	container?: HTMLElement | string | { jquery: any; [key: number]: HTMLElement };
+	name?: string;
+	title?: string;
+	options?: ToggleOption[];
+	value?: string;
+	onChange?: (value: string) => void;
+}
+
+interface ToggleItemRef {
+	element: HTMLButtonElement;
+	input: HTMLInputElement;
+	value: string;
+}
+
 export class ToggleGroup {
-	/**
-	 * @param {Object} options
-	 * @param {HTMLElement|string} [options.container]
-	 * @param {string} [options.name]
-	 * @param {string} [options.title]
-	 * @param {Array<{value: string, label: string, id?: string, icon?: string}>} [options.options]
-	 * @param {string} [options.value]
-	 * @param {Function} [options.onChange]
-	 */
-	constructor(options = {}) {
+	public options: ToggleOption[];
+	public value: string;
+	public title: string;
+	public name: string;
+	public onChange: ((value: string) => void) | null;
+	public element!: HTMLElement;
+	public items: ToggleItemRef[] = [];
+
+	constructor(options: ToggleGroupOptions = {}) {
 		this.options = options.options ? [...options.options] : [];
 		this.value = options.value || (this.options[0] ? this.options[0].value : '');
 		this.title = options.title || '';
-		this.name = options.name || `potree_toggle_${Math.random().toString(36).substr(2, 9)}`;
+		this.name = options.name || `potree_toggle_${Math.random().toString(36).substring(2, 9)}`;
 		this.onChange = options.onChange || null;
 
 		if (options.container) {
-			const target = typeof options.container === 'string'
+			const anyContainer = options.container as any;
+			const target: HTMLElement | null = typeof options.container === 'string'
 				? document.querySelector(options.container)
-				: (options.container.jquery ? options.container[0] : options.container);
+				: (anyContainer.jquery ? anyContainer[0] : (anyContainer as HTMLElement));
 
 			if (target) {
 				// If options were not provided, parse from <option> child elements
 				if (this.options.length === 0) {
-					target.querySelectorAll('option').forEach(opt => {
+					target.querySelectorAll('option').forEach((opt) => {
 						this.options.push({
 							id: opt.id,
 							value: opt.value,
-							label: opt.textContent.trim()
+							label: opt.textContent ? opt.textContent.trim() : opt.value,
 						});
 					});
 					if (!this.value && this.options[0]) {
 						this.value = this.options[0].value;
 					}
 					if (!this.title && target.getAttribute('title')) {
-						this.title = target.getAttribute('title');
+						this.title = target.getAttribute('title') || '';
 					}
 				}
 
@@ -54,7 +76,7 @@ export class ToggleGroup {
 		}
 	}
 
-	_render() {
+	private _render(): HTMLElement {
 		const root = document.createElement('div');
 		root.className = 'potree-toggle-group';
 
@@ -113,7 +135,7 @@ export class ToggleGroup {
 		return root;
 	}
 
-	setValue(value, triggerChange = false) {
+	public setValue(value: string, triggerChange = false): void {
 		this.value = value;
 		this.items.forEach((item) => {
 			const isMatch = String(item.value) === String(value);
@@ -137,11 +159,11 @@ export class ToggleGroup {
 		}
 	}
 
-	getValue() {
+	public getValue(): string {
 		return this.value;
 	}
 
-	destroy() {
+	public destroy(): void {
 		if (this.element && this.element.parentNode) {
 			this.element.parentNode.removeChild(this.element);
 		}

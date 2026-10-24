@@ -34,8 +34,8 @@
 
 	<script type="module">
 		import * as THREE from 'three';
-		import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-		import { PointCloudOctree, PointCloudMaterial, loadPointCloud, updatePointClouds } from '../src/core.js';
+		import { PointCloudOctree, loadPointCloud, updatePointClouds } from '../src/core.ts';
+		import { PointCloudMaterial } from '../src/materials/PointCloudMaterial.js';
 
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);

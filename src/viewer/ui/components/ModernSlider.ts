@@ -1,23 +1,44 @@
 /**
- * Modern Vanilla JS Slider & Range Slider Component
+ * Modern Vanilla TypeScript Slider & Range Slider Component
  * Zero-dependency, modern hardware-accelerated styling with glassmorphism and gradient fill.
  * Supports both single-value and dual-handle range sliders.
  */
 
+export interface ModernSliderEvent {
+	value: number;
+	values?: number[];
+}
+
+export interface ModernSliderOptions {
+	container?: HTMLElement | string | { jquery: any; [key: number]: HTMLElement };
+	min?: number;
+	max?: number;
+	step?: number;
+	value?: number;
+	values?: number[];
+	range?: boolean;
+	slide?: (event: Event | null, ui: ModernSliderEvent) => void;
+	change?: (event: Event | null, ui: ModernSliderEvent) => void;
+}
+
 export class ModernSlider {
-	/**
-	 * @param {Object} options
-	 * @param {HTMLElement|string} [options.container]
-	 * @param {number} [options.min=0]
-	 * @param {number} [options.max=100]
-	 * @param {number} [options.step=1]
-	 * @param {number} [options.value=0]
-	 * @param {Array<number>} [options.values]
-	 * @param {boolean} [options.range=false]
-	 * @param {Function} [options.slide] - (event, ui)
-	 * @param {Function} [options.change] - (event, ui)
-	 */
-	constructor(options = {}) {
+	public options: ModernSliderOptions;
+	public min: number;
+	public max: number;
+	public step: number;
+	public isRange: boolean;
+	public value: number;
+	public values: number[];
+	public element: HTMLElement;
+	public fillElement: HTMLElement | null = null;
+	public inputSingle?: HTMLInputElement;
+	public inputMin?: HTMLInputElement;
+	public inputMax?: HTMLInputElement;
+
+	private slideCallback: ((event: Event | null, ui: ModernSliderEvent) => void) | null;
+	private changeCallback: ((event: Event | null, ui: ModernSliderEvent) => void) | null;
+
+	constructor(options: ModernSliderOptions = {}) {
 		this.options = options;
 		this.min = options.min !== undefined ? Number(options.min) : 0;
 		this.max = options.max !== undefined ? Number(options.max) : 100;
@@ -40,9 +61,10 @@ export class ModernSlider {
 		this.updateTrackFill();
 
 		if (options.container) {
-			const target = typeof options.container === 'string'
+			const anyContainer = options.container as any;
+			const target: HTMLElement | null = typeof options.container === 'string'
 				? document.querySelector(options.container)
-				: (options.container.jquery ? options.container[0] : options.container);
+				: (anyContainer.jquery ? anyContainer[0] : (anyContainer as HTMLElement));
 			if (target) {
 				target.innerHTML = '';
 				target.appendChild(this.element);
@@ -50,7 +72,7 @@ export class ModernSlider {
 		}
 	}
 
-	_render() {
+	private _render(): HTMLElement {
 		const root = document.createElement('div');
 		root.className = 'potree-slider-wrapper' + (this.isRange ? ' potree-slider-range' : '');
 
@@ -79,7 +101,7 @@ export class ModernSlider {
 			inputMax.step = String(this.step);
 			inputMax.value = String(this.values[1]);
 
-			const handleInput = (e, isMin) => {
+			const handleInput = (e: Event, isMin: boolean) => {
 				let v1 = parseFloat(inputMin.value);
 				let v2 = parseFloat(inputMax.value);
 
@@ -101,7 +123,7 @@ export class ModernSlider {
 				root.dispatchEvent(new CustomEvent('slide', { detail: { values: this.values } }));
 			};
 
-			const handleChange = (e) => {
+			const handleChange = (e: Event) => {
 				if (typeof this.changeCallback === 'function') {
 					this.changeCallback(e, { values: this.values, value: this.values[0] });
 				}
@@ -156,7 +178,7 @@ export class ModernSlider {
 		return root;
 	}
 
-	updateTrackFill() {
+	public updateTrackFill(): void {
 		if (!this.fillElement) return;
 
 		const rangeSpan = this.max - this.min || 1;
@@ -172,7 +194,7 @@ export class ModernSlider {
 		}
 	}
 
-	setValue(val, trigger = false) {
+	public setValue(val: number | string, trigger = false): void {
 		const num = Number(val);
 		this.value = num;
 		this.values = [num];
@@ -186,11 +208,11 @@ export class ModernSlider {
 		}
 	}
 
-	getValue() {
+	public getValue(): number {
 		return this.value;
 	}
 
-	setValues(values, trigger = false) {
+	public setValues(values: number[], trigger = false): void {
 		if (!this.isRange || !Array.isArray(values)) return;
 		this.values = [Number(values[0]), Number(values[1])];
 		this.value = this.values[0];
@@ -204,11 +226,11 @@ export class ModernSlider {
 		}
 	}
 
-	getValues() {
+	public getValues(): number[] {
 		return this.values ? [...this.values] : [this.value];
 	}
 
-	setOption(key, val) {
+	public setOption(key: string, val: any): void {
 		if (key === 'min') {
 			this.min = Number(val);
 			if (this.inputSingle) this.inputSingle.min = String(val);
@@ -232,7 +254,7 @@ export class ModernSlider {
 		this.updateTrackFill();
 	}
 
-	getOption(key) {
+	public getOption(key: string): any {
 		if (key === 'min') return this.min;
 		if (key === 'max') return this.max;
 		if (key === 'step') return this.step;
@@ -241,7 +263,7 @@ export class ModernSlider {
 		return undefined;
 	}
 
-	destroy() {
+	public destroy(): void {
 		if (this.element && this.element.parentNode) {
 			this.element.parentNode.removeChild(this.element);
 		}
