@@ -1,46 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-	<title>Potree Modern Viewer (ESM Module)</title>
+	<title>Potree 2.0 Modern Point Cloud Viewer</title>
 
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+	<!-- Modern Potree Stylesheet -->
 	<link rel="stylesheet" type="text/css" href="../dist/potree.css">
+
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100vw;
+			height: 100vh;
+			overflow: hidden;
+			background-color: #0b0f19;
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		}
+
+		#state_hud {
+			position: absolute;
+			bottom: 16px;
+			right: 16px;
+			background: var(--potree-surface-glass);
+			backdrop-filter: var(--potree-glass-blur);
+			-webkit-backdrop-filter: var(--potree-glass-blur);
+			border: 1px solid var(--potree-border);
+			border-radius: var(--potree-radius-md);
+			padding: 10px 14px;
+			color: var(--potree-text-secondary);
+			font-size: 11px;
+			font-family: monospace;
+			z-index: 100;
+			box-shadow: var(--potree-shadow-md);
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			pointer-events: none;
+			max-width: 280px;
+		}
+
+		#state_hud .hud-title {
+			font-weight: 700;
+			color: var(--potree-accent);
+			font-family: 'Inter', sans-serif;
+			margin-bottom: 2px;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		#state_hud .hud-row {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+		}
+
+		#state_hud .hud-val {
+			color: var(--potree-text-primary);
+			font-weight: 600;
+		}
+	</style>
 </head>
 
 <body>
-
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"></div>
 	</div>
 
+	<!-- Reactive State HUD for Testing & Showcasing PotreeStore -->
+	<div id="state_hud">
+		<div class="hud-title">⚡ PotreeStore Reactive State</div>
+		<div class="hud-row"><span>Point Budget:</span><span id="hud_budget" class="hud-val">-</span></div>
+		<div class="hud-row"><span>EDL Enabled:</span><span id="hud_edl" class="hud-val">-</span></div>
+		<div class="hud-row"><span>Camera Mode:</span><span id="hud_cam" class="hud-val">-</span></div>
+		<div class="hud-row"><span>FOV:</span><span id="hud_fov" class="hud-val">-</span></div>
+		<div class="hud-row"><span>Theme:</span><span id="hud_theme" class="hud-val">-</span></div>
+	</div>
+
 	<script type="module">
 		import * as THREE from 'three';
-		import { Viewer, loadPointCloud, $ } from '../src/index.js';
+		import { 
+			Viewer, 
+			loadPointCloud, 
+			PotreeStore,
+			FloatingToolbar, 
+			ToggleGroup, 
+			ModernSlider, 
+			ModernColorPicker, 
+			SceneTree,
+			$ 
+		} from '../src/index.js';
 
-		const viewer = new Viewer(document.getElementById("potree_render_area"));
-		window.viewer = viewer; // Optional for debugging in devtools console
+		const renderArea = document.getElementById("potree_render_area");
+		const viewer = new Viewer(renderArea);
+		window.viewer = viewer;
 
-		viewer.setEDLEnabled(false);
+		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1_000_000);
+		viewer.setPointBudget(1_500_000);
 		viewer.loadSettingsFromURL();
 		viewer.setBackground("skybox");
-		viewer.setDescription("Potree Modern NPM Library Demo");
+		viewer.setDescription("Potree 2.0 Modernized ESM Library Demo");
 
+		// Initialize Modern GUI & Sidebar
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
 			$("#menu_tools").next().show();
-			$("#menu_clipping").next().show();
-			viewer.toggleSidebar();
 		});
 
+		// Subscribe HUD to PotreeStore reactive state updates
+		const hudBudget = document.getElementById('hud_budget');
+		const hudEDL = document.getElementById('hud_edl');
+		const hudCam = document.getElementById('hud_cam');
+		const hudFov = document.getElementById('hud_fov');
+		const hudTheme = document.getElementById('hud_theme');
+
+		viewer.store.subscribe((state) => {
+			hudBudget.textContent = state.pointBudget ? state.pointBudget.toLocaleString() : '-';
+			hudEDL.textContent = state.edlEnabled ? 'ON' : 'OFF';
+			hudCam.textContent = state.cameraMode ? state.cameraMode.toUpperCase() : '-';
+			hudFov.textContent = state.fov ? `${state.fov}°` : '-';
+			hudTheme.textContent = state.theme ? state.theme.toUpperCase() : 'DARK';
+		});
+
+		// Try loading sample point cloud if present locally
 		loadPointCloud("../pointclouds/vol_total/cloud.js", "vol_total").then(e => {
 			viewer.scene.addPointCloud(e.pointcloud);
 			viewer.fitToScreen();
 		}).catch(err => {
-			console.log("Sample pointcloud url ready or not present:", err.message);
+			console.log("Note: Demo pointcloud is not bundled locally. Load any cloud via viewer.loadPointCloud(...) or drag-and-drop.");
 		});
 	</script>
 </body>

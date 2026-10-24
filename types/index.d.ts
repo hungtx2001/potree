@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 export * from './core';
-import { PointCloudOctree } from './core';
+import { PointCloudOctree, PotreeStore } from './core';
 
 export declare class Scene {
 	scene: THREE.Scene;
@@ -13,11 +13,60 @@ export declare class Scene {
 	removePointCloud(pointcloud: PointCloudOctree): void;
 }
 
+export declare class FloatingToolbar {
+	constructor(viewer: Viewer);
+	element: HTMLElement;
+	destroy(): void;
+}
+
+export declare class ToggleGroup {
+	constructor(options?: any);
+	element: HTMLElement;
+	setValue(value: string, trigger?: boolean): void;
+	getValue(): string;
+	static upgrade(target: any, options?: any): ToggleGroup;
+	static installJQueryPlugin($: any): void;
+}
+
+export declare class ModernSlider {
+	constructor(options?: any);
+	element: HTMLElement;
+	setValue(value: number, trigger?: boolean): void;
+	getValue(): number;
+	setValues(values: number[], trigger?: boolean): void;
+	getValues(): number[];
+	static attach(target: any, options?: any): ModernSlider;
+	static installJQueryPlugin($: any): void;
+}
+
+export declare class ModernColorPicker {
+	constructor(options?: any);
+	element: HTMLElement;
+	setColor(hex: string): void;
+	getColor(): any;
+	static attach(target: any, options?: any): ModernColorPicker;
+	static installJQueryPlugin($: any): void;
+}
+
+export declare class SceneTree {
+	constructor(options?: any);
+	element: HTMLElement;
+	createNode(parentId: string, data: any): string;
+	checkNode(id: string): void;
+	uncheckNode(id: string): void;
+	selectNode(id: string): void;
+	deselectAll(): void;
+	deleteNode(id: string): void;
+	static installJQueryPlugin($: any): void;
+}
+
 export declare class Viewer {
 	constructor(domElement: HTMLElement, args?: Record<string, any>);
 	renderArea: HTMLElement;
 	scene: Scene;
 	renderer: THREE.WebGLRenderer;
+	store: PotreeStore;
+	floatingToolbar?: FloatingToolbar;
 	setEDLEnabled(enabled: boolean): void;
 	setFOV(fov: number): void;
 	setPointBudget(budget: number): void;

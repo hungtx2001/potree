@@ -164,3 +164,31 @@ export declare function updatePointClouds(
 	camera: THREE.Camera,
 	renderer: THREE.WebGLRenderer
 ): { visibleNodes: PointCloudTreeNode[]; numVisiblePoints: number };
+
+export interface PotreeState {
+	pointBudget: number;
+	fov: number;
+	edlEnabled: boolean;
+	edlRadius: number;
+	edlStrength: number;
+	edlOpacity: number;
+	background: 'skybox' | 'gradient' | 'black' | 'white' | 'none' | null;
+	cameraMode: 'perspective' | 'orthographic';
+	moveSpeed: number;
+	theme: 'dark' | 'light';
+	sidebarOpen: boolean;
+	activeTool: string | null;
+	pointclouds: any[];
+	measurements: any[];
+}
+
+export declare class PotreeStore {
+	constructor(initialState?: Partial<PotreeState>);
+	getState(): PotreeState;
+	setState(patch: Partial<PotreeState>): void;
+	subscribe(listener: (state: PotreeState, prevState: PotreeState) => void): () => void;
+	subscribeKey<K extends keyof PotreeState>(
+		key: K,
+		listener: (value: PotreeState[K], prevValue: PotreeState[K]) => void
+	): () => void;
+}
