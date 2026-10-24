@@ -29,10 +29,7 @@ export { DeviceOrientationControls } from '../navigation/DeviceOrientationContro
 export { OrientedImageControls } from '../modules/OrientedImages/OrientedImageControls.js';
 
 // Loaders
-export { OctreeLoader } from '../modules/loader/2.0/OctreeLoader.js';
-export { POCLoader } from '../loader/POCLoader.js';
-export { CopcLoader, EptLoader } from '../loader/EptLoader.js';
-export { PointAttribute, PointAttributes, PointAttributeTypes } from '../loader/PointAttributes.js';
+export { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.js';
 
 // Headless Viewport & Scene
 export { Viewer } from '../viewer/viewer.js';
@@ -40,9 +37,7 @@ export { Scene } from '../viewer/Scene.js';
 export { PotreeStore } from '../viewer/store/PotreeStore.js';
 export { Utils } from '../utils.js';
 
-import { OctreeLoader } from '../modules/loader/2.0/OctreeLoader.js';
-import { POCLoader } from '../loader/POCLoader.js';
-import { CopcLoader, EptLoader } from '../loader/EptLoader.js';
+import { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.js';
 import { PointCloudOctree } from '../PointCloudOctree.js';
 import type { LoadPointCloudResult } from './types.js';
 

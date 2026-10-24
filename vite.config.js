@@ -60,7 +60,6 @@ export default defineConfig({
         '@tweenjs/tween.js',
         'proj4',
         'json5',
-        'jquery',
         'copc',
         'i18next',
         '@ngageoint/geopackage',
