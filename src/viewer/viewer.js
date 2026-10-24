@@ -42,6 +42,7 @@ import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
 import { FloatingToolbar } from "./ui/FloatingToolbar.ts";
 import { PotreeStore } from "./store/PotreeStore.js";
+import { loadPointCloud } from "../core.js";
 
 
 export class Viewer extends EventDispatcher{
@@ -174,11 +175,12 @@ export class Viewer extends EventDispatcher{
 		{
 			let canvas = this.renderer.domElement;
 			canvas.addEventListener("webglcontextlost", (e) => {
+				if (this._isDestroyed) return;
 				console.log(e);
 				this.postMessage("WebGL context lost. \u2639");
 
 				let gl = this.renderer.getContext();
-				let error = gl.getError();
+				let error = gl?.getError();
 				console.log(error);
 			}, false);
 		}
@@ -1218,6 +1220,7 @@ export class Viewer extends EventDispatcher{
 	}
 
 	destroy() {
+		this._isDestroyed = true;
 		if (this.renderer) {
 			this.renderer.setAnimationLoop(null);
 			this.renderer.dispose();
@@ -2277,44 +2280,60 @@ export class Viewer extends EventDispatcher{
 		}
 	}
 
+	loadPointCloud(url, name, callback){
+		return loadPointCloud(url, name, callback).then(res => {
+			if(res.pointcloud && this.scene){
+				this.scene.addPointCloud(res.pointcloud);
+			}
+			return res;
+		});
+	}
+
 	postError(content, params = {}){
 		let message = this.postMessage(content, params);
-
-		message.element.addClass("potree_message_error");
-
+		if (message?.element) {
+			message.element.classList.add("potree_message_error");
+		}
 		return message;
 	}
 
 	postMessage(content, params = {}){
 		let message = new Message(content);
+		const el = message.element;
 
-		let animationDuration = 100;
+		el.style.opacity = '0';
+		el.style.transition = 'opacity 200ms ease, transform 200ms ease';
+		el.style.transform = 'translateY(10px)';
 
-		message.element.css("display", "none");
-		message.elClose.click( () => {
-			message.element.slideToggle(animationDuration);
+		const removeMessage = () => {
+			el.style.opacity = '0';
+			el.style.transform = 'translateY(10px)';
+			setTimeout(() => {
+				el.remove();
+				let index = this.messages.indexOf(message);
+				if (index >= 0) {
+					this.messages.splice(index, 1);
+				}
+			}, 200);
+		};
 
-			let index = this.messages.indexOf(message);
-			if(index >= 0){
-				this.messages.splice(index, 1);
-			}
+		if (message.elClose) {
+			message.elClose.addEventListener('click', removeMessage);
+		}
+
+		if (this.elMessages) {
+			this.elMessages.prepend(el);
+		}
+
+		requestAnimationFrame(() => {
+			el.style.opacity = '1';
+			el.style.transform = 'translateY(0)';
 		});
-
-		this.elMessages.prepend(message.element);
-
-		message.element.slideToggle(animationDuration);
 
 		this.messages.push(message);
 
-		if(params.duration !== undefined){
-			let fadeDuration = 500;
-			let slideOutDuration = 200;
-			setTimeout(() => {
-				message.element.animate({
-					opacity: 0	
-				}, fadeDuration);
-				message.element.slideToggle(slideOutDuration);
-			}, params.duration)
+		if (params.duration !== undefined) {
+			setTimeout(removeMessage, params.duration);
 		}
 
 		return message;

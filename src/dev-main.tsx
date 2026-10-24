@@ -5,11 +5,13 @@ import {
 	PotreeSidebar, 
 	ProfileViewer, 
 	FloatingToolbar,
+	OrientedImageOverlay,
 	IconFit,
 	IconLayers,
 	IconTool,
 	IconClose,
 } from './react/index.js';
+import { loadPointCloud } from './core.js';
 import './styles/theme.css';
 
 const PRESET_DATASETS = [
@@ -43,11 +45,14 @@ export const DevApp: React.FC = () => {
 			}
 		}
 
-		viewer.loadPointCloud(url, name || 'Point Cloud')
+		loadPointCloud(url, name || 'Point Cloud')
 			.then((res: any) => {
+				if (res.pointcloud && viewer.scene) {
+					viewer.scene.addPointCloud(res.pointcloud);
+					viewer.fitToScreen();
+				}
 				setIsLoading(false);
 				setStatusMessage(`Đã nạp thành công: ${res.pointcloud?.name || 'Point Cloud'}`);
-				viewer.fitToScreen();
 			})
 			.catch((err: any) => {
 				setIsLoading(false);
@@ -281,6 +286,9 @@ export const DevApp: React.FC = () => {
 				onClose={() => setProfileOpen(false)}
 			/>
 
+			{/* Oriented Images HUD */}
+			<OrientedImageOverlay viewer={viewer} />
+
 			{/* Bottom Status Pill */}
 			<div
 				style={{
@@ -308,7 +316,57 @@ export const DevApp: React.FC = () => {
 	);
 };
 
+interface ErrorBoundaryProps {
+	children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+	hasError: boolean;
+	error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+	constructor(props: ErrorBoundaryProps) {
+		super(props);
+		this.state = { hasError: false, error: null };
+	}
+
+	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+		return { hasError: true, error };
+	}
+
+	componentDidCatch(error: Error, info: React.ErrorInfo) {
+		console.error("Potree Studio Caught Error:", error, info);
+	}
+
+	render() {
+		if (this.state.hasError) {
+			return (
+				<div style={{ padding: '32px', color: '#ef4444', background: '#090d16', height: '100vh', fontFamily: 'Inter, sans-serif' }}>
+					<h2 style={{ color: '#f8fafc', marginBottom: '8px' }}>Đã xảy ra sự cố trong giao diện Studio</h2>
+					<p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '16px' }}>Hệ thống đã cách ly lỗi để bảo vệ trạng thái ứng dụng:</p>
+					<pre style={{ color: '#fca5a5', background: '#1e293b', padding: '16px', borderRadius: '8px', fontSize: '12px', overflow: 'auto' }}>
+						{String(this.state.error?.stack || this.state.error)}
+					</pre>
+					<button
+						type="button"
+						onClick={() => window.location.reload()}
+						style={{ marginTop: '16px', padding: '8px 18px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+					>
+						Tải lại trang
+					</button>
+				</div>
+			);
+		}
+		return this.props.children;
+	}
+}
+
 const rootEl = document.getElementById('root');
 if (rootEl) {
-	createRoot(rootEl).render(<DevApp />);
+	createRoot(rootEl).render(
+		<ErrorBoundary>
+			<DevApp />
+		</ErrorBoundary>
+	);
 }

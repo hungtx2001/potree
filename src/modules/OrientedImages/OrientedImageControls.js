@@ -29,48 +29,6 @@ export class OrientedImageControls extends EventDispatcher{
 
 		this.shear = [0, 0];
 
-		const createBtn = (val, style) => {
-			const btn = document.createElement('input');
-			btn.type = 'button';
-			btn.value = val;
-			btn.style.cssText = style;
-			return btn;
-		};
-
-		this.elUp = createBtn("🡅", "position: absolute; top: 10px; left: calc(50%); z-index: 1000");
-		this.elRight = createBtn("🡆", "position: absolute; top: calc(50%); right: 10px; z-index: 1000");
-		this.elDown = createBtn("🡇", "position: absolute; bottom: 10px; left: calc(50%); z-index: 1000");
-		this.elLeft = createBtn("🡄", "position: absolute; top: calc(50%); left: 10px; z-index: 1000");
-		this.elExit = createBtn("Back to 3D view", "position: absolute; bottom: 10px; right: 10px; z-index: 1000");
-
-		this.elExit.addEventListener('click', () => {
-			this.release();
-		});
-
-		this.elUp.addEventListener('click', () => {
-			const fovY = viewer.getFOV();
-			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
-			this.shear[1] += 0.1 * top;
-		});
-
-		this.elRight.addEventListener('click', () => {
-			const fovY = viewer.getFOV();
-			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
-			this.shear[0] += 0.1 * top;
-		});
-
-		this.elDown.addEventListener('click', () => {
-			const fovY = viewer.getFOV();
-			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
-			this.shear[1] -= 0.1 * top;
-		});
-
-		this.elLeft.addEventListener('click', () => {
-			const fovY = viewer.getFOV();
-			const top = Math.tan(THREE.Math.degToRad(fovY / 2));
-			this.shear[0] -= 0.1 * top;
-		});
-
 		this.scene = null;
 		this.sceneControls = new THREE.Scene();
 
@@ -79,7 +37,34 @@ export class OrientedImageControls extends EventDispatcher{
 		};
 
 		this.addEventListener('mousewheel', scroll);
-		//this.addEventListener("mousemove", onMove);
+	}
+
+	shearUp(amount = 0.1) {
+		const fovY = this.viewer.getFOV();
+		const top = Math.tan(THREE.Math.degToRad(fovY / 2));
+		this.shear[1] += amount * top;
+		this.dispatchEvent({ type: 'shear_changed', shear: this.shear });
+	}
+
+	shearDown(amount = 0.1) {
+		const fovY = this.viewer.getFOV();
+		const top = Math.tan(THREE.Math.degToRad(fovY / 2));
+		this.shear[1] -= amount * top;
+		this.dispatchEvent({ type: 'shear_changed', shear: this.shear });
+	}
+
+	shearRight(amount = 0.1) {
+		const fovY = this.viewer.getFOV();
+		const top = Math.tan(THREE.Math.degToRad(fovY / 2));
+		this.shear[0] += amount * top;
+		this.dispatchEvent({ type: 'shear_changed', shear: this.shear });
+	}
+
+	shearLeft(amount = 0.1) {
+		const fovY = this.viewer.getFOV();
+		const top = Math.tan(THREE.Math.degToRad(fovY / 2));
+		this.shear[0] -= amount * top;
+		this.dispatchEvent({ type: 'shear_changed', shear: this.shear });
 	}
 
 	hasSomethingCaptured(){
@@ -99,33 +84,25 @@ export class OrientedImageControls extends EventDispatcher{
 		this.viewer.setControls(this);
 		this.viewer.scene.overrideCamera = this.shearCam;
 
-		const elCanvas = this.viewer.renderer.domElement;
-		const elRoot = elCanvas?.parentElement;
-
 		this.shear = [0, 0];
 
-		if (elRoot) {
-			elRoot.appendChild(this.elUp);
-			elRoot.appendChild(this.elRight);
-			elRoot.appendChild(this.elDown);
-			elRoot.appendChild(this.elLeft);
-			elRoot.appendChild(this.elExit);
-		}
+		this.dispatchEvent({ type: 'captured', image: this.image });
 	}
 
 	release(){
+		if (!this.hasSomethingCaptured()) {
+			return;
+		}
+
+		const prevImage = this.image;
 		this.image = null;
 
 		this.viewer.scene.overrideCamera = null;
 
-		this.elUp.remove();
-		this.elRight.remove();
-		this.elDown.remove();
-		this.elLeft.remove();
-		this.elExit.remove();
-
 		this.viewer.setFOV(this.originalFOV);
 		this.viewer.setControls(this.originalControls);
+
+		this.dispatchEvent({ type: 'released', image: prevImage });
 	}
 
 	setScene (scene) {

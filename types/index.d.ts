@@ -98,6 +98,7 @@ export declare class Viewer {
 	toggleSidebar(): void;
 	setLanguage(lang: string): void;
 	fitToScreen(factor?: number): void;
+	loadPointCloud(url: string, name?: string, callback?: (res: any) => void): Promise<any>;
 	setCesiumViewer(cesiumViewer: any, projection: string, cesiumLib?: any): CesiumControls;
 	_lockProjectionZone(projection: string): void;
 	destroy(): void;
