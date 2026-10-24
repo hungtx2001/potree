@@ -27,6 +27,10 @@ export default defineConfig({
         'proj4',
         'd3',
         'json5',
+        'jquery',
+        'copc',
+        'i18next',
+        '@ngageoint/geopackage'
       ],
       output: {
         globals: {

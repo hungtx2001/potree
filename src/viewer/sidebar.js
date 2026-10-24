@@ -5,11 +5,6 @@ import { ModernSlider } from './ui/components/ModernSlider.js';
 import { ToggleGroup } from './ui/components/ToggleGroup.js';
 import { ModernColorPicker } from './ui/components/ModernColorPicker.js';
 import { SceneTree } from './ui/components/SceneTree.js';
-
-ModernSlider.installJQueryPlugin($);
-ToggleGroup.installJQueryPlugin($);
-ModernColorPicker.installJQueryPlugin($);
-SceneTree.installJQueryPlugin($);
 import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 import {DXFExporter} from "../exporter/DXFExporter.js"
 import {Volume, SphereVolume} from "../utils/Volume.js"
@@ -39,6 +34,7 @@ export class Sidebar{
 		this.measuringTool = viewer.measuringTool;
 		this.profileTool = viewer.profileTool;
 		this.volumeTool = viewer.volumeTool;
+		this.sceneTree = null;
 
 		this.dom = $("#sidebar_root");
 	}
@@ -54,6 +50,28 @@ export class Sidebar{
 		element.click(callback);
 
 		return element;
+	}
+
+	selectTreeItem(uuid, category = 'measurements') {
+		if (!this.sceneTree) return;
+		const root = this.sceneTree.getJson(category);
+		if (root && root.children) {
+			const node = root.children.find(child => child.data && child.data.uuid === uuid);
+			if (node) {
+				this.sceneTree.selectNode(node.id);
+			}
+		}
+	}
+
+	removeTreeItem(uuid, category = 'measurements') {
+		if (!this.sceneTree) return;
+		const root = this.sceneTree.getJson(category);
+		if (root && root.children) {
+			const node = root.children.find(child => child.data && child.data.uuid === uuid);
+			if (node) {
+				this.sceneTree.deleteNode(node.id);
+			}
+		}
 	}
 
 	init(){
@@ -89,10 +107,8 @@ export class Sidebar{
 					maxMarkers: 3,
 					name: 'Angle'});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				let measurementsRoot = this.sceneTree ? this.sceneTree.getJson("measurements") : null;
+				this.selectTreeItem(measurement.uuid, 'measurements');
 			}
 		));
 
@@ -111,10 +127,7 @@ export class Sidebar{
 					maxMarkers: 1,
 					name: 'Point'});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(measurement.uuid, 'measurements');
 			}
 		));
 
@@ -130,10 +143,7 @@ export class Sidebar{
 					closed: false,
 					name: 'Distance'});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(measurement.uuid, 'measurements');
 			}
 		));
 
@@ -151,10 +161,7 @@ export class Sidebar{
 					maxMarkers: 2,
 					name: 'Height'});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(measurement.uuid, 'measurements');
 			}
 		));
 
@@ -174,10 +181,7 @@ export class Sidebar{
 					maxMarkers: 3,
 					name: 'Circle'});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(measurement.uuid, 'measurements');
 			}
 		));
 
@@ -198,10 +202,7 @@ export class Sidebar{
 					maxMarkers: 2,
 					name: 'Azimuth'});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(measurement.uuid, 'measurements');
 			}
 		));
 
@@ -217,10 +218,7 @@ export class Sidebar{
 					closed: true,
 					name: 'Area'});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(measurement.uuid, 'measurements');
 			}
 		));
 
@@ -230,11 +228,7 @@ export class Sidebar{
 			'[title]tt.volume_measurement',
 			() => {
 				let volume = this.volumeTool.startInsertion(); 
-
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(volume.uuid, 'measurements');
 			}
 		));
 
@@ -244,11 +238,7 @@ export class Sidebar{
 			'[title]tt.volume_measurement',
 			() => { 
 				let volume = this.volumeTool.startInsertion({type: SphereVolume}); 
-
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(volume.uuid, 'measurements');
 			}
 		));
 
@@ -257,13 +247,9 @@ export class Sidebar{
 			runtime.resourcePath + '/icons/profile.svg',
 			'[title]tt.height_profile',
 			() => {
-				$('#menu_measurements').next().slideDown(); ;
+				$('#menu_measurements').next().slideDown();
 				let profile = this.profileTool.startInsertion();
-
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(profile.uuid, 'measurements');
 			}
 		));
 
@@ -272,13 +258,9 @@ export class Sidebar{
 			runtime.resourcePath + '/icons/annotation.svg',
 			'[title]tt.annotation',
 			() => {
-				$('#menu_measurements').next().slideDown(); ;
+				$('#menu_measurements').next().slideDown();
 				let annotation = this.viewer.annotationTool.startInsertion();
-
-				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
-				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(annotation.uuid, 'annotations');
 			}
 		));
 
@@ -291,18 +273,19 @@ export class Sidebar{
 			}
 		));
 
-
 		{ // SHOW / HIDE Measurements
-			let elShow = $("#measurement_options_show");
-			elShow.selectgroup({title: "Show/Hide labels"});
-
-			elShow.find("input").click( (e) => {
-				const show = e.target.value === "SHOW";
-				this.measuringTool.showLabels = show;
+			this.showMeasureToggle = new ToggleGroup({
+				container: '#measurement_options_show',
+				title: 'Show/Hide labels',
+				options: [
+					{ value: 'SHOW', label: 'Show' },
+					{ value: 'HIDE', label: 'Hide' }
+				],
+				value: this.measuringTool.showLabels ? 'SHOW' : 'HIDE',
+				onChange: (val) => {
+					this.measuringTool.showLabels = (val === 'SHOW');
+				}
 			});
-
-			let currentShow = this.measuringTool.showLabels ? "SHOW" : "HIDE";
-			elShow.find(`input[value=${currentShow}]`).trigger("click");
 		}
 	}
 
@@ -373,194 +356,129 @@ export class Sidebar{
 		let propertiesPanel = new PropertiesPanel(elProperties, this.viewer);
 		propertiesPanel.setScene(this.viewer.scene);
 		
-		localStorage.removeItem('jstree');
+		this.sceneTree = new SceneTree({
+			container: elObjects[0] || elObjects,
+			onSelect: (node) => {
+				let object = node.data;
+				propertiesPanel.set(object);
 
-		let tree = $(`<div id="jstree_scene"></div>`);
-		elObjects.append(tree);
+				this.viewer.inputHandler.deselectAll();
 
-		tree.jstree({
-			'plugins': ["checkbox", "state"],
-			'core': {
-				"dblclick_toggle": false,
-				"state": {
-					"checked" : true
-				},
-				'check_callback': true,
-				"expand_selected_onload": true
+				if(object instanceof Volume){
+					this.viewer.inputHandler.toggleSelection(object);
+				}
+
+				if (this.viewer.renderer && this.viewer.renderer.domElement) {
+					this.viewer.renderer.domElement.focus();
+				}
 			},
-			"checkbox" : {
-				"keep_selected_style": true,
-				"three_state": false,
-				"whole_node": false,
-				"tie_selection": false,
+			onDeselect: () => {
+				propertiesPanel.set(null);
 			},
+			onDelete: () => {
+				propertiesPanel.set(null);
+			},
+			onDoubleClick: (node) => {
+				let object = node.data;
+				if (!object) return;
+
+				if(object instanceof PointCloudTree){
+					let box = this.viewer.getBoundingBox([object]);
+					let n = new THREE.Object3D();
+					n.boundingBox = box;
+					this.viewer.zoomTo(n, 1, 500);
+				}else if(object instanceof Measure){
+					let points = object.points.map(p => p.position);
+					let box = new THREE.Box3().setFromPoints(points);
+					if(box.getSize(new THREE.Vector3()).length() > 0){
+						let n = new THREE.Object3D();
+						n.boundingBox = box;
+						this.viewer.zoomTo(n, 2, 500);
+					}
+				}else if(object instanceof Profile){
+					let points = object.points;
+					let box = new THREE.Box3().setFromPoints(points);
+					if(box.getSize(new THREE.Vector3()).length() > 0){
+						let n = new THREE.Object3D();
+						n.boundingBox = box;
+						this.viewer.zoomTo(n, 1, 500);
+					}
+				}else if(object instanceof Volume){
+					let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
+					if(box.getSize(new THREE.Vector3()).length() > 0){
+						let n = new THREE.Object3D();
+						n.boundingBox = box;
+						this.viewer.zoomTo(n, 1, 500);
+					}
+				}else if(object instanceof Annotation){
+					object.moveHere(this.viewer.scene.getActiveCamera());
+				}else if(object instanceof PolygonClipVolume){
+					let dir = object.camera.getWorldDirection(new THREE.Vector3());
+					let target;
+
+					if(object.camera instanceof THREE.OrthographicCamera){
+						dir.multiplyScalar(object.camera.right);
+						target = new THREE.Vector3().addVectors(object.camera.position, dir);
+						this.viewer.setCameraMode(CameraMode.ORTHOGRAPHIC);
+					}else if(object.camera instanceof THREE.PerspectiveCamera){
+						dir.multiplyScalar(this.viewer.scene.view.radius);
+						target = new THREE.Vector3().addVectors(object.camera.position, dir);
+						this.viewer.setCameraMode(CameraMode.PERSPECTIVE);
+					}
+					
+					this.viewer.scene.view.position.copy(object.camera.position);
+					this.viewer.scene.view.lookAt(target);
+				}else if(object.type === "SpotLight"){
+					let distance = (object.distance > 0) ? object.distance / 4 : 5 * 1000;
+					let position = object.position;
+					let target = new THREE.Vector3().addVectors(
+						position, 
+						object.getWorldDirection(new THREE.Vector3()).multiplyScalar(distance));
+
+					this.viewer.scene.view.position.copy(object.position);
+					this.viewer.scene.view.lookAt(target);
+				}else if(object instanceof THREE.Object3D){
+					let box = new THREE.Box3().setFromObject(object);
+					if(box.getSize(new THREE.Vector3()).length() > 0){
+						let n = new THREE.Object3D();
+						n.boundingBox = box;
+						this.viewer.zoomTo(n, 1, 500);
+					}
+				}
+			}
 		});
 
+		let tree = this.sceneTree;
+
 		let createNode = (parent, text, icon, object) => {
-			let nodeID = tree.jstree('create_node', parent, { 
-					"text": text, 
-					"icon": icon,
-					"data": object
-				}, 
-				"last", false, false);
+			let nodeID = tree.createNode(parent, { 
+				text: text, 
+				icon: icon,
+				data: object
+			});
 			
-			if(object.visible){
-				tree.jstree('check_node', nodeID);
+			if(object && object.visible){
+				tree.checkNode(nodeID);
 			}else{
-				tree.jstree('uncheck_node', nodeID);
+				tree.uncheckNode(nodeID);
 			}
 
 			return nodeID;
-		}
+		};
 
-		let pcID = tree.jstree('create_node', "#", { "text": "<b>Point Clouds</b>", "id": "pointclouds"}, "last", false, false);
-		let measurementID = tree.jstree('create_node', "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
-		let annotationsID = tree.jstree('create_node', "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
-		let otherID = tree.jstree('create_node', "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
-		let vectorsID = tree.jstree('create_node', "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
-		let imagesID = tree.jstree('create_node', "#", { "text": "<b> Images</b>", "id": "images" }, "last", false, false);
+		let pcID = tree.createNode("#", { text: "<b>Point Clouds</b>", id: "pointclouds" });
+		let measurementID = tree.createNode("#", { text: "<b>Measurements</b>", id: "measurements" });
+		let annotationsID = tree.createNode("#", { text: "<b>Annotations</b>", id: "annotations" });
+		let otherID = tree.createNode("#", { text: "<b>Other</b>", id: "other" });
+		let vectorsID = tree.createNode("#", { text: "<b>Vectors</b>", id: "vectors" });
+		let imagesID = tree.createNode("#", { text: "<b> Images</b>", id: "images" });
 
-		tree.jstree("check_node", pcID);
-		tree.jstree("check_node", measurementID);
-		tree.jstree("check_node", annotationsID);
-		tree.jstree("check_node", otherID);
-		tree.jstree("check_node", vectorsID);
-		tree.jstree("check_node", imagesID);
-
-		tree.on('create_node.jstree', (e, data) => {
-			tree.jstree("open_all");
-		});
-
-		tree.on("select_node.jstree", (e, data) => {
-			let object = data.node.data;
-			propertiesPanel.set(object);
-
-			this.viewer.inputHandler.deselectAll();
-
-			if(object instanceof Volume){
-				this.viewer.inputHandler.toggleSelection(object);
-			}
-
-			$(this.viewer.renderer.domElement).focus();
-		});
-
-		tree.on("deselect_node.jstree", (e, data) => {
-			propertiesPanel.set(null);
-		});
-
-		tree.on("delete_node.jstree", (e, data) => {
-			propertiesPanel.set(null);
-		});
-
-		tree.on('dblclick','.jstree-anchor', (e) => {
-
-			let instance = $.jstree.reference(e.target);
-			let node = instance.get_node(e.target);
-			let object = node.data;
-
-			// ignore double click on checkbox
-			if(e.target.classList.contains("jstree-checkbox")){
-				return;
-			}
-
-			if(object instanceof PointCloudTree){
-				let box = this.viewer.getBoundingBox([object]);
-				let node = new THREE.Object3D();
-				node.boundingBox = box;
-				this.viewer.zoomTo(node, 1, 500);
-			}else if(object instanceof Measure){
-				let points = object.points.map(p => p.position);
-				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize(new THREE.Vector3()).length() > 0){
-					let node = new THREE.Object3D();
-					node.boundingBox = box;
-					this.viewer.zoomTo(node, 2, 500);
-				}
-			}else if(object instanceof Profile){
-				let points = object.points;
-				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize(new THREE.Vector3()).length() > 0){
-					let node = new THREE.Object3D();
-					node.boundingBox = box;
-					this.viewer.zoomTo(node, 1, 500);
-				}
-			}else if(object instanceof Volume){
-				
-				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
-
-				if(box.getSize(new THREE.Vector3()).length() > 0){
-					let node = new THREE.Object3D();
-					node.boundingBox = box;
-					this.viewer.zoomTo(node, 1, 500);
-				}
-			}else if(object instanceof Annotation){
-				object.moveHere(this.viewer.scene.getActiveCamera());
-			}else if(object instanceof PolygonClipVolume){
-				let dir = object.camera.getWorldDirection(new THREE.Vector3());
-				let target;
-
-				if(object.camera instanceof THREE.OrthographicCamera){
-					dir.multiplyScalar(object.camera.right)
-					target = new THREE.Vector3().addVectors(object.camera.position, dir);
-					this.viewer.setCameraMode(CameraMode.ORTHOGRAPHIC);
-				}else if(object.camera instanceof THREE.PerspectiveCamera){
-					dir.multiplyScalar(this.viewer.scene.view.radius);
-					target = new THREE.Vector3().addVectors(object.camera.position, dir);
-					this.viewer.setCameraMode(CameraMode.PERSPECTIVE);
-				}
-				
-				this.viewer.scene.view.position.copy(object.camera.position);
-				this.viewer.scene.view.lookAt(target);
-			}else if(object.type === "SpotLight"){
-				let distance = (object.distance > 0) ? object.distance / 4 : 5 * 1000;
-				let position = object.position;
-				let target = new THREE.Vector3().addVectors(
-					position, 
-					object.getWorldDirection(new THREE.Vector3()).multiplyScalar(distance));
-
-				this.viewer.scene.view.position.copy(object.position);
-				this.viewer.scene.view.lookAt(target);
-			}else if(object instanceof THREE.Object3D){
-				let box = new THREE.Box3().setFromObject(object);
-
-				if(box.getSize(new THREE.Vector3()).length() > 0){
-					let node = new THREE.Object3D();
-					node.boundingBox = box;
-					this.viewer.zoomTo(node, 1, 500);
-				}
-			}else if(object instanceof OrientedImage){
-				// TODO zoom to images
-
-				// let box = new THREE.Box3().setFromObject(object);
-
-				// if(box.getSize(new THREE.Vector3()).length() > 0){
-				// 	let node = new THREE.Object3D();
-				// 	node.boundingBox = box;
-				// 	this.viewer.zoomTo(node, 1, 500);
-				// }
-			}else if(object instanceof Images360){
-				// TODO
-			}else if(object instanceof Geopackage){
-				// TODO
-			}
-		});
-
-		tree.on("uncheck_node.jstree", (e, data) => {
-			let object = data.node.data;
-
-			if(object){
-				object.visible = false;
-			}
-		});
-
-		tree.on("check_node.jstree", (e, data) => {
-			let object = data.node.data;
-
-			if(object){
-				object.visible = true;
-			}
-		});
-
+		tree.checkNode(pcID);
+		tree.checkNode(measurementID);
+		tree.checkNode(annotationsID);
+		tree.checkNode(otherID);
+		tree.checkNode(vectorsID);
+		tree.checkNode(imagesID);
 
 		let onPointCloudAdded = (e) => {
 			let pointcloud = e.pointcloud;
@@ -569,9 +487,9 @@ export class Sidebar{
 
 			pointcloud.addEventListener("visibility_changed", () => {
 				if(pointcloud.visible){
-					tree.jstree('check_node', node);
+					tree.checkNode(node);
 				}else{
-					tree.jstree('uncheck_node', node);
+					tree.uncheckNode(node);
 				}
 			});
 		};
@@ -589,9 +507,9 @@ export class Sidebar{
 
 			volume.addEventListener("visibility_changed", () => {
 				if(volume.visible){
-					tree.jstree('check_node', node);
+					tree.checkNode(node);
 				}else{
-					tree.jstree('uncheck_node', node);
+					tree.uncheckNode(node);
 				}
 			});
 		};
@@ -611,70 +529,70 @@ export class Sidebar{
 			this.annotationMapping.set(annotation, annotationID);
 
 			annotation.addEventListener("annotation_changed", (e) => {
-				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
-				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
-				
-				$.jstree.reference(jsonNode.id).rename_node(jsonNode.id, annotation.title);
+				let node = tree.getNode(annotationID);
+				if (node) {
+					node.text = annotation.title;
+					if (node.header) {
+						let label = node.header.querySelector('.potree-tree-label');
+						if (label) label.innerHTML = annotation.title;
+					}
+				}
 			});
 		};
 
 		let onCameraAnimationAdded = (e) => {
 			const animation = e.animation;
-
 			const animationIcon = `${runtime.resourcePath}/icons/camera_animation.svg`;
 			createNode(otherID, "animation", animationIcon, animation);
 		};
 
 		let onOrientedImagesAdded = (e) => {
 			const images = e.images;
-
 			const imagesIcon = `${runtime.resourcePath}/icons/picture.svg`;
 			const node = createNode(imagesID, "images", imagesIcon, images);
 
 			images.addEventListener("visibility_changed", () => {
 				if(images.visible){
-					tree.jstree('check_node', node);
+					tree.checkNode(node);
 				}else{
-					tree.jstree('uncheck_node', node);
+					tree.uncheckNode(node);
 				}
 			});
 		};
 
 		let onImages360Added = (e) => {
 			const images = e.images;
-
 			const imagesIcon = `${runtime.resourcePath}/icons/picture.svg`;
 			const node = createNode(imagesID, "360° images", imagesIcon, images);
 
 			images.addEventListener("visibility_changed", () => {
 				if(images.visible){
-					tree.jstree('check_node', node);
+					tree.checkNode(node);
 				}else{
-					tree.jstree('uncheck_node', node);
+					tree.uncheckNode(node);
 				}
 			});
 		};
 
 		const onGeopackageAdded = (e) => {
 			const geopackage = e.geopackage;
-
 			const geopackageIcon = `${runtime.resourcePath}/icons/triangle.svg`;
-			const tree = $(`#jstree_scene`);
 			const parentNode = "vectors";
 
 			for(const layer of geopackage.node.children){
 				const name = layer.name;
 
-				let shpPointsID = tree.jstree('create_node', parentNode, { 
-						"text": name, 
-						"icon": geopackageIcon,
-						"object": layer,
-						"data": layer,
-					}, 
-					"last", false, false);
-				tree.jstree(layer.visible ? "check_node" : "uncheck_node", shpPointsID);
+				let shpPointsID = tree.createNode(parentNode, { 
+					text: name, 
+					icon: geopackageIcon,
+					data: layer,
+				});
+				if (layer.visible) {
+					tree.checkNode(shpPointsID);
+				} else {
+					tree.uncheckNode(shpPointsID);
+				}
 			}
-
 		};
 
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
@@ -689,37 +607,26 @@ export class Sidebar{
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
 		let onMeasurementRemoved = (e) => {
-			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
-			
-			tree.jstree("delete_node", jsonNode.id);
+			this.removeTreeItem(e.measurement.uuid, 'measurements');
 		};
 
 		let onVolumeRemoved = (e) => {
-			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.volume.uuid);
-			
-			tree.jstree("delete_node", jsonNode.id);
+			this.removeTreeItem(e.volume.uuid, 'measurements');
 		};
 
 		let onPolygonClipVolumeRemoved = (e) => {
-			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.volume.uuid);
-			
-			tree.jstree("delete_node", jsonNode.id);
+			this.removeTreeItem(e.volume.uuid, 'measurements');
 		};
 
 		let onProfileRemoved = (e) => {
-			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.profile.uuid);
-			
-			tree.jstree("delete_node", jsonNode.id);
+			this.removeTreeItem(e.profile.uuid, 'measurements');
 		};
 
 		this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
 		this.viewer.scene.addEventListener("polygon_clip_volume_removed", onPolygonClipVolumeRemoved);
 		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
+
 
 		{
 			let annotationIcon = `${runtime.resourcePath}/icons/annotation.svg`;
@@ -801,29 +708,37 @@ export class Sidebar{
 		});
 
 		{
-			let elClipTask = $("#cliptask_options");
-			elClipTask.selectgroup({title: "Clip Task"});
-
-			elClipTask.find("input").click( (e) => {
-				this.viewer.setClipTask(ClipTask[e.target.value]);
+			let currentClipTask = Object.keys(ClipTask).find(key => ClipTask[key] === this.viewer.clipTask) || 'NONE';
+			this.clipTaskToggle = new ToggleGroup({
+				container: '#cliptask_options',
+				title: 'Clip Task',
+				options: [
+					{ value: 'NONE', label: 'None' },
+					{ value: 'HIGHLIGHT', label: 'Highlight' },
+					{ value: 'SHOW_INSIDE', label: 'Inside' },
+					{ value: 'SHOW_OUTSIDE', label: 'Outside' }
+				],
+				value: currentClipTask,
+				onChange: (val) => {
+					this.viewer.setClipTask(ClipTask[val]);
+				}
 			});
-
-			let currentClipTask = Object.keys(ClipTask)
-				.filter(key => ClipTask[key] === this.viewer.clipTask);
-			elClipTask.find(`input[value=${currentClipTask}]`).trigger("click");
 		}
 
 		{
-			let elClipMethod = $("#clipmethod_options");
-			elClipMethod.selectgroup({title: "Clip Method"});
-
-			elClipMethod.find("input").click( (e) => {
-				this.viewer.setClipMethod(ClipMethod[e.target.value]);
+			let currentClipMethod = Object.keys(ClipMethod).find(key => ClipMethod[key] === this.viewer.clipMethod) || 'INSIDE_ANY';
+			this.clipMethodToggle = new ToggleGroup({
+				container: '#clipmethod_options',
+				title: 'Clip Method',
+				options: [
+					{ value: 'INSIDE_ANY', label: 'Inside Any' },
+					{ value: 'INSIDE_ALL', label: 'Inside All' }
+				],
+				value: currentClipMethod,
+				onChange: (val) => {
+					this.viewer.setClipMethod(ClipMethod[val]);
+				}
 			});
-
-			let currentClipMethod = Object.keys(ClipMethod)
-				.filter(key => ClipMethod[key] === this.viewer.clipMethod);
-			elClipMethod.find(`input[value=${currentClipMethod}]`).trigger("click");
 		}
 
 		let clippingToolBar = $("#clipping_tools");
@@ -834,11 +749,7 @@ export class Sidebar{
 			'[title]tt.clip_volume',
 			() => {
 				let item = this.volumeTool.startInsertion({clip: true}); 
-
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(item.uuid, 'measurements');
 			}
 		));
 
@@ -848,11 +759,7 @@ export class Sidebar{
 			"[title]tt.clip_polygon",
 			() => {
 				let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
-
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				this.selectTreeItem(item.uuid, 'measurements');
 			}
 		));
 
@@ -870,14 +777,11 @@ export class Sidebar{
 					}
 					
 					let item = boxSelectTool.startInsertion();
-
-					let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-					let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-					$.jstree.reference(jsonNode.id).deselect_all();
-					$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+					this.selectTreeItem(item.uuid, 'measurements');
 				}
 			));
 		}
+
 
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(
@@ -904,23 +808,23 @@ export class Sidebar{
 		let elReturnFilterPanel = $('#return_filter_panel');
 
 		{ // RETURN NUMBER
-			let sldReturnNumber = elReturnFilterPanel.find('#sldReturnNumber');
 			let lblReturnNumber = elReturnFilterPanel.find('#lblReturnNumber');
 
-			sldReturnNumber.slider({
+			this.sldReturnNumber = new ModernSlider({
+				container: elReturnFilterPanel.find('#sldReturnNumber')[0],
 				range: true,
 				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
-					this.viewer.setFilterReturnNumberRange(ui.values[0], ui.values[1])
+					this.viewer.setFilterReturnNumberRange(ui.values[0], ui.values[1]);
 				}
 			});
 
 			let onReturnNumberChanged = (event) => {
 				let [from, to] = this.viewer.filterReturnNumberRange;
 
-				lblReturnNumber[0].innerHTML = `${from} to ${to}`;
-				sldReturnNumber.slider({values: [from, to]});
+				if (lblReturnNumber[0]) lblReturnNumber[0].innerHTML = `${from} to ${to}`;
+				this.sldReturnNumber.setValues([from, to]);
 			};
 
 			this.viewer.addEventListener('filter_return_number_range_changed', onReturnNumberChanged);
@@ -929,23 +833,23 @@ export class Sidebar{
 		}
 
 		{ // NUMBER OF RETURNS
-			let sldNumberOfReturns = elReturnFilterPanel.find('#sldNumberOfReturns');
 			let lblNumberOfReturns = elReturnFilterPanel.find('#lblNumberOfReturns');
 
-			sldNumberOfReturns.slider({
+			this.sldNumberOfReturns = new ModernSlider({
+				container: elReturnFilterPanel.find('#sldNumberOfReturns')[0],
 				range: true,
 				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
-					this.viewer.setFilterNumberOfReturnsRange(ui.values[0], ui.values[1])
+					this.viewer.setFilterNumberOfReturnsRange(ui.values[0], ui.values[1]);
 				}
 			});
 
 			let onNumberOfReturnsChanged = (event) => {
 				let [from, to] = this.viewer.filterNumberOfReturnsRange;
 
-				lblNumberOfReturns[0].innerHTML = `${from} to ${to}`;
-				sldNumberOfReturns.slider({values: [from, to]});
+				if (lblNumberOfReturns[0]) lblNumberOfReturns[0].innerHTML = `${from} to ${to}`;
+				this.sldNumberOfReturns.setValues([from, to]);
 			};
 
 			this.viewer.addEventListener('filter_number_of_returns_range_changed', onNumberOfReturnsChanged);
@@ -1126,18 +1030,9 @@ export class Sidebar{
 			defaultColor = `rgb(${defaultColor})`;
 
 
-			elColorPicker.spectrum({
-				// flat: true,
+			new ModernColorPicker({
+				container: elColorPicker[0] || elColorPicker,
 				color: defaultColor,
-				showInput: true,
-				preferredFormat: 'rgb',
-				cancelText: '',
-				chooseText: 'Apply',
-				move: color => {
-					let rgb = color.toRgb();
-					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255, 1];
-					classification.color = c;
-				},
 				change: color => {
 					let rgb = color.toRgb();
 					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255, 1];
@@ -1285,9 +1180,8 @@ export class Sidebar{
 
 	initAppearance(){
 
-		const sldPointBudget = this.dom.find('#sldPointBudget');
-
-		sldPointBudget.slider({
+		this.sldPointBudget = new ModernSlider({
+			container: this.dom.find('#sldPointBudget')[0] || '#sldPointBudget',
 			value: this.viewer.getPointBudget(),
 			min: 100 * 1000,
 			max: 10 * 1000 * 1000,
@@ -1295,7 +1189,8 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setPointBudget(ui.value); }
 		});
 
-		this.dom.find('#sldFOV').slider({
+		this.sldFOV = new ModernSlider({
+			container: this.dom.find('#sldFOV')[0] || '#sldFOV',
 			value: this.viewer.getFOV(),
 			min: 20,
 			max: 100,
@@ -1303,7 +1198,8 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setFOV(ui.value); }
 		});
 
-		$('#sldEDLRadius').slider({
+		this.sldEDLRadius = new ModernSlider({
+			container: this.dom.find('#sldEDLRadius')[0] || '#sldEDLRadius',
 			value: this.viewer.getEDLRadius(),
 			min: 1,
 			max: 4,
@@ -1311,7 +1207,8 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setEDLRadius(ui.value); }
 		});
 
-		$('#sldEDLStrength').slider({
+		this.sldEDLStrength = new ModernSlider({
+			container: this.dom.find('#sldEDLStrength')[0] || '#sldEDLStrength',
 			value: this.viewer.getEDLStrength(),
 			min: 0,
 			max: 5,
@@ -1319,7 +1216,8 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setEDLStrength(ui.value); }
 		});
 
-		$('#sldEDLOpacity').slider({
+		this.sldEDLOpacity = new ModernSlider({
+			container: this.dom.find('#sldEDLOpacity')[0] || '#sldEDLOpacity',
 			value: this.viewer.getEDLOpacity(),
 			min: 0,
 			max: 1,
@@ -1329,12 +1227,12 @@ export class Sidebar{
 
 		this.viewer.addEventListener('point_budget_changed', (event) => {
 			$('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
-			sldPointBudget.slider({value: this.viewer.getPointBudget()});
+			this.sldPointBudget.setValue(this.viewer.getPointBudget());
 		});
 
 		this.viewer.addEventListener('fov_changed', (event) => {
 			$('#lblFOV')[0].innerHTML = parseInt(this.viewer.getFOV());
-			$('#sldFOV').slider({value: this.viewer.getFOV()});
+			this.sldFOV.setValue(this.viewer.getFOV());
 		});
 
 		this.viewer.addEventListener('use_edl_changed', (event) => {
@@ -1343,16 +1241,18 @@ export class Sidebar{
 
 		this.viewer.addEventListener('edl_radius_changed', (event) => {
 			$('#lblEDLRadius')[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
-			$('#sldEDLRadius').slider({value: this.viewer.getEDLRadius()});
+			this.sldEDLRadius.setValue(this.viewer.getEDLRadius());
 		});
 
 		this.viewer.addEventListener('edl_strength_changed', (event) => {
 			$('#lblEDLStrength')[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
-			$('#sldEDLStrength').slider({value: this.viewer.getEDLStrength()});
+			this.sldEDLStrength.setValue(this.viewer.getEDLStrength());
 		});
 
 		this.viewer.addEventListener('background_changed', (event) => {
-			$("input[name=background][value='" + this.viewer.getBackground() + "']").prop('checked', true);
+			if (this.bgToggle) {
+				this.bgToggle.setValue(this.viewer.getBackground(), false);
+			}
 		});
 
 		$('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
@@ -1362,15 +1262,14 @@ export class Sidebar{
 		$('#chkEDLEnabled')[0].checked = this.viewer.getEDLEnabled();
 		
 		{
-			let elBackground = $(`#background_options`);
-			elBackground.selectgroup();
-
-			elBackground.find("input").click( (e) => {
-				this.viewer.setBackground(e.target.value);
+			const elBackground = this.dom.find('#background_options')[0] || document.getElementById('background_options');
+			this.bgToggle = new ToggleGroup({
+				container: elBackground,
+				value: this.viewer.getBackground(),
+				onChange: (value) => {
+					this.viewer.setBackground(value);
+				}
 			});
-
-			let currentBackground = this.viewer.getBackground();
-			$(`input[name=background_options][value=${currentBackground}]`).trigger("click");
 		}
 
 		$('#chkEDLEnabled').click( () => {
@@ -1495,13 +1394,17 @@ export class Sidebar{
 			</selectgroup>
 		`);
 		elNavigation.append(elCameraProjection);
-		elCameraProjection.selectgroup({title: "Camera Projection"});
-		elCameraProjection.find("input").click( (e) => {
-			this.viewer.setCameraMode(CameraMode[e.target.value]);
-		});
 		let cameraMode = Object.keys(CameraMode)
 			.filter(key => CameraMode[key] === this.viewer.scene.cameraMode);
-		elCameraProjection.find(`input[value=${cameraMode}]`).trigger("click");
+
+		this.camProjectionToggle = new ToggleGroup({
+			container: elCameraProjection[0],
+			title: "Camera Projection",
+			value: cameraMode[0] || 'PERSPECTIVE',
+			onChange: (val) => {
+				this.viewer.setCameraMode(CameraMode[val]);
+			}
+		});
 
 		let speedRange = new THREE.Vector2(1, 10 * 1000);
 
@@ -1513,7 +1416,8 @@ export class Sidebar{
 			return Math.pow((value - speedRange.x) / speedRange.y, 1 / 4);
 		};
 
-		sldMoveSpeed.slider({
+		this.sldMoveSpeed = new ModernSlider({
+			container: sldMoveSpeed[0] || sldMoveSpeed,
 			value: toExpSpeed(this.viewer.getMoveSpeed()),
 			min: 0,
 			max: 1,
@@ -1523,7 +1427,7 @@ export class Sidebar{
 
 		this.viewer.addEventListener('move_speed_changed', (event) => {
 			lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
-			sldMoveSpeed.slider({value: toExpSpeed(this.viewer.getMoveSpeed())});
+			this.sldMoveSpeed.setValue(toExpSpeed(this.viewer.getMoveSpeed()));
 		});
 
 		lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
@@ -1533,7 +1437,8 @@ export class Sidebar{
 	initSettings(){
 
 		{
-			$('#sldMinNodeSize').slider({
+			this.sldMinNodeSize = new ModernSlider({
+				container: $('#sldMinNodeSize')[0] || '#sldMinNodeSize',
 				value: this.viewer.getMinNodeSize(),
 				min: 0,
 				max: 1000,
@@ -1543,25 +1448,26 @@ export class Sidebar{
 
 			this.viewer.addEventListener('minnodesize_changed', (event) => {
 				$('#lblMinNodeSize').html(parseInt(this.viewer.getMinNodeSize()));
-				$('#sldMinNodeSize').slider({value: this.viewer.getMinNodeSize()});
+				this.sldMinNodeSize.setValue(this.viewer.getMinNodeSize());
 			});
 			$('#lblMinNodeSize').html(parseInt(this.viewer.getMinNodeSize()));
 		}
 
 		{
 			let elSplatQuality = $("#splat_quality_options");
-			elSplatQuality.selectgroup({title: "Splat Quality"});
-
-			elSplatQuality.find("input").click( (e) => {
-				if(e.target.value === "standard"){
-					this.viewer.useHQ = false;
-				}else if(e.target.value === "hq"){
-					this.viewer.useHQ = true;
+			let currentQuality = this.viewer.useHQ ? "hq" : "standard";
+			this.splatQualityToggle = new ToggleGroup({
+				container: elSplatQuality[0] || elSplatQuality,
+				title: "Splat Quality",
+				value: currentQuality,
+				onChange: (value) => {
+					if(value === "standard"){
+						this.viewer.useHQ = false;
+					}else if(value === "hq"){
+						this.viewer.useHQ = true;
+					}
 				}
 			});
-
-			let currentQuality = this.viewer.useHQ ? "hq" : "standard";
-			elSplatQuality.find(`input[value=${currentQuality}]`).trigger("click");
 		}
 
 		$('#show_bounding_box').click(() => {
@@ -1574,3 +1480,4 @@ export class Sidebar{
 	}
 
 }
+

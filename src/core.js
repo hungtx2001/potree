@@ -2,55 +2,132 @@
  * Potree Core Engine (Zero-DOM / Pure WebGL Point Cloud Streaming & Rendering)
  */
 
-export * from "./defines.js";
-export * from "./Enum.js";
-export * from "./EventDispatcher.js";
-export * from "./KeyCodes.js";
-export * from "./LRU.js";
-export * from "./WorkerPool.js";
-export * from "./runtime.js";
+// Foundation & Runtime
+import {
+	CameraMode,
+	ClipTask,
+	ClipMethod,
+	ElevationGradientRepeat,
+	MOUSE,
+	PointSizeType,
+	PointShape,
+	TreeType,
+	LengthUnits
+} from "./defines.js";
+import { Enum } from "./Enum.js";
+import { EventDispatcher } from "./EventDispatcher.js";
+import { KeyCodes } from "./KeyCodes.js";
+import { LRU, LRUItem } from "./LRU.js";
+import { WorkerPool } from "./WorkerPool.js";
+import { runtime, workerPool, lru } from "./runtime.js";
 
 // Materials & Shaders
-export * from "./materials/ClassificationScheme.js";
-export * from "./materials/EyeDomeLightingMaterial.js";
-export * from "./materials/Gradients.js";
-export * from "./materials/NormalizationEDLMaterial.js";
-export * from "./materials/NormalizationMaterial.js";
-export * from "./materials/PointCloudMaterial.js";
-export { Shaders } from "./materials/shaders/shaders.js";
+import { ClassificationScheme } from "./materials/ClassificationScheme.js";
+import { EyeDomeLightingMaterial } from "./materials/EyeDomeLightingMaterial.js";
+import { Gradients } from "./materials/Gradients.js";
+import { NormalizationEDLMaterial } from "./materials/NormalizationEDLMaterial.js";
+import { NormalizationMaterial } from "./materials/NormalizationMaterial.js";
+import { PointCloudMaterial } from "./materials/PointCloudMaterial.js";
+import { Shaders } from "./materials/shaders/shaders.js";
 
 // Loaders & Attributes
-export * from "./loader/PointAttributes.js";
-export * from "./loader/POCLoader.js";
-export * from "./modules/loader/2.0/OctreeLoader.js";
-export * from "./modules/loader/2.0/OctreeGeometry.js";
-export * from "./loader/EptLoader.js";
-export * from "./loader/BinaryLoader.js";
-export * from "./loader/LasLazLoader.js";
+import {
+	PointAttribute,
+	PointAttributes,
+	PointAttributeTypes
+} from "./loader/PointAttributes.js";
+import { POCLoader } from "./loader/POCLoader.js";
+import { OctreeLoader, NodeLoader } from "./modules/loader/2.0/OctreeLoader.js";
+import { OctreeGeometry, OctreeGeometryNode } from "./modules/loader/2.0/OctreeGeometry.js";
+import { EptLoader, CopcLoader } from "./loader/EptLoader.js";
+import { BinaryLoader } from "./loader/BinaryLoader.js";
+import { LasLazLoader } from "./loader/LasLazLoader.js";
 
 // Point Cloud 3D Scene Objects & Geometries
-export * from "./Points.js";
-export * from "./PointCloudTree.js";
-export * from "./PointCloudOctree.js";
-export * from "./PointCloudOctreeGeometry.js";
-export * from "./PointCloudEptGeometry.js";
-export * from "./PotreeRenderer.js";
-export * from "./Potree_update_visibility.js";
+import { Points } from "./Points.js";
+import { PointCloudTree, PointCloudTreeNode } from "./PointCloudTree.js";
+import { PointCloudOctree, PointCloudOctreeNode } from "./PointCloudOctree.js";
+import { PointCloudOctreeGeometry, PointCloudOctreeGeometryNode } from "./PointCloudOctreeGeometry.js";
+import {
+	PointCloudCopcGeometry,
+	PointCloudEptGeometry,
+	PointCloudCopcGeometryNode
+} from "./PointCloudEptGeometry.js";
+import { Renderer } from "./PotreeRenderer.js";
+import { updatePointClouds } from "./Potree_update_visibility.js";
 
 // Helpers & Volumes
-export * from "./utils/Box3Helper.js";
-export * from "./utils/Volume.js";
-export * from "./utils/ClipVolume.js";
-export * from "./utils/PolygonClipVolume.js";
-export * from "./TextSprite.js";
-export * from "./XHRFactory.js";
-export * from "./Version.js";
-export * from "./viewer/store/PotreeStore.js";
+import { Box3Helper } from "./utils/Box3Helper.js";
+import { Volume, BoxVolume, SphereVolume } from "./utils/Volume.js";
+import { ClipVolume } from "./utils/ClipVolume.js";
+import { PolygonClipVolume } from "./utils/PolygonClipVolume.js";
+import { TextSprite } from "./TextSprite.js";
+import { XHRFactory } from "./XHRFactory.js";
+import { Version } from "./Version.js";
+import { PotreeStore } from "./viewer/store/PotreeStore.js";
 
-import { OctreeLoader } from "./modules/loader/2.0/OctreeLoader.js";
-import { POCLoader } from "./loader/POCLoader.js";
-import { CopcLoader, EptLoader } from "./loader/EptLoader.js";
-import { PointCloudOctree } from "./PointCloudOctree.js";
+export {
+	CameraMode,
+	ClipTask,
+	ClipMethod,
+	ElevationGradientRepeat,
+	MOUSE,
+	PointSizeType,
+	PointShape,
+	TreeType,
+	LengthUnits,
+	Enum,
+	EventDispatcher,
+	KeyCodes,
+	LRU,
+	LRUItem,
+	WorkerPool,
+	runtime,
+	workerPool,
+	lru,
+	ClassificationScheme,
+	EyeDomeLightingMaterial,
+	Gradients,
+	NormalizationEDLMaterial,
+	NormalizationMaterial,
+	PointCloudMaterial,
+	Shaders,
+	PointAttribute,
+	PointAttributes,
+	PointAttributeTypes,
+	POCLoader,
+	OctreeLoader,
+	NodeLoader,
+	OctreeGeometry,
+	OctreeGeometryNode,
+	EptLoader,
+	CopcLoader,
+	BinaryLoader,
+	LasLazLoader,
+	Points,
+	PointCloudTree,
+	PointCloudTreeNode,
+	PointCloudOctree,
+	PointCloudOctreeNode,
+	PointCloudOctreeGeometry,
+	PointCloudOctreeGeometryNode,
+	PointCloudCopcGeometry,
+	PointCloudEptGeometry,
+	PointCloudCopcGeometryNode,
+	Renderer,
+	Renderer as PotreeRenderer,
+	updatePointClouds,
+	Box3Helper,
+	Volume,
+	BoxVolume,
+	SphereVolume,
+	ClipVolume,
+	PolygonClipVolume,
+	TextSprite,
+	XHRFactory,
+	Version,
+	PotreeStore
+};
 
 export const version = {
 	major: 2,

@@ -295,86 +295,10 @@ export class SceneTree {
 		});
 	}
 
-	/**
-	 * Installs seamless drop-in jQuery plugin for jstree
-	 * Allows legacy sidebar code using $(...).jstree(...) to work directly with SceneTree!
-	 * @param {Object} $ - jQuery instance
-	 */
-	static installJQueryPlugin($) {
-		if (!$ || !$.fn) return;
-
-		$.jstree = {
-			reference: function(idOrEl) {
-				const dom = (typeof idOrEl === 'string')
-					? (document.getElementById(idOrEl) || document.querySelector(idOrEl))
-					: (idOrEl && idOrEl.jquery ? idOrEl[0] : idOrEl);
-				if (!dom) return null;
-				const treeEl = dom.closest('.potree-scene-tree') || dom.querySelector('.potree-scene-tree');
-				return treeEl && treeEl._potreeSceneTree ? treeEl._potreeSceneTree.getJQueryProxy() : null;
-			}
-		};
-
-		$.fn.jstree = function(...args) {
-			if (args.length === 0) {
-				const el = this[0];
-				return el && el._potreeSceneTree ? el._potreeSceneTree.getJQueryProxy() : null;
-			}
-
-			if (typeof args[0] === 'string') {
-				const method = args[0];
-				const el = this[0];
-				const tree = el && el._potreeSceneTree;
-				if (!tree) return null;
-				const proxy = tree.getJQueryProxy();
-				if (typeof proxy[method] === 'function') {
-					return proxy[method](...args.slice(1));
-				}
-				return null;
-			}
-
-			// Initialization: $(el).jstree(options)
-			return this.each(function() {
-				const tree = new SceneTree();
-				this.innerHTML = '';
-				this.appendChild(tree.element);
-				this._potreeSceneTree = tree;
-				tree.element._potreeSceneTree = tree;
-
-				// Forward custom events to jQuery events: create_node.jstree, select_node.jstree, etc.
-				const $this = $(this);
-				tree.element.addEventListener('select_node', (e) => {
-					$this.trigger('select_node.jstree', { node: e.detail.node });
-				});
-				tree.element.addEventListener('deselect_node', (e) => {
-					$this.trigger('deselect_node.jstree', { node: e.detail.node });
-				});
-				tree.element.addEventListener('check_node', (e) => {
-					$this.trigger('check_node.jstree', { node: e.detail.node });
-				});
-				tree.element.addEventListener('uncheck_node', (e) => {
-					$this.trigger('uncheck_node.jstree', { node: e.detail.node });
-				});
-				tree.element.addEventListener('delete_node', (e) => {
-					$this.trigger('delete_node.jstree', { node: e.detail.node });
-				});
-				tree.element.addEventListener('create_node', (e) => {
-					$this.trigger('create_node.jstree', { node: e.detail.node });
-				});
-			});
-		};
-	}
-
-	getJQueryProxy() {
-		return {
-			create_node: (parent, data) => this.createNode(parent, data),
-			check_node: (id) => this.checkNode(id),
-			uncheck_node: (id) => this.uncheckNode(id),
-			select_node: (id) => this.selectNode(id),
-			deselect_all: () => this.deselectAll(),
-			delete_node: (id) => this.deleteNode(id),
-			get_node: (id) => this.getNode(id),
-			get_json: (id) => this.getJson(id),
-			open_all: () => this.openAll()
-		};
+	destroy() {
+		if (this.element && this.element.parentNode) {
+			this.element.parentNode.removeChild(this.element);
+		}
 	}
 }
+

@@ -23,6 +23,9 @@ import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
 import {AnnotationPanel} from "./AnnotationPanel.js";
 import { CameraAnimationPanel } from "./CameraAnimationPanel.js";
+import { ModernSlider } from "../ui/components/ModernSlider.js";
+import { ToggleGroup } from "../ui/components/ToggleGroup.js";
+import { ModernColorPicker } from "../ui/components/ModernColorPicker.js";
 
 export class PropertiesPanel{
 
@@ -257,7 +260,8 @@ export class PropertiesPanel{
 			let sldPointSize = panel.find(`#sldPointSize`);
 			let lblPointSize = panel.find(`#lblPointSize`);
 
-			sldPointSize.slider({
+			this.sldPointSize = new ModernSlider({
+				container: sldPointSize[0] || sldPointSize,
 				value: material.size,
 				min: 0,
 				max: 3,
@@ -267,7 +271,7 @@ export class PropertiesPanel{
 
 			let update = (e) => {
 				lblPointSize.html(material.size.toFixed(2));
-				sldPointSize.slider({value: material.size});
+				this.sldPointSize.setValue(material.size);
 			};
 			this.addVolatileListener(material, "point_size_changed", update);
 			
@@ -278,8 +282,9 @@ export class PropertiesPanel{
 			let sldMinPointSize = panel.find(`#sldMinPointSize`);
 			let lblMinPointSize = panel.find(`#lblMinPointSize`);
 
-			sldMinPointSize.slider({
-				value: material.size,
+			this.sldMinPointSize = new ModernSlider({
+				container: sldMinPointSize[0] || sldMinPointSize,
+				value: material.minSize,
 				min: 0,
 				max: 3,
 				step: 0.01,
@@ -288,7 +293,7 @@ export class PropertiesPanel{
 
 			let update = (e) => {
 				lblMinPointSize.html(material.minSize.toFixed(2));
-				sldMinPointSize.slider({value: material.minSize});
+				this.sldMinPointSize.setValue(material.minSize);
 			};
 			this.addVolatileListener(material, "point_size_changed", update);
 			
@@ -367,7 +372,8 @@ export class PropertiesPanel{
 			let sldOpacity = panel.find(`#sldOpacity`);
 			let lblOpacity = panel.find(`#lblOpacity`);
 
-			sldOpacity.slider({
+			this.sldOpacity = new ModernSlider({
+				container: sldOpacity[0] || sldOpacity,
 				value: material.opacity,
 				min: 0,
 				max: 1,
@@ -379,7 +385,7 @@ export class PropertiesPanel{
 
 			let update = (e) => {
 				lblOpacity.html(material.opacity.toFixed(2));
-				sldOpacity.slider({value: material.opacity});
+				this.sldOpacity.setValue(material.opacity);
 			};
 			this.addVolatileListener(material, "opacity_changed", update);
 
@@ -440,7 +446,9 @@ export class PropertiesPanel{
 
 					const [min, max] = attribute.range;
 
-					panel.find('#sldIntensityRange').slider({
+					const elIntensityRange = panel.find('#sldIntensityRange');
+					this.sldIntensityRange = new ModernSlider({
+						container: elIntensityRange[0] || elIntensityRange,
 						range: true,
 						min: min, max: max, step: 0.01,
 						values: [min, max],
@@ -462,7 +470,9 @@ export class PropertiesPanel{
 					let minMaxAreNumbers = typeof min === "number" && typeof max === "number";
 
 					if(minMaxAreNumbers){
-						panel.find('#sldExtraRange').slider({
+						const elExtraRange = panel.find('#sldExtraRange');
+						this.sldExtraRange = new ModernSlider({
+							container: elExtraRange[0] || elExtraRange,
 							range: true,
 							min: min, 
 							max: max, 
@@ -621,43 +631,57 @@ export class PropertiesPanel{
 		}
 
 		{
-			panel.find('#sldRGBGamma').slider({
+			const elRGBGamma = panel.find('#sldRGBGamma');
+			this.sldRGBGamma = new ModernSlider({
+				container: elRGBGamma[0] || elRGBGamma,
 				value: material.rgbGamma,
 				min: 0, max: 4, step: 0.01,
 				slide: (event, ui) => {material.rgbGamma = ui.value}
 			});
 
-			panel.find('#sldRGBContrast').slider({
+			const elRGBContrast = panel.find('#sldRGBContrast');
+			this.sldRGBContrast = new ModernSlider({
+				container: elRGBContrast[0] || elRGBContrast,
 				value: material.rgbContrast,
 				min: -1, max: 1, step: 0.01,
 				slide: (event, ui) => {material.rgbContrast = ui.value}
 			});
 
-			panel.find('#sldRGBBrightness').slider({
+			const elRGBBrightness = panel.find('#sldRGBBrightness');
+			this.sldRGBBrightness = new ModernSlider({
+				container: elRGBBrightness[0] || elRGBBrightness,
 				value: material.rgbBrightness,
 				min: -1, max: 1, step: 0.01,
 				slide: (event, ui) => {material.rgbBrightness = ui.value}
 			});
 
-			panel.find('#sldExtraGamma').slider({
+			const elExtraGamma = panel.find('#sldExtraGamma');
+			this.sldExtraGamma = new ModernSlider({
+				container: elExtraGamma[0] || elExtraGamma,
 				value: material.extraGamma,
 				min: 0, max: 4, step: 0.01,
 				slide: (event, ui) => {material.extraGamma = ui.value}
 			});
 
-			panel.find('#sldExtraBrightness').slider({
+			const elExtraBrightness = panel.find('#sldExtraBrightness');
+			this.sldExtraBrightness = new ModernSlider({
+				container: elExtraBrightness[0] || elExtraBrightness,
 				value: material.extraBrightness,
 				min: -1, max: 1, step: 0.01,
 				slide: (event, ui) => {material.extraBrightness = ui.value}
 			});
 
-			panel.find('#sldExtraContrast').slider({
+			const elExtraContrast = panel.find('#sldExtraContrast');
+			this.sldExtraContrast = new ModernSlider({
+				container: elExtraContrast[0] || elExtraContrast,
 				value: material.extraContrast,
 				min: -1, max: 1, step: 0.01,
 				slide: (event, ui) => {material.extraContrast = ui.value}
 			});
 
-			panel.find('#sldHeightRange').slider({
+			const elHeightRange = panel.find('#sldHeightRange');
+			this.sldHeightRange = new ModernSlider({
+				container: elHeightRange[0] || elHeightRange,
 				range: true,
 				min: 0, max: 1000, step: 0.01,
 				values: [0, 1000],
@@ -667,87 +691,95 @@ export class PropertiesPanel{
 				}
 			});
 
-			panel.find('#sldIntensityGamma').slider({
+			const elIntensityGamma = panel.find('#sldIntensityGamma');
+			this.sldIntensityGamma = new ModernSlider({
+				container: elIntensityGamma[0] || elIntensityGamma,
 				value: material.intensityGamma,
 				min: 0, max: 4, step: 0.01,
 				slide: (event, ui) => {material.intensityGamma = ui.value}
 			});
 
-			panel.find('#sldIntensityContrast').slider({
+			const elIntensityContrast = panel.find('#sldIntensityContrast');
+			this.sldIntensityContrast = new ModernSlider({
+				container: elIntensityContrast[0] || elIntensityContrast,
 				value: material.intensityContrast,
 				min: -1, max: 1, step: 0.01,
 				slide: (event, ui) => {material.intensityContrast = ui.value}
 			});
 
-			panel.find('#sldIntensityBrightness').slider({
+			const elIntensityBrightness = panel.find('#sldIntensityBrightness');
+			this.sldIntensityBrightness = new ModernSlider({
+				container: elIntensityBrightness[0] || elIntensityBrightness,
 				value: material.intensityBrightness,
 				min: -1, max: 1, step: 0.01,
 				slide: (event, ui) => {material.intensityBrightness = ui.value}
 			});
 
-			panel.find('#sldWeightRGB').slider({
+			const elWeightRGB = panel.find('#sldWeightRGB');
+			this.sldWeightRGB = new ModernSlider({
+				container: elWeightRGB[0] || elWeightRGB,
 				value: material.weightRGB,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightRGB = ui.value}
 			});
 
-			panel.find('#sldWeightIntensity').slider({
+			const elWeightIntensity = panel.find('#sldWeightIntensity');
+			this.sldWeightIntensity = new ModernSlider({
+				container: elWeightIntensity[0] || elWeightIntensity,
 				value: material.weightIntensity,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightIntensity = ui.value}
 			});
 
-			panel.find('#sldWeightElevation').slider({
+			const elWeightElevation = panel.find('#sldWeightElevation');
+			this.sldWeightElevation = new ModernSlider({
+				container: elWeightElevation[0] || elWeightElevation,
 				value: material.weightElevation,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightElevation = ui.value}
 			});
 
-			panel.find('#sldWeightClassification').slider({
+			const elWeightClassification = panel.find('#sldWeightClassification');
+			this.sldWeightClassification = new ModernSlider({
+				container: elWeightClassification[0] || elWeightClassification,
 				value: material.weightClassification,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightClassification = ui.value}
 			});
 
-			panel.find('#sldWeightReturnNumber').slider({
+			const elWeightReturnNumber = panel.find('#sldWeightReturnNumber');
+			this.sldWeightReturnNumber = new ModernSlider({
+				container: elWeightReturnNumber[0] || elWeightReturnNumber,
 				value: material.weightReturnNumber,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightReturnNumber = ui.value}
 			});
 
-			panel.find('#sldWeightSourceID').slider({
+			const elWeightSourceID = panel.find('#sldWeightSourceID');
+			this.sldWeightSourceID = new ModernSlider({
+				container: elWeightSourceID[0] || elWeightSourceID,
 				value: material.weightSourceID,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightSourceID = ui.value}
 			});
 
-			panel.find(`#materials\\.color\\.picker`).spectrum({
-				flat: true,
-				showInput: true,
-				preferredFormat: 'rgb',
-				cancelText: '',
-				chooseText: 'Apply',
+			const elColorPicker = panel.find(`#materials\\.color\\.picker`);
+			this.colorPicker = new ModernColorPicker({
+				container: elColorPicker[0] || elColorPicker,
 				color: `#${material.color.getHexString()}`,
-				move: color => {
-					let cRGB = color.toRgb();
-					let tc = new THREE.Color().setRGB(cRGB.r / 255, cRGB.g / 255, cRGB.b / 255);
-					material.color = tc;
-				},
-				change: color => {
-					let cRGB = color.toRgb();
-					let tc = new THREE.Color().setRGB(cRGB.r / 255, cRGB.g / 255, cRGB.b / 255);
-					material.color = tc;
+				showAlpha: false,
+				onChange: colorHex => {
+					material.color = new THREE.Color(colorHex);
 				}
 			});
 
 			this.addVolatileListener(material, "color_changed", () => {
-				panel.find(`#materials\\.color\\.picker`)
-					.spectrum('set', `#${material.color.getHexString()}`);
+				if (this.colorPicker) {
+					this.colorPicker.setColor(`#${material.color.getHexString()}`, false);
+				}
 			});
 
-			let updateHeightRange = function () {
-				
-
+			let updateHeightRange = () => {
 				let aPosition = pointcloud.getAttribute("position");
 
 				let bMin, bMax;
@@ -776,7 +808,11 @@ export class PropertiesPanel{
 				let range = material.elevationRange;
 
 				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
-				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
+				if (this.sldHeightRange) {
+					this.sldHeightRange.setOption('min', bMin);
+					this.sldHeightRange.setOption('max', bMax);
+					this.sldHeightRange.setValues(range);
+				}
 			};
 
 			let updateExtraRange = function () {
@@ -817,34 +853,36 @@ export class PropertiesPanel{
 
 			{
 				updateHeightRange();
-				panel.find(`#sldHeightRange`).slider('option', 'min');
-				panel.find(`#sldHeightRange`).slider('option', 'max');
 			}
 
 			{
 				let elGradientRepeat = panel.find("#gradient_repeat_option");
-				elGradientRepeat.selectgroup({title: "Gradient"});
-
-				elGradientRepeat.find("input").click( (e) => {
-					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
-				});
-
 				let current = Object.keys(ElevationGradientRepeat)
 					.filter(key => ElevationGradientRepeat[key] === this.viewer.elevationGradientRepeat);
-				elGradientRepeat.find(`input[value=${current}]`).trigger("click");
+
+				this.gradientRepeatToggle = new ToggleGroup({
+					container: elGradientRepeat[0] || elGradientRepeat,
+					title: "Gradient",
+					value: current[0] || 'CLAMP',
+					onChange: (value) => {
+						this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[value]);
+					}
+				});
 			}
 
 			{
 				let elGradientRepeat = panel.find("#extra_gradient_repeat_option");
-				elGradientRepeat.selectgroup({title: "Gradient"});
-
-				elGradientRepeat.find("input").click( (e) => {
-					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
-				});
-
 				let current = Object.keys(ElevationGradientRepeat)
 					.filter(key => ElevationGradientRepeat[key] === this.viewer.elevationGradientRepeat);
-				elGradientRepeat.find(`input[value=${current}]`).trigger("click");
+
+				this.extraGradientRepeatToggle = new ToggleGroup({
+					container: elGradientRepeat[0] || elGradientRepeat,
+					title: "Gradient",
+					value: current[0] || 'CLAMP',
+					onChange: (value) => {
+						this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[value]);
+					}
+				});
 			}
 
 			let onIntensityChange = () => {
@@ -858,9 +896,9 @@ export class PropertiesPanel{
 				panel.find('#lblIntensityContrast').html(contrast.toFixed(2));
 				panel.find('#lblIntensityBrightness').html(brightness.toFixed(2));
 
-				panel.find('#sldIntensityGamma').slider({value: gamma});
-				panel.find('#sldIntensityContrast').slider({value: contrast});
-				panel.find('#sldIntensityBrightness').slider({value: brightness});
+				if (this.sldIntensityGamma) this.sldIntensityGamma.setValue(gamma);
+				if (this.sldIntensityContrast) this.sldIntensityContrast.setValue(contrast);
+				if (this.sldIntensityBrightness) this.sldIntensityBrightness.setValue(brightness);
 			};
 
 			let onRGBChange = () => {
@@ -872,9 +910,9 @@ export class PropertiesPanel{
 				panel.find('#lblRGBContrast').html(contrast.toFixed(2));
 				panel.find('#lblRGBBrightness').html(brightness.toFixed(2));
 
-				panel.find('#sldRGBGamma').slider({value: gamma});
-				panel.find('#sldRGBContrast').slider({value: contrast});
-				panel.find('#sldRGBBrightness').slider({value: brightness});
+				if (this.sldRGBGamma) this.sldRGBGamma.setValue(gamma);
+				if (this.sldRGBContrast) this.sldRGBContrast.setValue(contrast);
+				if (this.sldRGBBrightness) this.sldRGBBrightness.setValue(brightness);
 			};
 
 			this.addVolatileListener(material, "material_property_changed", updateExtraRange);

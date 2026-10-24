@@ -213,7 +213,3 @@ export function loadPointCloud(path, name, callback){
 	}
 };
 
-
-// Install modern selectgroup / ToggleGroup jQuery bridge
-ToggleGroup.installJQueryPlugin(typeof jQuery !== 'undefined' ? jQuery : (typeof window !== 'undefined' ? window.$ : undefined));
-

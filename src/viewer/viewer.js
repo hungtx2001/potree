@@ -1,9 +1,6 @@
 
 import * as THREE from 'three';
 import $ from 'jquery';
-import { ModernSlider } from './ui/components/ModernSlider.js';
-
-ModernSlider.installJQueryPlugin($);
 import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";

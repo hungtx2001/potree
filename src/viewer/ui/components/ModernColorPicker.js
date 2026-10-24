@@ -1,12 +1,13 @@
 /**
  * Modern Color Picker Component
  * Pure vanilla JS, glassmorphism design, native HTML5 color picker integration.
- * Drop-in replacement for spectrum-colorpicker2 with zero external dependencies.
+ * Zero external dependencies.
  */
 
 export class ModernColorPicker {
 	/**
 	 * @param {Object} options
+	 * @param {HTMLElement|string} [options.container]
 	 * @param {string} [options.color='#ffffff']
 	 * @param {Function} [options.change] - (colorObj)
 	 * @param {Function} [options.move] - (colorObj)
@@ -18,6 +19,16 @@ export class ModernColorPicker {
 
 		this.colorHex = this._normalizeToHex(options.color || '#38bdf8');
 		this.element = this._render();
+
+		if (options.container) {
+			const target = typeof options.container === 'string'
+				? document.querySelector(options.container)
+				: (options.container.jquery ? options.container[0] : options.container);
+			if (target) {
+				target.innerHTML = '';
+				target.appendChild(this.element);
+			}
+		}
 	}
 
 	_normalizeToHex(color) {
@@ -127,55 +138,9 @@ export class ModernColorPicker {
 		return this._createColorObject(this.colorHex);
 	}
 
-	/**
-	 * Attach ModernColorPicker to target element
-	 */
-	static attach(target, options = {}) {
-		const dom = (typeof target === 'string')
-			? document.querySelector(target)
-			: (target && target.jquery ? target[0] : target);
-
-		if (!dom) return null;
-
-		if (dom._potreeColorPicker) {
-			if (options.color) dom._potreeColorPicker.setColor(options.color);
-			return dom._potreeColorPicker;
+	destroy() {
+		if (this.element && this.element.parentNode) {
+			this.element.parentNode.removeChild(this.element);
 		}
-
-		const picker = new ModernColorPicker(options);
-		dom.innerHTML = '';
-		dom.appendChild(picker.element);
-		dom._potreeColorPicker = picker;
-		return picker;
-	}
-
-	/**
-	 * Installs seamless drop-in jQuery plugin for spectrum
-	 * @param {Object} $ - jQuery instance
-	 */
-	static installJQueryPlugin($) {
-		if (!$ || !$.fn) return;
-
-		$.fn.spectrum = function(...args) {
-			if (args.length === 0) return this;
-
-			if (args[0] === 'set' && args.length >= 2) {
-				return this.each(function() {
-					if (this._potreeColorPicker) {
-						this._potreeColorPicker.setColor(args[1]);
-					}
-				});
-			}
-
-			if (args[0] === 'get') {
-				const el = this[0];
-				return el && el._potreeColorPicker ? el._potreeColorPicker.getColor() : null;
-			}
-
-			const opts = args[0] || {};
-			return this.each(function() {
-				ModernColorPicker.attach(this, opts);
-			});
-		};
 	}
 }

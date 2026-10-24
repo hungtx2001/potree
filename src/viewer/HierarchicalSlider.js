@@ -1,3 +1,4 @@
+import { ModernSlider } from "./ui/components/ModernSlider.js";
 
 function addCommas(nStr){
 	nStr += '';
@@ -18,7 +19,6 @@ function format(value){
 export class HierarchicalSlider{
 
 	constructor(params = {}){
-		
 		this.element = document.createElement("div");
 
 		this.labels = [];
@@ -32,32 +32,24 @@ export class HierarchicalSlider{
 		for(let level = 0; level < levels; level++){
 			this.addLevel();
 		}
-
 	}
 
 	setRange(range){
 		this.range = [...range];
 
-		{ // root slider
-			let slider = this.sliders[0];
-
-			$(slider).slider({
-				min: range[0],
-				max: range[1],
-			});
+		if (this.sliders.length > 0) {
+			const rootSlider = this.sliders[0];
+			rootSlider.setOption('min', range[0]);
+			rootSlider.setOption('max', range[1]);
 		}
 
 		for(let i = 1; i < this.sliders.length; i++){
 			let parentSlider = this.sliders[i - 1];
 			let slider = this.sliders[i];
 
-			let parentValues = $(parentSlider).slider("option", "values");
-			let childRange = [...parentValues];
-
-			$(slider).slider({
-				min: childRange[0],
-				max: childRange[1],
-			});
+			let parentValues = parentSlider.getValues();
+			slider.setOption('min', parentValues[0]);
+			slider.setOption('max', parentValues[1]);
 		}
 		
 		this.updateLabels();
@@ -65,9 +57,7 @@ export class HierarchicalSlider{
 
 	setValues(values){
 		for(let slider of this.sliders){
-			$(slider).slider({
-				values: [...values],
-			});
+			slider.setValues([...values]);
 		}
 
 		this.updateLabels();
@@ -77,7 +67,7 @@ export class HierarchicalSlider{
 		const elLevel = document.createElement("li");
 		const elRange = document.createTextNode("Range: ");
 		const label = document.createElement("span");
-		const slider = document.createElement("div");
+		const sliderContainer = document.createElement("div");
 
 		let level = this.sliders.length;
 		let [min, max] = [0, 0];
@@ -86,37 +76,32 @@ export class HierarchicalSlider{
 			[min, max] = this.range;
 		}else{
 			let parentSlider = this.sliders[this.sliders.length - 1];
-			[min, max] = $(parentSlider).slider("option", "values");
+			[min, max] = parentSlider.getValues();
 		}
 		
-		$(slider).slider({
+		const modernSlider = new ModernSlider({
+			container: sliderContainer,
 			range: true, 
 			min: min, 
-			max: max,
-			step: this.step,
+			max: max, 
+			step: this.step, 
 			values: [min, max],
 			slide: (event, ui) => {
-				
+				const currentValues = ui.values || [ui.value, ui.value];
 				// set all descendants to same range
 				let levels = this.sliders.length;
 				for(let i = level + 1; i < levels; i++){
 					let descendant = this.sliders[i];
-
-					$(descendant).slider({
-						range: true,
-						min: ui.values[0],
-						max: ui.values[1],
-						values: [...ui.values],
-					});
+					descendant.setOption('min', currentValues[0]);
+					descendant.setOption('max', currentValues[1]);
+					descendant.setValues([...currentValues]);
 				}
 
 				if(this.slide){
-					let values = [...ui.values];
-
 					this.slide({
 						target: this, 
 						range: this.range,
-						values: values,
+						values: [...currentValues],
 					});
 				}
 
@@ -124,9 +109,9 @@ export class HierarchicalSlider{
 			},
 		});
 
-		elLevel.append(elRange, label, slider);
+		elLevel.append(elRange, label, sliderContainer);
 
-		this.sliders.push(slider);
+		this.sliders.push(modernSlider);
 		this.labels.push(label);
 		this.element.append(elLevel);
 
@@ -142,24 +127,20 @@ export class HierarchicalSlider{
 	}
 
 	updateLabels(){
-
 		let levels = this.sliders.length;
 
 		for(let i = 0; i < levels; i++){
-
 			let slider = this.sliders[i];
 			let label = this.labels[i];
 
-			let [min, max] = $(slider).slider("option", "values");
+			let values = slider.getValues();
+			let min = values[0] !== undefined ? values[0] : 0;
+			let max = values[1] !== undefined ? values[1] : min;
 			let strMin = format(min);
 			let strMax = format(max);
 			let strLabel = `${strMin} to ${strMax}`;
 
 			label.innerHTML = strLabel;
 		}
-
 	}
-
-
 }
-

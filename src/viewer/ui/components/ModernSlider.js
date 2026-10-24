@@ -18,6 +18,7 @@ export class ModernSlider {
 	 * @param {Function} [options.change] - (event, ui)
 	 */
 	constructor(options = {}) {
+		this.options = options;
 		this.min = options.min !== undefined ? Number(options.min) : 0;
 		this.max = options.max !== undefined ? Number(options.max) : 100;
 		this.step = options.step !== undefined ? Number(options.step) : 1;
@@ -37,6 +38,16 @@ export class ModernSlider {
 
 		this.element = this._render();
 		this.updateTrackFill();
+
+		if (options.container) {
+			const target = typeof options.container === 'string'
+				? document.querySelector(options.container)
+				: (options.container.jquery ? options.container[0] : options.container);
+			if (target) {
+				target.innerHTML = '';
+				target.appendChild(this.element);
+			}
+		}
 	}
 
 	_render() {
@@ -52,7 +63,6 @@ export class ModernSlider {
 		this.fillElement = fill;
 
 		if (this.isRange) {
-			// Range slider: two native range inputs overlaid
 			const inputMin = document.createElement('input');
 			inputMin.type = 'range';
 			inputMin.className = 'potree-range-input potree-range-min';
@@ -111,7 +121,6 @@ export class ModernSlider {
 			root.appendChild(inputMin);
 			root.appendChild(inputMax);
 		} else {
-			// Single slider
 			const input = document.createElement('input');
 			input.type = 'range';
 			input.className = 'potree-range-input';
@@ -232,97 +241,9 @@ export class ModernSlider {
 		return undefined;
 	}
 
-	/**
-	 * Mounts ModernSlider into a target element or selector
-	 * @param {HTMLElement|string|Object} target
-	 * @param {Object} options
-	 * @returns {ModernSlider}
-	 */
-	static attach(target, options = {}) {
-		const dom = (typeof target === 'string')
-			? document.querySelector(target)
-			: (target && target.jquery ? target[0] : target);
-
-		if (!dom) return null;
-
-		// If already attached, update existing
-		if (dom._potreeSlider) {
-			const s = dom._potreeSlider;
-			if (options.value !== undefined) s.setValue(options.value);
-			if (options.values !== undefined) s.setValues(options.values);
-			if (options.min !== undefined) s.setOption('min', options.min);
-			if (options.max !== undefined) s.setOption('max', options.max);
-			if (options.step !== undefined) s.setOption('step', options.step);
-			return s;
+	destroy() {
+		if (this.element && this.element.parentNode) {
+			this.element.parentNode.removeChild(this.element);
 		}
-
-		const slider = new ModernSlider(options);
-		dom.innerHTML = '';
-		dom.appendChild(slider.element);
-		dom._potreeSlider = slider;
-		return slider;
-	}
-
-	/**
-	 * Installs seamless jQuery UI slider compatibility shim
-	 * Replaces jQuery UI's $.fn.slider with ModernSlider
-	 * @param {Object} $ - jQuery instance
-	 */
-	static installJQueryPlugin($) {
-		if (!$ || !$.fn) return;
-
-		$.fn.slider = function(...args) {
-			if (args.length === 0) {
-				return this;
-			}
-
-			// Case 1: Method call with string: $(el).slider('value'), $(el).slider('values'), $(el).slider('option', key)
-			if (typeof args[0] === 'string') {
-				const method = args[0];
-				const el = this[0];
-				if (!el || !el._potreeSlider) return undefined;
-				const instance = el._potreeSlider;
-
-				if (method === 'value') {
-					if (args.length === 1) {
-						return instance.getValue();
-					} else {
-						return this.each(function() {
-							if (this._potreeSlider) this._potreeSlider.setValue(args[1]);
-						});
-					}
-				}
-
-				if (method === 'values') {
-					if (args.length === 1) {
-						return instance.getValues();
-					} else if (args.length === 2 && typeof args[1] === 'number') {
-						const vals = instance.getValues();
-						return vals[args[1]];
-					} else {
-						return this.each(function() {
-							if (this._potreeSlider) this._potreeSlider.setValues(args[1]);
-						});
-					}
-				}
-
-				if (method === 'option') {
-					if (args.length === 2) {
-						return instance.getOption(args[1]);
-					} else if (args.length >= 3) {
-						return this.each(function() {
-							if (this._potreeSlider) this._potreeSlider.setOption(args[1], args[2]);
-						});
-					}
-				}
-				return this;
-			}
-
-			// Case 2: Initialization or option update: $(el).slider({ min, max, value, ... })
-			const opts = args[0] || {};
-			return this.each(function() {
-				ModernSlider.attach(this, opts);
-			});
-		};
 	}
 }

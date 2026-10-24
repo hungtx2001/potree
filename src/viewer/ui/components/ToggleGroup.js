@@ -6,6 +6,7 @@
 export class ToggleGroup {
 	/**
 	 * @param {Object} options
+	 * @param {HTMLElement|string} [options.container]
 	 * @param {string} [options.name]
 	 * @param {string} [options.title]
 	 * @param {Array<{value: string, label: string, id?: string, icon?: string}>} [options.options]
@@ -13,13 +14,44 @@ export class ToggleGroup {
 	 * @param {Function} [options.onChange]
 	 */
 	constructor(options = {}) {
-		this.options = options.options || [];
+		this.options = options.options ? [...options.options] : [];
 		this.value = options.value || (this.options[0] ? this.options[0].value : '');
 		this.title = options.title || '';
 		this.name = options.name || `potree_toggle_${Math.random().toString(36).substr(2, 9)}`;
 		this.onChange = options.onChange || null;
 
-		this.element = this._render();
+		if (options.container) {
+			const target = typeof options.container === 'string'
+				? document.querySelector(options.container)
+				: (options.container.jquery ? options.container[0] : options.container);
+
+			if (target) {
+				// If options were not provided, parse from <option> child elements
+				if (this.options.length === 0) {
+					target.querySelectorAll('option').forEach(opt => {
+						this.options.push({
+							id: opt.id,
+							value: opt.value,
+							label: opt.textContent.trim()
+						});
+					});
+					if (!this.value && this.options[0]) {
+						this.value = this.options[0].value;
+					}
+					if (!this.title && target.getAttribute('title')) {
+						this.title = target.getAttribute('title');
+					}
+				}
+
+				this.element = this._render();
+				target.innerHTML = '';
+				target.appendChild(this.element);
+			} else {
+				this.element = this._render();
+			}
+		} else {
+			this.element = this._render();
+		}
 	}
 
 	_render() {
@@ -47,7 +79,6 @@ export class ToggleGroup {
 			item.setAttribute('role', 'radio');
 			item.setAttribute('aria-checked', opt.value === this.value ? 'true' : 'false');
 
-			// Support hidden radio input inside for backward-compatibility with jQuery selectors
 			const hiddenInput = document.createElement('input');
 			hiddenInput.type = 'radio';
 			hiddenInput.name = this.name;
@@ -82,11 +113,6 @@ export class ToggleGroup {
 		return root;
 	}
 
-	/**
-	 * Sets current value
-	 * @param {string} value
-	 * @param {boolean} [triggerChange=false]
-	 */
 	setValue(value, triggerChange = false) {
 		this.value = value;
 		this.items.forEach((item) => {
@@ -115,61 +141,9 @@ export class ToggleGroup {
 		return this.value;
 	}
 
-	/**
-	 * Upgrades a legacy DOM container (or selector / jQuery element) containing `<option>` tags
-	 * into a modern segmented ToggleGroup.
-	 * @param {HTMLElement|string|Object} target
-	 * @param {Object} [args={}]
-	 * @returns {ToggleGroup}
-	 */
-	static upgrade(target, args = {}) {
-		const dom = (typeof target === 'string')
-			? document.querySelector(target)
-			: (target && target.jquery ? target[0] : target);
-
-		if (!dom) return null;
-
-		const title = args.title !== undefined ? args.title : (dom.getAttribute('title') || '');
-		const name = dom.id || `toggle_${Math.random().toString(36).substr(2, 9)}`;
-
-		const options = [];
-		const optionEls = dom.querySelectorAll('option');
-		optionEls.forEach((opt) => {
-			options.push({
-				id: opt.id,
-				value: opt.value,
-				label: opt.textContent.trim()
-			});
-		});
-
-		const group = new ToggleGroup({
-			title,
-			name,
-			options,
-			onChange: args.onChange
-		});
-
-		// Empty container and append modern toggle group
-		dom.innerHTML = '';
-		dom.appendChild(group.element);
-
-		// Attach instance to DOM element
-		dom._potreeToggleGroup = group;
-
-		return group;
-	}
-
-	/**
-	 * Installs/overrides jQuery's $.fn.selectgroup with modern ToggleGroup
-	 * @param {Object} $ - jQuery instance
-	 */
-	static installJQueryPlugin($) {
-		if (!$ || !$.fn) return;
-
-		$.fn.selectgroup = function(args = {}) {
-			return this.each(function() {
-				ToggleGroup.upgrade(this, args);
-			});
-		};
+	destroy() {
+		if (this.element && this.element.parentNode) {
+			this.element.parentNode.removeChild(this.element);
+		}
 	}
 }

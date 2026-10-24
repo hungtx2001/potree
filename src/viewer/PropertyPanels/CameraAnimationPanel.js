@@ -1,6 +1,7 @@
 
 import {Utils} from "../../utils.js";
 import {runtime} from "../../runtime.js";
+import {ModernSlider} from "../ui/components/ModernSlider.js";
 
 export class CameraAnimationPanel{
 	constructor(viewer, propertiesPanel, animation){
@@ -32,7 +33,8 @@ export class CameraAnimationPanel{
 		});
 
 		const elSlider = this.elContent.find('#sldTime');
-		elSlider.slider({
+		this.sldTime = new ModernSlider({
+			container: elSlider[0] || elSlider,
 			value: 0,
 			min: 0,
 			max: 1,
