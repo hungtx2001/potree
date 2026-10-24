@@ -352,12 +352,15 @@ export class ProfileWindow extends EventDispatcher {
 			this.viewerPickSphere.scale.set(scale, scale, scale);
 		};
 
-		this.renderArea.mousemove(e => {
+		const onMouseMove = (e) => {
 			if (this.pointclouds.size === 0) {
 				return;
 			}
 
-			let rect = this.renderArea[0].getBoundingClientRect();
+			const renderEl = this.renderArea instanceof HTMLElement ? this.renderArea : (this.renderArea?.[0] || null);
+			if (!renderEl) return;
+
+			let rect = renderEl.getBoundingClientRect();
 			let x = e.clientX - rect.left;
 			let y = e.clientY - rect.top;
 
@@ -392,7 +395,6 @@ export class ProfileWindow extends EventDispatcher {
 						point.position[2] + closest.pointcloud.position.z
 					]);
 
-					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, 0, position[2]);
@@ -405,88 +407,60 @@ export class ProfileWindow extends EventDispatcher {
 							this.viewer.addEventListener("update", viewerPickSphereSizeHandler);
 						}
 					}
-					
 
-					let info = this.elRoot.find('#profileSelectionProperties');
-					let html = '<table>';
-
+					const attributes = {};
 					for (let attributeName of Object.keys(point)) {
-
+						if (attributeName === 'normal') continue;
 						let value = point[attributeName];
 						let attribute = closest.pointcloud.getAttribute(attributeName);
-
-						let transform = value => value;
-						if(attribute && attribute.type.size > 4){
+						if (attribute && attribute.type.size > 4) {
 							let range = attribute.initialRange;
 							let scale = 1 / (range[1] - range[0]);
 							let offset = range[0];
-							transform = value => value / scale + offset;
+							value = value / scale + offset;
 						}
-
-						
-
-						
-
-						if (attributeName === 'position') {
-							let values = [...position].map(v => Utils.addCommas(v.toFixed(3)));
-							html += `
-								<tr>
-									<td>x</td>
-									<td>${values[0]}</td>
-								</tr>
-								<tr>
-									<td>y</td>
-									<td>${values[1]}</td>
-								</tr>
-								<tr>
-									<td>z</td>
-									<td>${values[2]}</td>
-								</tr>`;
-						} else if (attributeName === 'rgba') {
-							html += `
-								<tr>
-									<td>${attributeName}</td>
-									<td>${value.join(', ')}</td>
-								</tr>`;
-						} else if (attributeName === 'normal') {
-							continue;
-						} else if (attributeName === 'mileage') {
-							html += `
-								<tr>
-									<td>${attributeName}</td>
-									<td>${value.toFixed(3)}</td>
-								</tr>`;
-						} else {
-							html += `
-								<tr>
-									<td>${attributeName}</td>
-									<td>${transform(value)}</td>
-								</tr>`;
-						}
+						attributes[attributeName] = value;
 					}
-					html += '</table>';
-					info.html(html);
 
-					this.selectedPoint = point;
+					this.selectedPoint = {
+						point: point,
+						position: [position[0], position[1], position[2]],
+						mileage: point.mileage,
+						elevation: position[2],
+						rgba: point.rgba ? [...point.rgba] : null,
+						classification: point.classification !== undefined ? point.classification : null,
+						intensity: point.intensity !== undefined ? point.intensity : null,
+						gpsTime: point.gpsTime !== undefined ? point.gpsTime : null,
+						attributes: attributes,
+						pointcloudName: closest.pointcloud.name || 'Point Cloud'
+					};
+
+					this.dispatchEvent({
+						type: "point_selected",
+						point: this.selectedPoint,
+						closest: closest
+					});
 				} else {
-					// this.pickSphere.visible = false;
-					// this.selectedPoint = null;
-
-					this.viewer.scene.scene.add(this.viewerPickSphere);
+					this.pickSphere.visible = false;
+					this.selectedPoint = null;
 
 					let index = this.viewer.scene.scene.children.indexOf(this.viewerPickSphere);
 					if(index >= 0){
 						this.viewer.scene.scene.children.splice(index, 1);
 					}
 					this.viewer.removeEventListener("update", viewerPickSphereSizeHandler);
-					
 
+					this.dispatchEvent({ type: "point_unselected" });
 				}
 				this.render();
 			}
 
 			this.mouse.copy(newMouse);
-		});
+		};
+
+		if (this.renderArea) {
+			this.renderArea.addEventListener('mousemove', onMouseMove);
+		}
 
 		let onWheel = e => {
 			this.autoFit = false;
@@ -523,81 +497,90 @@ export class ProfileWindow extends EventDispatcher {
 			this.renderArea.addEventListener('wheel', onWheel, { passive: false });
 		}
 
-		const closeBtn = document.getElementById('closeProfileContainer');
+		const closeBtn = this.elRoot ? this.elRoot.querySelector('#closeProfileContainer') : document.getElementById('closeProfileContainer');
 		if (closeBtn) {
 			closeBtn.addEventListener('click', () => this.hide());
 		}
 
-		let getProfilePoints = (truePosition) => {
-			let points = new Points();
-			
-			for(let [pointcloud, entry] of this.pointclouds){
-				for(let pointSet of entry.points){
-
-					let originPos = pointSet.data.position;
-					let truePointPosition = new Float64Array(originPos);
-					for(let i = 0; i < pointSet.numPoints; i++){
-
-						if (truePosition === true) {
-							truePointPosition[3 * i + 0] += pointcloud.position.x;
-							truePointPosition[3 * i + 1] += pointcloud.position.y;
-						}
-
-						truePointPosition[3 * i + 2] += pointcloud.position.z;
-					}
-
-					pointSet.data.position = truePointPosition;
-					points.add(pointSet);
-					pointSet.data.position = originPos;
-				}
-			}
-
-			return points;
-		};
-
-		const dxf2dBtn = document.getElementById('potree_download_dxf2D_icon');
+		// Backward-compatibility: attach click listeners to legacy action buttons if found
+		const dxf2dBtn = this.elRoot ? this.elRoot.querySelector('#potree_download_dxf2D_icon') : document.getElementById('potree_download_dxf2D_icon');
 		if (dxf2dBtn) {
 			dxf2dBtn.addEventListener('click', () => {
-				const points = getProfilePoints();
-				const string = DXFProfileExporter.toString(points, true);
-				const blob = new Blob([string], {type: "text/string"});
-				const link = document.getElementById('potree_download_profile_dxf2D_link');
-				if (link) link.setAttribute('href', URL.createObjectURL(blob));
+				const blob = this.exportDXF(true);
+				this.downloadFile(blob, 'profile_2d.dxf');
 			});
 		}
 
-		const dxf3dBtn = document.getElementById('potree_download_dxf3D_icon');
+		const dxf3dBtn = this.elRoot ? this.elRoot.querySelector('#potree_download_dxf3D_icon') : document.getElementById('potree_download_dxf3D_icon');
 		if (dxf3dBtn) {
 			dxf3dBtn.addEventListener('click', () => {
-				const points = getProfilePoints(true);
-				const string = DXFProfileExporter.toString(points);
-				const blob = new Blob([string], {type: "text/string"});
-				const link = document.getElementById('potree_download_profile_dxf3D_link');
-				if (link) link.setAttribute('href', URL.createObjectURL(blob));
+				const blob = this.exportDXF(false);
+				this.downloadFile(blob, 'profile_3d.dxf');
 			});
 		}
 
-		const csvBtn = document.getElementById('potree_download_csv_icon');
+		const csvBtn = this.elRoot ? this.elRoot.querySelector('#potree_download_csv_icon') : document.getElementById('potree_download_csv_icon');
 		if (csvBtn) {
 			csvBtn.addEventListener('click', () => {
-				let points = getProfilePoints(true);
-				let string = CSVExporter.toString(points);
-				let blob = new Blob([string], {type: "text/string"});
-				const link = document.getElementById('potree_download_profile_ortho_link');
-				if (link) link.setAttribute('href', URL.createObjectURL(blob));
+				const blob = this.exportCSV();
+				this.downloadFile(blob, 'profile.csv');
 			});
 		}
 
-		const lasBtn = document.getElementById('potree_download_las_icon');
+		const lasBtn = this.elRoot ? this.elRoot.querySelector('#potree_download_las_icon') : document.getElementById('potree_download_las_icon');
 		if (lasBtn) {
 			lasBtn.addEventListener('click', () => {
-				let points = getProfilePoints(true);
-				let buffer = LASExporter.toLAS(points);
-				let blob = new Blob([buffer], {type: "application/octet-binary"});
-				const link = document.getElementById('potree_download_profile_link');
-				if (link) link.setAttribute('href', URL.createObjectURL(blob));
+				const blob = this.exportLAS();
+				this.downloadFile(blob, 'profile.las');
 			});
 		}
+	}
+
+	getProfilePoints (truePosition) {
+		let points = new Points();
+		for(let [pointcloud, entry] of this.pointclouds){
+			for(let pointSet of entry.points){
+				let originPos = pointSet.data.position;
+				let truePointPosition = new Float64Array(originPos);
+				for(let i = 0; i < pointSet.numPoints; i++){
+					if (truePosition === true) {
+						truePointPosition[3 * i + 0] += pointcloud.position.x;
+						truePointPosition[3 * i + 1] += pointcloud.position.y;
+					}
+					truePointPosition[3 * i + 2] += pointcloud.position.z;
+				}
+				pointSet.data.position = truePointPosition;
+				points.add(pointSet);
+				pointSet.data.position = originPos;
+			}
+		}
+		return points;
+	}
+
+	exportDXF (is2D = false) {
+		const points = this.getProfilePoints(!is2D);
+		const string = DXFProfileExporter.toString(points, is2D);
+		return new Blob([string], { type: "text/plain" });
+	}
+
+	exportCSV () {
+		const points = this.getProfilePoints(true);
+		const string = CSVExporter.toString(points);
+		return new Blob([string], { type: "text/csv" });
+	}
+
+	exportLAS () {
+		const points = this.getProfilePoints(true);
+		const buffer = LASExporter.toLAS(points);
+		return new Blob([buffer], { type: "application/octet-binary" });
+	}
+
+	downloadFile (blob, filename) {
+		const link = document.createElement('a');
+		link.href = URL.createObjectURL(blob);
+		link.download = filename;
+		link.click();
+		setTimeout(() => URL.revokeObjectURL(link.href), 10000);
 	}
 
 	selectPoint (mileage, elevation, radius) {
@@ -880,10 +863,6 @@ export class ProfileWindow extends EventDispatcher {
 			numPoints += value.points.reduce( (a, i) => a + i.numPoints, 0);
 		}
 		this.numPoints = numPoints;
-		const numPointsEl = document.getElementById('profile_num_points');
-		if (numPointsEl) {
-			numPointsEl.textContent = Utils.addCommas(numPoints);
-		}
 		this.dispatchEvent({ type: "points_changed", numPoints: numPoints });
 
 	}
@@ -909,9 +888,8 @@ export class ProfileWindow extends EventDispatcher {
 			this.scale.set(1, 1, 1);
 		}
 		this.pickSphere.visible = false;
-
-		const propEl = document.getElementById('profileSelectionProperties');
-		if (propEl) propEl.style.display = 'none';
+		this.selectedPoint = null;
+		this.dispatchEvent({ type: "point_unselected" });
 
 		this.render();
 	}

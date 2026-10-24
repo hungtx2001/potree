@@ -65,27 +65,34 @@ export class Viewer extends EventDispatcher{
 			domElement.appendChild(this.elMessages);
 		}
 		
-		try{
+		this.descriptionContainer = null;
+		this.annotationContainer = null;
+		this.quickButtonsContainer = null;
+
+		try {
 			if (domElement) {
-				if (!domElement.querySelector('#potree_description')) {
-					const potreeDescription = document.createElement('div');
-					potreeDescription.id = 'potree_description';
-					potreeDescription.className = 'potree_info_text';
-					domElement.appendChild(potreeDescription);
+				this.descriptionContainer = domElement.querySelector('#potree_description');
+				if (!this.descriptionContainer) {
+					this.descriptionContainer = document.createElement('div');
+					this.descriptionContainer.id = 'potree_description';
+					this.descriptionContainer.className = 'potree_info_text';
+					domElement.appendChild(this.descriptionContainer);
 				}
 
-				if (!domElement.querySelector('#potree_annotation_container')) {
-					const potreeAnnotationContainer = document.createElement('div');
-					potreeAnnotationContainer.id = 'potree_annotation_container';
-					potreeAnnotationContainer.style.cssText = 'position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;';
-					domElement.appendChild(potreeAnnotationContainer);
+				this.annotationContainer = domElement.querySelector('#potree_annotation_container');
+				if (!this.annotationContainer) {
+					this.annotationContainer = document.createElement('div');
+					this.annotationContainer.id = 'potree_annotation_container';
+					this.annotationContainer.style.cssText = 'position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;';
+					domElement.appendChild(this.annotationContainer);
 				}
 
-				if (!domElement.querySelector('#potree_quick_buttons')) {
-					const potreeQuickButtons = document.createElement('div');
-					potreeQuickButtons.id = 'potree_quick_buttons';
-					potreeQuickButtons.className = 'quick_buttons_container';
-					domElement.appendChild(potreeQuickButtons);
+				this.quickButtonsContainer = domElement.querySelector('#potree_quick_buttons');
+				if (!this.quickButtonsContainer) {
+					this.quickButtonsContainer = document.createElement('div');
+					this.quickButtonsContainer.id = 'potree_quick_buttons';
+					this.quickButtonsContainer.className = 'quick_buttons_container';
+					domElement.appendChild(this.quickButtonsContainer);
 				}
 			}
 
@@ -351,7 +358,7 @@ export class Viewer extends EventDispatcher{
 			if (!this.onAnnotationAdded) {
 				this.onAnnotationAdded = e => {
 					e.annotation.traverse(node => {
-						const container = document.getElementById("potree_annotation_container");
+						const container = this.annotationContainer || this.renderArea?.querySelector("#potree_annotation_container");
 						const dom = node.domElement?.[0] || node.domElement;
 						if (container && dom) {
 							container.appendChild(dom);
@@ -422,7 +429,7 @@ export class Viewer extends EventDispatcher{
 
 	setDescription (value) {
 		this.description = value;
-		const el = document.getElementById('potree_description');
+		const el = this.descriptionContainer || this.renderArea?.querySelector('#potree_description');
 		if (el) {
 			el.innerHTML = value;
 		}
@@ -813,13 +820,9 @@ export class Viewer extends EventDispatcher{
 	}
 
 	showAbout () {
-		const el = document.getElementById('about-panel');
+		const el = this.renderArea?.querySelector('#about-panel');
 		if (el) {
-			if (typeof (window).$ !== 'undefined' && typeof (window).$('#about-panel')?.dialog === 'function') {
-				(window).$('#about-panel').dialog();
-			} else {
-				el.style.display = el.style.display === 'none' ? 'block' : 'none';
-			}
+			el.style.display = el.style.display === 'none' ? 'block' : 'none';
 		}
 	};
 
@@ -1115,7 +1118,7 @@ export class Viewer extends EventDispatcher{
 	};
 
 	toggleSidebar () {
-		let renderArea = document.getElementById('potree_render_area') || this.renderArea;
+		let renderArea = this.renderArea;
 		if (!renderArea) return;
 		let isVisible = renderArea.style.left && renderArea.style.left !== '0px';
 
@@ -1247,7 +1250,7 @@ export class Viewer extends EventDispatcher{
 			this.onGUILoaded(callback);
 		}
 
-		let sidebarContainer = document.getElementById('potree_sidebar_container');
+		let sidebarContainer = this.renderArea?.querySelector('#potree_sidebar_container');
 
 		const initGuiDom = () => {
 			if (sidebarContainer) {
@@ -1266,7 +1269,7 @@ export class Viewer extends EventDispatcher{
 			imgMapToggle.onclick = e => { this.toggleMap(); };
 			imgMapToggle.id = 'potree_map_toggle';
 
-			let elButtons = document.getElementById("potree_quick_buttons");
+			let elButtons = this.quickButtonsContainer || this.renderArea?.querySelector("#potree_quick_buttons");
 			if (elButtons) {
 				elButtons.appendChild(imgMenuToggle);
 				elButtons.appendChild(imgMapToggle);
@@ -1886,7 +1889,7 @@ export class Viewer extends EventDispatcher{
 		if(this.mapView){
 			this.mapView.update(delta);
 			if(this.mapView.sceneProjection){
-				const elToggle = document.getElementById("potree_map_toggle");
+				const elToggle = this.renderArea?.querySelector("#potree_map_toggle");
 				if (elToggle) elToggle.style.display = "block";
 				
 			}
