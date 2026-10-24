@@ -35,8 +35,6 @@ import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import * as TWEEN from '@tweenjs/tween.js';
 import JSON5 from 'json5';
 import proj4 from 'proj4';
-import sidebarHtml from './sidebar.html?raw';
-import profileHtml from './profile.html?raw';
 import { runtime } from "../runtime.js";
 import { updatePointClouds } from "../Potree_update_visibility.js";
 import { saveProject } from "./SaveProject.js";
@@ -1312,35 +1310,23 @@ export class Viewer extends EventDispatcher{
 
 			import("./sidebar.js").then(({ Sidebar }) => {
 				let sidebar = new Sidebar(this);
-				sidebar.init();
+				sidebar.init(sidebarContainer);
 				this.sidebar = sidebar;
 			}).catch(err => {
 				console.warn("Could not load legacy Sidebar:", err);
 			});
 
-			const initProfileDom = () => {
-				let elProfile = document.createElement('div');
-				elProfile.innerHTML = profileHtml;
-				while (elProfile.firstChild) {
-					document.body.appendChild(elProfile.firstChild);
-				}
-				this.profileWindow = new ProfileWindow(this);
-				this.profileWindowController = new ProfileWindowController(this);
+			this.profileWindow = new ProfileWindow(this);
+			this.profileWindowController = new ProfileWindowController(this);
 
-				this.guiLoaded = true;
-				for(let task of this.guiLoadTasks){
-					task();
-				}
-				this.guiLoadTasks = [];
-			};
-
-			initProfileDom();
+			this.guiLoaded = true;
+			for (let task of this.guiLoadTasks) {
+				task();
+			}
+			this.guiLoadTasks = [];
 		};
 
-		if (sidebarHtml && sidebarContainer) {
-			sidebarContainer.innerHTML = sidebarHtml;
-			initGuiDom();
-		}
+		initGuiDom();
 
 		return this.promiseGuiLoaded();
 	}

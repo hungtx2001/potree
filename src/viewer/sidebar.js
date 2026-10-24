@@ -74,7 +74,11 @@ export class Sidebar{
 		}
 	}
 
-	init(){
+	init(container){
+		if (container && (!this.dom || this.dom.length === 0)) {
+			container.innerHTML = LEGACY_SIDEBAR_HTML;
+			this.dom = $("#sidebar_root");
+		}
 
 		this.initAccordion();
 		this.initAppearance();
@@ -1480,4 +1484,5 @@ export class Sidebar{
 	}
 
 }
+
 
