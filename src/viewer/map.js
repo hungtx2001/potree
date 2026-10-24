@@ -102,12 +102,17 @@ export class MapView{
 			return;
 		}
 
-		this.elMap = $('#potree_map');
-		this.elMap.draggable({ handle: $('#potree_map_header') });
-		this.elMap.resizable();
+		this.elMap = this.viewer.renderArea?.querySelector('#potree_map') || document.getElementById('potree_map');
+		if (this.elMap && typeof (window).$ !== 'undefined' && typeof (window).$(this.elMap)?.draggable === 'function') {
+			(window).$(this.elMap).draggable({ handle: this.elMap.querySelector('#potree_map_header') || undefined });
+			(window).$(this.elMap).resizable();
+		}
 
-		this.elTooltip = $(`<div style="position: relative; z-index: 100"></div>`);
-		this.elMap.append(this.elTooltip);
+		this.elTooltip = document.createElement('div');
+		this.elTooltip.style.cssText = "position: relative; z-index: 100;";
+		if (this.elMap) {
+			this.elMap.appendChild(this.elTooltip);
+		}
 
 		let extentsLayer = this.getExtentsLayer();
 		let cameraLayer = this.getCameraLayer();
@@ -747,11 +752,13 @@ export class MapView{
 	}
 
 	toggle () {
-		if (this.elMap.is(':visible')) {
-			this.elMap.css('display', 'none');
+		if (!this.elMap) return;
+		const isVisible = this.elMap.style.display !== 'none' && this.elMap.style.display !== '';
+		if (isVisible) {
+			this.elMap.style.display = 'none';
 			this.enabled = false;
 		} else {
-			this.elMap.css('display', 'block');
+			this.elMap.style.display = 'block';
 			this.enabled = true;
 		}
 	}
@@ -761,15 +768,17 @@ export class MapView{
 			return;
 		}
 
-		let pm = $('#potree_map');
+		let pm = this.elMap || this.viewer.renderArea?.querySelector('#potree_map');
 
-		if (!this.enabled) {
+		if (!this.enabled || !pm) {
 			return;
 		}
 
 		// resize
 		let mapSize = this.map.getSize();
-		let resized = (pm.width() !== mapSize[0] || pm.height() !== mapSize[1]);
+		let pmWidth = pm.clientWidth || pm.offsetWidth;
+		let pmHeight = pm.clientHeight || pm.offsetHeight;
+		let resized = (pmWidth !== mapSize[0] || pmHeight !== mapSize[1]);
 		if (resized) {
 			this.map.updateSize();
 		}
