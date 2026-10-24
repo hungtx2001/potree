@@ -75,6 +75,14 @@ export function loadPointCloud(
 				pointcloud.position.copy(geometry.offset).multiplyScalar(-1);
 			}
 
+			const aPosition = pointcloud.getAttribute?.('position');
+			if (aPosition && aPosition.range && pointcloud.material) {
+				pointcloud.material.elevationRange = [
+					aPosition.range[0][2],
+					aPosition.range[1][2],
+				];
+			}
+
 			const result: LoadPointCloudResult = { type: 'pointcloud_loaded', pointcloud };
 			if (callback) callback(result);
 			resolve(result);
