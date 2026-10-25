@@ -8,3 +8,4 @@ export * from './XHRFactory.js';
 export * from './Utils.js';
 export * from './Message.js';
 export * from './GeoTIFF.js';
+export * from './CameraExtensions.js';

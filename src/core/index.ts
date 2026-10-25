@@ -23,6 +23,9 @@ export * from './runtime/index.js';
 // Headless Navigation
 export * from './navigation/index.js';
 
+// Arena4D kd-tree format
+export * from './arena4d/index.js';
+
 // Loaders
 export { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.js';
 
@@ -32,6 +35,9 @@ export { Scene } from './Scene.js';
 export { PotreeStore } from '../viewer/store/PotreeStore.js';
 // Core Utilities & Math
 export * from './utils/index.js';
+
+// Project Persistence
+export * from './viewer/index.js';
 
 import { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.js';
 import { PointCloudOctree } from './octree/PointCloudOctree.js';

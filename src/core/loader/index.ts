@@ -6,3 +6,5 @@ export * from './POCLoader.js';
 export * from './EptLoader.js';
 export * from './ShapefileLoader.js';
 export * from './GeoPackageLoader.js';
+export * from './laslaz.js';
+export * from './LasLazLoader.js';

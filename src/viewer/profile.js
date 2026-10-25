@@ -1,14 +1,13 @@
 
 import * as THREE from 'three';
 
-import {Utils} from "../utils.js";
-import {Points} from "../Points.js";
-import { EventDispatcher } from "../EventDispatcher.js";
-import {PointCloudTree} from "../PointCloudTree.js";
-import {Renderer} from "../PotreeRenderer.js";
-import {PointCloudMaterial} from "../core/materials/PointCloudMaterial.js";
-import {PointSizeType} from "../defines.js";
-import {runtime} from "../runtime.js";
+import { Utils } from "../core/utils/Utils.js";
+import { Points, PointCloudTree } from "../core/octree/index.js";
+import { EventDispatcher } from "../core/EventDispatcher.js";
+import { Renderer } from "../core/rendering/PotreeRenderer.js";
+import { PointCloudMaterial } from "../core/materials/PointCloudMaterial.js";
+import { PointSizeType } from "../core/types.js";
+import { runtime } from "../core/runtime/runtime.js";
 
 
 class ProfileScale {

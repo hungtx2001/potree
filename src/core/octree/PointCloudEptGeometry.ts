@@ -3,10 +3,8 @@ import { PointAttributes, PointAttribute, PointAttributeTypes } from '../loader/
 import * as THREE from 'three';
 import proj4 from 'proj4';
 import { Copc, Key, Bounds, Ept } from 'copc';
-import { Version } from '../../Version.js';
-import { CopcLaszipLoader, EptLaszipLoader } from '../../loader/ept/LaszipLoader.js';
-import { EptBinaryLoader } from '../../loader/ept/BinaryLoader.js';
-import { EptZstandardLoader } from '../../loader/ept/ZstandardLoader.js';
+import { Version } from '../utils/Version.js';
+import { CopcLaszipLoader, EptLaszipLoader, EptBinaryLoader, EptZstandardLoader } from '../loader/ept/index.js';
 import { runtime } from '../runtime/index.js';
 
 class U {

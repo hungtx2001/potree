@@ -1447,6 +1447,8 @@ export class Renderer {
 
 };
 
+export { Renderer as PotreeRenderer };
+
 
 
 
