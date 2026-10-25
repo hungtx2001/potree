@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import { NormalizationMaterial, NormalizationEDLMaterial, PointCloudMaterial } from '../materials/index.js';
+import { NormalizationMaterial } from '../materials/NormalizationMaterial.js';
+import { NormalizationEDLMaterial } from '../materials/NormalizationEDLMaterial.js';
+import { PointCloudMaterial } from '../materials/PointCloudMaterial.js';
 import { PointShape } from '../types.js';
 import { SphereVolume } from '../tools/Volume.js';
 import { Utils } from '../utils/Utils.js';

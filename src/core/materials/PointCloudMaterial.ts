@@ -151,6 +151,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.vertexShader = pointcloudVert;
 		this.fragmentShader = pointcloudFrag;
 		this.vertexColors = true;
+		this.extensions = {
+			derivatives: false,
+			fragDepth: true,
+			drawBuffers: false,
+			shaderTextureLOD: false,
+		};
 
 		Object.defineProperty(this, 'opacity', {
 			get: () => this.uniforms?.uOpacity?.value ?? 1.0,

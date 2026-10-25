@@ -35,6 +35,9 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial {
 			uniforms,
 			vertexShader: normalizeVert,
 			fragmentShader: normalizeAndEdlFrag,
+			extensions: {
+				fragDepth: true,
+			},
 			...parameters,
 		});
 

@@ -1,1 +1,0 @@
-export { loadProject } from '../core/viewer/LoadProject.js';

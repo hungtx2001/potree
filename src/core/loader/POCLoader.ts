@@ -90,7 +90,13 @@ export class POCLoader {
 
 			xhr.onreadystatechange = function () {
 				if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
-					const fMno = JSON.parse(xhr.responseText);
+					let text = xhr.responseText.trim();
+					const firstBrace = text.indexOf('{');
+					const lastBrace = text.lastIndexOf('}');
+					if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
+						text = text.substring(firstBrace, lastBrace + 1);
+					}
+					const fMno = JSON.parse(text);
 					const version = new Version(fMno.version);
 
 					if (fMno.octreeDir.indexOf('http') === 0) {

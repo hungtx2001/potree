@@ -185,7 +185,13 @@ export class PointCloudArena4DGeometry extends EventDispatcher {
 		xhr.onreadystatechange = () => {
 			try {
 				if (xhr.readyState === 4 && xhr.status === 200) {
-					const response = JSON.parse(xhr.responseText);
+					let text = xhr.responseText.trim();
+					const firstBrace = text.indexOf('{');
+					const lastBrace = text.lastIndexOf('}');
+					if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
+						text = text.substring(firstBrace, lastBrace + 1);
+					}
+					const response = JSON.parse(text);
 
 					const geometry = new PointCloudArena4DGeometry();
 					geometry.url = url;

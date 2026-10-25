@@ -17,10 +17,10 @@
   "type": "module",
   "main": "./dist/potree.cjs",
   "module": "./dist/potree.js",
-  "types": "./types/index.d.ts",
+  "types": "./dist/potree.d.ts",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./dist/potree.d.ts",
       "import": "./dist/potree.js",
       "require": "./dist/potree.cjs"
     },
@@ -43,7 +43,6 @@
   },
   "files": [
     "dist",
-    "types",
     "resources",
     "README.md",
     "LICENSE"

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PointCloudTree } from '../octree/PointCloudTree.js';
 import { PointCloudOctreeNode } from '../octree/PointCloudOctree.js';
 import { PointSizeType, ClipTask, ElevationGradientRepeat } from '../types.js';
-import { runtime } from '../runtime/index.js';
+import { runtime } from '../runtime/runtime.js';
 
 // Copied from three.js: WebGLRenderer.js
 function paramThreeToGL(_gl: any, p: any): number {
@@ -1127,10 +1127,8 @@ export class Renderer {
 			for (let uniformName of Object.keys(material.uniforms)) {
 				let uniform = material.uniforms[uniformName];
 
-				if (uniform.type == "t") {
-
-					let texture = uniform.value;
-
+				let texture = uniform?.value;
+				if (uniform?.type === "t" || texture?.isTexture || (texture && texture.image)) {
 					if (!texture) {
 						continue;
 					}
@@ -1142,9 +1140,7 @@ export class Renderer {
 					}
 
 					let webGLTexture = this.textures.get(texture);
-					webGLTexture.update();
-
-
+					webGLTexture?.update();
 				}
 			}
 		}
@@ -1304,7 +1300,17 @@ export class Renderer {
 
 			shader.setUniform("backfaceCulling", material.uniforms.backfaceCulling.value);
 
-			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
+			const getWebGLTexture = (texture: any) => {
+				if (!texture) return null;
+				if (!this.textures.has(texture)) {
+					this.textures.set(texture, new WebGLTexture(gl, texture));
+				}
+				const wt = this.textures.get(texture);
+				wt?.update();
+				return wt;
+			};
+
+			let vnWebGLTexture = getWebGLTexture(material.visibleNodesTexture);
 			if(vnWebGLTexture){
 				shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);
 				gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
@@ -1312,35 +1318,41 @@ export class Renderer {
 				currentTextureBindingPoint++;
 			}
 
-			let gradientTexture = this.textures.get(material.gradientTexture);
-			shader.setUniform1i("gradient", currentTextureBindingPoint);
-			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
-			gl.bindTexture(gradientTexture.target, gradientTexture.id);
+			let gradientTexture = getWebGLTexture(material.gradientTexture);
+			if(gradientTexture){
+				shader.setUniform1i("gradient", currentTextureBindingPoint);
+				gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
+				gl.bindTexture(gradientTexture.target, gradientTexture.id);
 
-			const repeat = material.elevationGradientRepeat;
-			if(repeat === ElevationGradientRepeat.REPEAT){
-				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.REPEAT);
-				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.REPEAT);
-			}else if(repeat === ElevationGradientRepeat.MIRRORED_REPEAT){
-				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
-				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-			}else{
-				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				const repeat = material.elevationGradientRepeat;
+				if(repeat === ElevationGradientRepeat.REPEAT){
+					gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.REPEAT);
+					gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.REPEAT);
+				}else if(repeat === ElevationGradientRepeat.MIRRORED_REPEAT){
+					gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+					gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+				}else{
+					gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+					gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				}
+				currentTextureBindingPoint++;
 			}
-			currentTextureBindingPoint++;
 
-			let classificationTexture = this.textures.get(material.classificationTexture);
-			shader.setUniform1i("classificationLUT", currentTextureBindingPoint);
-			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
-			gl.bindTexture(classificationTexture.target, classificationTexture.id);
-			currentTextureBindingPoint++;
+			let classificationTexture = getWebGLTexture(material.classificationTexture);
+			if(classificationTexture){
+				shader.setUniform1i("classificationLUT", currentTextureBindingPoint);
+				gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
+				gl.bindTexture(classificationTexture.target, classificationTexture.id);
+				currentTextureBindingPoint++;
+			}
 
-			let matcapTexture = this.textures.get(material.matcapTexture);
-			shader.setUniform1i("matcapTextureUniform", currentTextureBindingPoint);
-			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
-			gl.bindTexture(matcapTexture.target, matcapTexture.id);
-			currentTextureBindingPoint++;
+			let matcapTexture = getWebGLTexture(material.matcapTexture);
+			if(matcapTexture){
+				shader.setUniform1i("matcapTextureUniform", currentTextureBindingPoint);
+				gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
+				gl.bindTexture(matcapTexture.target, matcapTexture.id);
+				currentTextureBindingPoint++;
+			}
 
 
 			if (material.snapEnabled === true) {

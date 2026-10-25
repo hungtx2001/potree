@@ -4,8 +4,10 @@ import * as THREE from 'three';
 import proj4 from 'proj4';
 import { Copc, Key, Bounds, Ept } from 'copc';
 import { Version } from '../utils/Version.js';
-import { CopcLaszipLoader, EptLaszipLoader, EptBinaryLoader, EptZstandardLoader } from '../loader/ept/index.js';
-import { runtime } from '../runtime/index.js';
+import { CopcLaszipLoader, EptLaszipLoader } from '../loader/ept/LaszipLoader.js';
+import { EptBinaryLoader } from '../loader/ept/BinaryLoader.js';
+import { EptZstandardLoader } from '../loader/ept/ZstandardLoader.js';
+import { runtime } from '../runtime/runtime.js';
 
 class U {
 	static toVector3(v: number[], offset: number = 0): THREE.Vector3 {

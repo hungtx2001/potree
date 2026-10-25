@@ -50,6 +50,9 @@ export class EyeDomeLightingMaterial extends THREE.RawShaderMaterial {
 			depthTest: true,
 			depthWrite: true,
 			transparent: true,
+			extensions: {
+				fragDepth: true,
+			},
 			...parameters,
 		});
 

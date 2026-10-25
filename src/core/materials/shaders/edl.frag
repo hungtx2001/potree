@@ -1,4 +1,12 @@
+#if defined(GL_EXT_frag_depth)
 #extension GL_EXT_frag_depth : enable
+#define gl_FragDepthCompat gl_FragDepthEXT
+#elif !defined(GL_ES) || __VERSION__ >= 300
+#define gl_FragDepthCompat gl_FragDepth
+#else
+#extension GL_EXT_frag_depth : enable
+#define gl_FragDepthCompat gl_FragDepthEXT
+#endif
 
 // Eye-Dome Lighting (EDL) shader adapted from Christian Boucheny (CloudCompare)
 precision mediump float;
@@ -62,7 +70,7 @@ void main() {
 		float pz = dp.z / dp.w;
 		float fragDepth = (pz + 1.0) / 2.0;
 
-		gl_FragDepthEXT = fragDepth;
+		gl_FragDepthCompat = fragDepth;
 	}
 
 	if (depth == 0.0) {

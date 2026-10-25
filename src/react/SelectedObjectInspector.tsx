@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import type { Viewer } from '../../types/index.js';
-import { Measure } from '../utils/Measure.js';
-import { Volume } from '../utils/Volume.js';
-import { Annotation } from '../Annotation.js';
+import type { Viewer } from '../viewer/viewer.js';
+import { Measure } from '../core/tools/Measure.js';
+import { Volume } from '../core/tools/Volume.js';
+import { Annotation } from '../core/tools/Annotation.js';
 import { IconBox, IconClose, IconRuler, IconCopy, IconCheck } from './icons.js';
 
 export interface SelectedObjectInspectorProps {

@@ -1,43 +1,132 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Viewer } from '../../types/index.js';
+import type { Viewer } from '../viewer/viewer.js';
 import {
-	IconEye,
-	IconTool,
-	IconFilter,
-	IconLayers,
-	IconSettings,
-	IconClose,
+	IconMenu,
 	IconChevronRight,
 	IconChevronDown,
-	IconBox,
+	IconFolder,
+	IconCloud,
 	IconRuler,
-	IconDownload,
+	IconCamera,
+	IconTag,
+	IconFit,
+	IconClose,
 } from './icons.js';
-import { MeasurementPanel } from './MeasurementPanel.js';
-import { ClassificationFilterPanel } from './ClassificationFilterPanel.js';
-import { PointCloudPropertyPanel } from './PointCloudPropertyPanel.js';
-import { SelectedObjectInspector } from './SelectedObjectInspector.js';
-import { PointCloudOctree } from '../PointCloudOctree.js';
+import {
+	iconAngle,
+	iconPoint,
+	iconDistance,
+	iconHeight,
+	iconCircle,
+	iconArea,
+	iconVolume,
+	iconProfile,
+	iconResetTools,
+	iconClipVolume,
+	iconClipPolygon,
+	iconClipScreen,
+	iconRemove,
+	iconEarth,
+	iconFps,
+	iconHelicopter,
+	iconOrbit,
+	iconFocus,
+	iconNavCube,
+	iconLeft,
+	iconRight,
+	iconFront,
+	iconBack,
+	iconTop,
+	iconBottom,
+} from './toolIcons.js';
+import { PointCloudOctree } from '../core/octree/PointCloudOctree.js';
 import { Exporters } from '../core/tools/Exporters.js';
+import { CameraMode, ClipTask, ClipMethod } from '../core/types.js';
+import { runtime } from '../core/runtime/runtime.js';
+import '../styles/potree.css';
 
 export interface PotreeSidebarProps {
 	viewer?: Viewer | null;
 	isOpen?: boolean;
+	onToggle?: () => void;
 	onClose?: () => void;
 	onOpenProfile?: () => void;
+	resourcePath?: string;
+	showBranding?: boolean;
 	className?: string;
 	style?: React.CSSProperties;
 }
 
+interface ASPRSClass {
+	code: number;
+	name: string;
+	color: string;
+	visible: boolean;
+}
+
+const DEFAULT_ASPRS_CLASSES: ASPRSClass[] = [
+	{ code: 0, name: 'Never Classified', color: '#808080', visible: true },
+	{ code: 1, name: 'Unassigned', color: '#a0a0a0', visible: true },
+	{ code: 2, name: 'Ground', color: '#d2b48c', visible: true },
+	{ code: 3, name: 'Low Vegetation', color: '#90ee90', visible: true },
+	{ code: 4, name: 'Medium Vegetation', color: '#228b22', visible: true },
+	{ code: 5, name: 'High Vegetation', color: '#006400', visible: true },
+	{ code: 6, name: 'Building', color: '#ff8c00', visible: true },
+	{ code: 7, name: 'Low Point / Noise', color: '#ff0000', visible: false },
+	{ code: 9, name: 'Water', color: '#0000ff', visible: true },
+	{ code: 14, name: 'Wire Conductor (EVN)', color: '#00ffff', visible: true },
+	{ code: 15, name: 'Transmission Tower (EVN)', color: '#ff00ff', visible: true },
+	{ code: 16, name: 'Wire Structure', color: '#ffff00', visible: true },
+];
+
 export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 	viewer,
-	isOpen = true,
+	isOpen: controlledIsOpen,
+	onToggle,
 	onClose,
 	onOpenProfile,
+	resourcePath,
+	showBranding = false,
 	className = '',
 	style,
 }) => {
-	const [activeTab, setActiveTab] = useState<'appearance' | 'tools' | 'classification' | 'scene'>('appearance');
+	const resPath = resourcePath || (viewer as any)?.resourcePath || runtime?.resourcePath || '/resources';
+	// Open/Close state (controlled or uncontrolled)
+	const [uncontrolledOpen, setUncontrolledOpen] = useState(true);
+	const isOpen = typeof controlledIsOpen !== 'undefined' ? controlledIsOpen : uncontrolledOpen;
+
+	const handleToggle = () => {
+		if (onToggle) {
+			onToggle();
+		} else {
+			setUncontrolledOpen(!uncontrolledOpen);
+		}
+	};
+
+	// Accordion open/close sections (Scene open by default, matching screenshot)
+	const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+		appearance: false,
+		tools: false,
+		scene: true,
+		classification: false,
+		about: false,
+	});
+
+	const toggleSection = (id: string) => {
+		setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+	};
+
+	// Tree expand/collapse states
+	const [treeOpen, setTreeOpen] = useState<Record<string, boolean>>({
+		pointclouds: true,
+		measurements: true,
+		annotations: true,
+		other: true,
+	});
+
+	const toggleTreeNode = (id: string) => {
+		setTreeOpen(prev => ({ ...prev, [id]: !prev[id] }));
+	};
 
 	// Appearance State
 	const [pointBudget, setPointBudget] = useState<number>(2_000_000);
@@ -45,17 +134,29 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 	const [edlEnabled, setEdlEnabled] = useState<boolean>(true);
 	const [edlRadius, setEdlRadius] = useState<number>(1.4);
 	const [edlStrength, setEdlStrength] = useState<number>(0.8);
+	const [edlOpacity, setEdlOpacity] = useState<number>(1.0);
 	const [background, setBackgroundState] = useState<'gradient' | 'skybox' | 'black' | 'white' | 'none'>('gradient');
+	const [splatQuality, setSplatQuality] = useState<'standard' | 'hq'>('standard');
+	const [minNodeSize, setMinNodeSize] = useState<number>(100);
 	const [showBoundingBox, setShowBoundingBox] = useState<boolean>(false);
+	const [isFreeze, setIsFreeze] = useState<boolean>(false);
 
-	// Scene Selection State
+	// Navigation & Move Speed
+	const [moveSpeed, setMoveSpeed] = useState<number>(210.0);
+	const [navMode, setNavMode] = useState<'earth' | 'flight' | 'helicopter' | 'orbit'>('orbit');
+	const [cameraProjection, setCameraProjection] = useState<'Perspective' | 'Orthographic'>('Perspective');
+
+	// Clipping Options
+	const [clipTask, setClipTask] = useState<'NONE' | 'HIGHLIGHT' | 'SHOW_INSIDE' | 'SHOW_OUTSIDE'>('HIGHLIGHT');
+	const [clipMethod, setClipMethod] = useState<'INSIDE_ANY' | 'INSIDE_ALL'>('INSIDE_ANY');
+
+	// Selection and Scene Sync
 	const [selectedObject, setSelectedObject] = useState<any>(null);
 	const [, setSceneVersion] = useState<number>(0);
+	const triggerSceneUpdate = useCallback(() => setSceneVersion(v => v + 1), []);
 
-	// Refresh trigger for scene objects
-	const triggerSceneUpdate = useCallback(() => {
-		setSceneVersion(v => v + 1);
-	}, []);
+	// Classification state
+	const [classes, setClasses] = useState<ASPRSClass[]>(DEFAULT_ASPRS_CLASSES);
 
 	// Sync with Viewer
 	useEffect(() => {
@@ -64,27 +165,24 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 		viewer.setPointBudget(pointBudget);
 		viewer.setFOV(fov);
 		viewer.setEDLEnabled(edlEnabled);
+		viewer.setEDLRadius?.(edlRadius);
+		viewer.setEDLStrength?.(edlStrength);
+		viewer.setEDLOpacity?.(edlOpacity);
 		viewer.setBackground(background);
-
-		if (viewer.scene && viewer.scene.pointclouds) {
-			for (const pc of viewer.scene.pointclouds) {
-				const mat = (pc as any).material;
-				if (mat) {
-					if (typeof mat.edlRadius !== 'undefined') mat.edlRadius = edlRadius;
-					if (typeof mat.edlStrength !== 'undefined') mat.edlStrength = edlStrength;
-				}
-			}
-		}
+		viewer.setMoveSpeed?.(moveSpeed);
 
 		if (typeof (viewer as any).setShowBoundingBox === 'function') {
 			(viewer as any).setShowBoundingBox(showBoundingBox);
 		}
-	}, [viewer, pointBudget, fov, edlEnabled, edlRadius, edlStrength, background, showBoundingBox]);
 
-	// Listen to scene changes (pointcloud added, measurements added/removed)
+		if (typeof (viewer as any).setFreeze === 'function') {
+			(viewer as any).setFreeze(isFreeze);
+		}
+	}, [viewer, pointBudget, fov, edlEnabled, edlRadius, edlStrength, edlOpacity, background, showBoundingBox, isFreeze, moveSpeed]);
+
+	// Listen to scene events
 	useEffect(() => {
 		if (!viewer || !viewer.scene) return;
-
 		const scene = viewer.scene;
 		const update = () => triggerSceneUpdate();
 
@@ -109,595 +207,1157 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 		};
 	}, [viewer, triggerSceneUpdate]);
 
-	if (!isOpen) return null;
-
-	const tabs = [
-		{ id: 'appearance', label: 'Hiển thị', icon: <IconEye size={16} /> },
-		{ id: 'tools', label: 'Công cụ', icon: <IconTool size={16} /> },
-		{ id: 'classification', label: 'Phân loại', icon: <IconFilter size={16} /> },
-		{ id: 'scene', label: 'Đối tượng', icon: <IconLayers size={16} /> },
-	] as const;
-
-	const pointclouds = viewer?.scene?.pointclouds || [];
-	const measurements = viewer?.scene?.measurements || [];
-	const volumes = viewer?.scene?.volumes || [];
-	const profiles = viewer?.scene?.profiles || [];
-
-	const handleToggleVisibility = (item: any) => {
-		item.visible = !item.visible;
-		triggerSceneUpdate();
-	};
-
-	const handleExportScene = (type: 'geojson' | 'dxf') => {
+	// Export Scene Data
+	const handleExport = (type: 'geojson' | 'dxf') => {
 		if (!viewer || !viewer.scene) return;
-		const allItems = [...measurements, ...profiles, ...volumes];
-		if (allItems.length === 0) return;
+		const allItems = [
+			...(viewer.scene.measurements || []),
+			...(viewer.scene.profiles || []),
+			...(viewer.scene.volumes || []),
+		];
+		if (allItems.length === 0) {
+			alert('No measurements to export!');
+			return;
+		}
 
 		if (type === 'geojson') {
 			const json = Exporters.toGeoJSON(allItems as any);
-			Exporters.downloadFile('measurements.geojson', json, 'application/json');
+			Exporters.downloadFile('potree_scene.geojson', json, 'application/json');
 		} else if (type === 'dxf') {
 			const dxf = Exporters.toDXF(allItems as any);
-			Exporters.downloadFile('measurements.dxf', dxf, 'application/dxf');
+			Exporters.downloadFile('potree_scene.dxf', dxf, 'application/dxf');
 		}
 	};
 
+	// Start Measurement Tool
+	const startMeasurement = (type: string) => {
+		if (!viewer || !viewer.measuringTool) return;
+		switch (type) {
+			case 'angle':
+				viewer.measuringTool.startInsertion({ showAngles: true, closed: true, maxMarkers: 3, name: 'Angle' });
+				break;
+			case 'point':
+				viewer.measuringTool.startInsertion({ showCoordinates: true, maxMarkers: 1, name: 'Point' });
+				break;
+			case 'distance':
+				viewer.measuringTool.startInsertion({ showDistances: true, closed: false, name: 'Distance' });
+				break;
+			case 'height':
+				viewer.measuringTool.startInsertion({ showHeight: true, closed: false, maxMarkers: 2, name: 'Height' });
+				break;
+			case 'circle':
+				viewer.measuringTool.startInsertion({ showCircle: true, closed: false, maxMarkers: 3, name: 'Circle' });
+				break;
+			case 'area':
+				viewer.measuringTool.startInsertion({ showArea: true, closed: true, name: 'Area' });
+				break;
+			case 'volume':
+				viewer.volumeTool?.startInsertion({ type: 'box', name: 'Box Volume' });
+				break;
+			case 'sphere':
+				viewer.volumeTool?.startInsertion({ type: 'sphere', name: 'Sphere Volume' });
+				break;
+			case 'profile':
+				viewer.profileTool?.startInsertion({ name: 'Height Profile' });
+				if (onOpenProfile) onOpenProfile();
+				break;
+			case 'clear':
+				if (viewer.scene) {
+					viewer.scene.removeAllMeasurements();
+					setSelectedObject(null);
+					triggerSceneUpdate();
+				}
+				break;
+			default:
+				break;
+		}
+	};
+
+	// Apply Classification Filter
+	const toggleClassVisibility = (code: number) => {
+		setClasses(prev => {
+			const next = prev.map(c => (c.code === code ? { ...c, visible: !c.visible } : c));
+			if (viewer?.scene?.pointclouds) {
+				for (const pc of viewer.scene.pointclouds) {
+					const mat = (pc as any).material;
+					if (mat?.classification?.[code]) {
+						mat.classification[code].visible = !mat.classification[code].visible;
+						mat.updateShaderSource?.();
+					}
+				}
+			}
+			return next;
+		});
+	};
+
+	const setAllClasses = (visible: boolean) => {
+		setClasses(prev => {
+			const next = prev.map(c => ({ ...c, visible }));
+			if (viewer?.scene?.pointclouds) {
+				for (const pc of viewer.scene.pointclouds) {
+					const mat = (pc as any).material;
+					if (mat?.classification) {
+						for (const c of next) {
+							if (mat.classification[c.code]) {
+								mat.classification[c.code].visible = visible;
+							}
+						}
+						mat.updateShaderSource?.();
+					}
+				}
+			}
+			return next;
+		});
+	};
+
+	const pointclouds = viewer?.scene?.pointclouds || [];
+	const measurements = viewer?.scene?.measurements || [];
+	const annotations: any[] = (viewer?.scene?.annotations as any)?.children || [];
+
+	const toggleTop = style?.top ? `calc(${style.top} + 10px)` : '10px';
+
 	return (
-		<aside
-			className={`potree-glass potree-react-sidebar ${className}`}
-			style={{
-				position: 'absolute',
-				top: '20px',
-				left: '20px',
-				bottom: '20px',
-				width: '380px',
-				borderRadius: '16px',
-				backdropFilter: 'blur(24px)',
-				background: 'rgba(15, 23, 42, 0.90)',
-				border: '1px solid rgba(255, 255, 255, 0.12)',
-				boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65)',
-				display: 'flex',
-				flexDirection: 'column',
-				overflow: 'hidden',
-				zIndex: 1000,
-				fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-				color: '#f8fafc',
-				...style,
-			}}
-		>
-			{/* Header */}
-			<div
+		<>
+			{/* Traditional Top-Left Hamburger Toggle Button */}
+			<button
+				type="button"
+				className="potree_sidebar_toggle"
+				onClick={handleToggle}
+				title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
 				style={{
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'space-between',
-					padding: '14px 18px',
-					borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-					background: 'rgba(255, 255, 255, 0.02)',
+					top: toggleTop,
+					left: isOpen ? '380px' : '10px',
 				}}
 			>
-				<div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-					<span
-						style={{
-							width: '10px',
-							height: '10px',
-							borderRadius: '50%',
-							background: '#38bdf8',
-							boxShadow: '0 0 10px #38bdf8',
-						}}
-					/>
-					<span style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.4px', color: '#f8fafc' }}>
-						POTREE 3D ENGINE
-					</span>
-					<span
-						style={{
-							fontSize: '10px',
-							background: 'rgba(56, 189, 248, 0.16)',
-							color: '#38bdf8',
-							padding: '2px 6px',
-							borderRadius: '6px',
-							fontWeight: 600,
-						}}
-					>
-						v2.0
-					</span>
-				</div>
+				<IconMenu size={20} />
+			</button>
 
-				{onClose && (
-					<button
-						type="button"
-						onClick={onClose}
-						title="Thu gọn Sidebar"
-						style={{
-							background: 'none',
-							border: 'none',
-							color: 'rgba(255, 255, 255, 0.6)',
-							cursor: 'pointer',
-							padding: '4px',
-							display: 'flex',
-							alignItems: 'center',
-							borderRadius: '6px',
-						}}
-					>
-						<IconClose size={18} />
-					</button>
-				)}
-			</div>
-
-			{/* Modern Tab Bar */}
-			<div
+			{/* Authentic Potree Sidebar Container */}
+			<aside
+				className={`potree_sidebar_container ${className}`}
 				style={{
-					display: 'grid',
-					gridTemplateColumns: 'repeat(4, 1fr)',
-					borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-					background: 'rgba(0, 0, 0, 0.2)',
-				}}
-			>
-				{tabs.map(tab => {
-					const isActive = activeTab === tab.id;
-					return (
-						<button
-							key={tab.id}
-							type="button"
-							onClick={() => setActiveTab(tab.id)}
-							style={{
-								display: 'flex',
-								flexDirection: 'column',
-								alignItems: 'center',
-								gap: '4px',
-								padding: '10px 4px',
-								background: isActive ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
-								border: 'none',
-								borderBottom: isActive ? '2px solid #38bdf8' : '2px solid transparent',
-								color: isActive ? '#38bdf8' : 'rgba(255, 255, 255, 0.6)',
-								fontSize: '11px',
-								fontWeight: isActive ? 600 : 500,
-								cursor: 'pointer',
-								transition: 'all 0.15s ease',
-							}}
-						>
-							{tab.icon}
-							<span>{tab.label}</span>
-						</button>
-					);
-				})}
-			</div>
-
-			{/* Tab Content Body */}
-			<div
-				style={{
-					flex: 1,
+					position: 'absolute',
+					top: 0,
+					left: 0,
+					bottom: 0,
+					width: '370px',
+					background: '#0f172a',
+					borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+					zIndex: 1000,
 					overflowY: 'auto',
-					padding: '16px 18px',
 					display: 'flex',
 					flexDirection: 'column',
-					gap: '16px',
+					transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+					transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+					...style,
 				}}
 			>
-				{/* 1. APPEARANCE TAB */}
-				{activeTab === 'appearance' && (
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-						{/* Point Budget */}
-						<div>
-							<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-								<span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Mật độ điểm hiển thị:</span>
-								<span style={{ fontSize: '12px', fontWeight: 600, color: '#38bdf8' }}>
-									{(pointBudget / 1_000_000).toFixed(1)}M điểm
-								</span>
+				{/* SECTION 1: APPEARANCE */}
+				<div
+					className={`potree_accordion_header ${openSections.appearance ? 'active' : ''}`}
+					onClick={() => toggleSection('appearance')}
+				>
+					<span>Appearance</span>
+					{openSections.appearance ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+				</div>
+				{openSections.appearance && (
+					<div className="potree_accordion_body">
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Point Budget</span>
+								<span className="potree_slider_val">{(pointBudget / 1_000_000).toFixed(1)}M</span>
 							</div>
 							<input
 								type="range"
+								className="potree_slider"
 								min={100_000}
 								max={10_000_000}
-								step={200_000}
+								step={100_000}
 								value={pointBudget}
 								onChange={e => setPointBudget(Number(e.target.value))}
-								style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
 							/>
 						</div>
 
-						{/* Field of View */}
-						<div>
-							<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-								<span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Góc nhìn camera (FOV):</span>
-								<span style={{ fontSize: '12px', fontWeight: 600, color: '#38bdf8' }}>{fov}°</span>
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Field of View</span>
+								<span className="potree_slider_val">{fov}°</span>
 							</div>
 							<input
 								type="range"
-								min={20}
-								max={100}
+								className="potree_slider"
+								min={30}
+								max={120}
 								step={1}
 								value={fov}
 								onChange={e => setFov(Number(e.target.value))}
-								style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
 							/>
 						</div>
 
-						{/* Eye-Dome Lighting (EDL) */}
-						<div
-							style={{
-								padding: '12px',
-								borderRadius: '10px',
-								background: 'rgba(255, 255, 255, 0.04)',
-								border: '1px solid rgba(255, 255, 255, 0.08)',
-							}}
-						>
-							<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-								<span style={{ fontSize: '12px', fontWeight: 600 }}>Tăng cường độ nổi 3D (EDL)</span>
+						<div className="divider">
+							<span>Eye-Dome-Lighting</span>
+						</div>
+
+						<label className="potree_checkbox_label">
+							<input
+								type="checkbox"
+								className="potree_tree_checkbox"
+								checked={edlEnabled}
+								onChange={e => setEdlEnabled(e.target.checked)}
+							/>
+							<span>Enable EDL</span>
+						</label>
+
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Radius</span>
+								<span className="potree_slider_val">{edlRadius.toFixed(1)}</span>
+							</div>
+							<input
+								type="range"
+								className="potree_slider"
+								min={0.5}
+								max={4.0}
+								step={0.1}
+								value={edlRadius}
+								onChange={e => setEdlRadius(Number(e.target.value))}
+							/>
+						</div>
+
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Strength</span>
+								<span className="potree_slider_val">{edlStrength.toFixed(1)}</span>
+							</div>
+							<input
+								type="range"
+								className="potree_slider"
+								min={0.1}
+								max={3.0}
+								step={0.1}
+								value={edlStrength}
+								onChange={e => setEdlStrength(Number(e.target.value))}
+							/>
+						</div>
+
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Opacity</span>
+								<span className="potree_slider_val">{edlOpacity.toFixed(2)}</span>
+							</div>
+							<input
+								type="range"
+								className="potree_slider"
+								min={0.0}
+								max={1.0}
+								step={0.05}
+								value={edlOpacity}
+								onChange={e => setEdlOpacity(Number(e.target.value))}
+							/>
+						</div>
+
+						<div className="divider">
+							<span>Background</span>
+						</div>
+
+						<div className="potree_selectgroup">
+							{(['skybox', 'gradient', 'black', 'white', 'none'] as const).map(bg => (
+								<button
+									key={bg}
+									type="button"
+									className={`potree_selectgroup_btn ${background === bg ? 'active' : ''}`}
+									onClick={() => setBackgroundState(bg)}
+								>
+									{bg.charAt(0).toUpperCase() + bg.slice(1)}
+								</button>
+							))}
+						</div>
+
+						<div className="divider">
+							<span>Other</span>
+						</div>
+
+						<div className="potree_selectgroup">
+							<button
+								type="button"
+								className={`potree_selectgroup_btn ${splatQuality === 'standard' ? 'active' : ''}`}
+								onClick={() => setSplatQuality('standard')}
+							>
+								Standard
+							</button>
+							<button
+								type="button"
+								className={`potree_selectgroup_btn ${splatQuality === 'hq' ? 'active' : ''}`}
+								onClick={() => setSplatQuality('hq')}
+							>
+								High Quality
+							</button>
+						</div>
+
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Min Node Size:</span>
+								<span>{minNodeSize}</span>
+							</div>
+							<input
+								type="range"
+								className="potree_slider"
+								min={0}
+								max={300}
+								step={5}
+								value={minNodeSize}
+								onChange={e => setMinNodeSize(Number(e.target.value))}
+							/>
+						</div>
+
+						<label className="potree_checkbox_label">
+							<input
+								type="checkbox"
+								className="potree_tree_checkbox"
+								checked={showBoundingBox}
+								onChange={e => setShowBoundingBox(e.target.checked)}
+							/>
+							<span>Show Bounding Box</span>
+						</label>
+
+						<label className="potree_checkbox_label">
+							<input
+								type="checkbox"
+								className="potree_tree_checkbox"
+								checked={isFreeze}
+								onChange={e => setIsFreeze(e.target.checked)}
+							/>
+							<span>Freeze</span>
+						</label>
+					</div>
+				)}
+
+				{/* SECTION 2: TOOLS */}
+				<div
+					className={`potree_accordion_header ${openSections.tools ? 'active' : ''}`}
+					onClick={() => toggleSection('tools')}
+				>
+					<span>Tools</span>
+					{openSections.tools ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+				</div>
+				{openSections.tools && (
+					<div className="potree_accordion_body">
+						{/* MEASUREMENT */}
+						<div className="divider">
+							<span>Measurement</span>
+						</div>
+
+						<div className="potree_toolbar">
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('angle')}
+								title="Angle measurement"
+							>
+								<img src={iconAngle} alt="Angle" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('point')}
+								title="Point coordinates"
+							>
+								<img src={iconPoint} alt="Point" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('distance')}
+								title="Distance measurement"
+							>
+								<img src={iconDistance} alt="Distance" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('height')}
+								title="Height measurement"
+							>
+								<img src={iconHeight} alt="Height" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('circle')}
+								title="Circle measurement"
+							>
+								<img src={iconCircle} alt="Circle" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('area')}
+								title="Area measurement"
+							>
+								<img src={iconArea} alt="Area" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('volume')}
+								title="Volume measurement"
+							>
+								<img src={iconVolume} alt="Volume" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('profile')}
+								title="Height profile"
+							>
+								<img src={iconProfile} alt="Profile" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => startMeasurement('clear')}
+								title="Remove all measurements"
+							>
+								<img src={iconResetTools} alt="Clear All" />
+							</button>
+						</div>
+
+						{/* CLIPPING */}
+						<div className="divider">
+							<span>Clipping</span>
+						</div>
+
+						<div className="potree_toolbar">
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => {
+									if (viewer?.volumeTool) {
+										viewer.volumeTool.startInsertion({ clip: true, name: 'Clip Volume' });
+										triggerSceneUpdate();
+									}
+								}}
+								title="Volume clip"
+							>
+								<img src={iconClipVolume} alt="Clip Volume" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => {
+									if (viewer?.clippingTool) {
+										viewer.clippingTool.startInsertion({ type: 'polygon' });
+										triggerSceneUpdate();
+									}
+								}}
+								title="Polygon clip"
+							>
+								<img src={iconClipPolygon} alt="Clip Polygon" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => {
+									if (viewer?.clippingTool) {
+										viewer.clippingTool.startInsertion({ type: 'screen' });
+										triggerSceneUpdate();
+									}
+								}}
+								title="Screen box clip"
+							>
+								<img src={iconClipScreen} alt="Clip Screen" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => {
+									if (viewer?.scene) {
+										viewer.scene.removeAllClipVolumes();
+										triggerSceneUpdate();
+									}
+								}}
+								title="Remove all clipping volumes"
+							>
+								<img src={iconRemove} alt="Remove Clips" />
+							</button>
+						</div>
+
+						<div className="potree_field_label">Clip Task</div>
+						<div className="potree_selectgroup">
+							{([
+								{ key: 'NONE', label: 'None', val: ClipTask.NONE },
+								{ key: 'HIGHLIGHT', label: 'Highlight', val: ClipTask.HIGHLIGHT },
+								{ key: 'SHOW_INSIDE', label: 'Inside', val: ClipTask.SHOW_INSIDE },
+								{ key: 'SHOW_OUTSIDE', label: 'Outside', val: ClipTask.SHOW_OUTSIDE },
+							]).map(({ key, label, val }) => (
+								<button
+									key={key}
+									type="button"
+									className={`potree_selectgroup_btn ${clipTask === key ? 'active' : ''}`}
+									onClick={() => {
+										setClipTask(key as any);
+										if (viewer) (viewer as any).setClipTask?.(val);
+									}}
+								>
+									{label}
+								</button>
+							))}
+						</div>
+
+						<div className="potree_field_label">Clip Method</div>
+						<div className="potree_selectgroup">
+							<button
+								type="button"
+								className={`potree_selectgroup_btn ${clipMethod === 'INSIDE_ANY' ? 'active' : ''}`}
+								onClick={() => {
+									setClipMethod('INSIDE_ANY');
+									if (viewer) (viewer as any).setClipMethod?.(ClipMethod.INSIDE_ANY);
+								}}
+							>
+								Inside Any
+							</button>
+							<button
+								type="button"
+								className={`potree_selectgroup_btn ${clipMethod === 'INSIDE_ALL' ? 'active' : ''}`}
+								onClick={() => {
+									setClipMethod('INSIDE_ALL');
+									if (viewer) (viewer as any).setClipMethod?.(ClipMethod.INSIDE_ALL);
+								}}
+							>
+								Inside All
+							</button>
+						</div>
+
+						{/* NAVIGATION */}
+						<div className="divider">
+							<span>Navigation</span>
+						</div>
+
+						<div className="potree_toolbar">
+							<button
+								type="button"
+								className={`potree_tool_icon ${navMode === 'earth' ? 'active' : ''}`}
+								onClick={() => {
+									setNavMode('earth');
+									if (viewer?.earthControls) viewer.setControls(viewer.earthControls);
+								}}
+								title="Earth control"
+							>
+								<img src={iconEarth} alt="Earth" />
+							</button>
+							<button
+								type="button"
+								className={`potree_tool_icon ${navMode === 'flight' ? 'active' : ''}`}
+								onClick={() => {
+									setNavMode('flight');
+									if (viewer?.fpControls) {
+										viewer.setControls(viewer.fpControls);
+										viewer.fpControls.lockElevation = false;
+									}
+								}}
+								title="Flight control"
+							>
+								<img src={iconFps} alt="Flight" />
+							</button>
+							<button
+								type="button"
+								className={`potree_tool_icon ${navMode === 'helicopter' ? 'active' : ''}`}
+								onClick={() => {
+									setNavMode('helicopter');
+									if (viewer?.fpControls) {
+										viewer.setControls(viewer.fpControls);
+										viewer.fpControls.lockElevation = true;
+									}
+								}}
+								title="Helicopter control"
+							>
+								<img src={iconHelicopter} alt="Helicopter" />
+							</button>
+							<button
+								type="button"
+								className={`potree_tool_icon ${navMode === 'orbit' ? 'active' : ''}`}
+								onClick={() => {
+									setNavMode('orbit');
+									if (viewer?.orbitControls) viewer.setControls(viewer.orbitControls);
+								}}
+								title="Orbit control"
+							>
+								<img src={iconOrbit} alt="Orbit" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => {
+									viewer?.fitToScreen();
+								}}
+								title="Full extent"
+							>
+								<img src={iconFocus} alt="Full extent" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => {
+									(viewer as any)?.toggleNavigationCube?.();
+								}}
+								title="Navigation Cube"
+							>
+								<img src={iconNavCube} alt="Navigation Cube" />
+							</button>
+						</div>
+
+						{/* VIEW ORIENTATION CUBES */}
+						<div className="potree_toolbar">
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => (viewer as any)?.setLeftView?.()}
+								title="Left view"
+							>
+								<img src={iconLeft} alt="Left" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => (viewer as any)?.setRightView?.()}
+								title="Right view"
+							>
+								<img src={iconRight} alt="Right" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => (viewer as any)?.setFrontView?.()}
+								title="Front view"
+							>
+								<img src={iconFront} alt="Front" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => (viewer as any)?.setBackView?.()}
+								title="Back view"
+							>
+								<img src={iconBack} alt="Back" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => (viewer as any)?.setTopView?.()}
+								title="Top view"
+							>
+								<img src={iconTop} alt="Top" />
+							</button>
+							<button
+								type="button"
+								className="potree_tool_icon"
+								onClick={() => (viewer as any)?.setBottomView?.()}
+								title="Bottom view"
+							>
+								<img src={iconBottom} alt="Bottom" />
+							</button>
+						</div>
+
+						<div className="potree_field_label">Camera Projection</div>
+						<div className="potree_selectgroup">
+							<button
+								type="button"
+								className={`potree_selectgroup_btn ${cameraProjection === 'Perspective' ? 'active' : ''}`}
+								onClick={() => {
+									setCameraProjection('Perspective');
+									if (viewer) (viewer as any).setCameraMode?.(CameraMode.PERSPECTIVE);
+								}}
+							>
+								Perspective
+							</button>
+							<button
+								type="button"
+								className={`potree_selectgroup_btn ${cameraProjection === 'Orthographic' ? 'active' : ''}`}
+								onClick={() => {
+									setCameraProjection('Orthographic');
+									if (viewer) (viewer as any).setCameraMode?.(CameraMode.ORTHOGRAPHIC);
+								}}
+							>
+								Orthographic
+							</button>
+						</div>
+
+						<div className="potree_slider_row" style={{ marginTop: '10px' }}>
+							<div className="potree_slider_label">
+								<span>Speed</span>
+								<span className="potree_slider_val">{moveSpeed.toFixed(1)}</span>
+							</div>
+							<input
+								type="range"
+								className="potree_slider"
+								min={1}
+								max={1000}
+								step={1}
+								value={moveSpeed}
+								onChange={e => {
+									const val = Number(e.target.value);
+									setMoveSpeed(val);
+									if (viewer) (viewer as any).setMoveSpeed?.(val);
+								}}
+							/>
+						</div>
+					</div>
+				)}
+
+				{/* SECTION 3: SCENE (Exact Match of Screenshot) */}
+				<div
+					className={`potree_accordion_header ${openSections.scene ? 'active' : ''}`}
+					onClick={() => toggleSection('scene')}
+				>
+					<span>Scene</span>
+					{openSections.scene ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+				</div>
+				{openSections.scene && (
+					<div className="potree_accordion_body">
+						{/* Export Row */}
+						<div className="potree_export_row">
+							<span>Export:</span>
+							<button type="button" className="potree_export_btn" onClick={() => handleExport('geojson')}>
+								JSON
+							</button>
+							<button type="button" className="potree_export_btn" onClick={() => handleExport('dxf')}>
+								DXF
+							</button>
+						</div>
+
+						{/* Objects Divider */}
+						<div className="divider">
+							<span>Objects</span>
+						</div>
+
+						{/* Tree View (Matching jstree hierarchy from screenshot) */}
+						<div className="potree_tree">
+							{/* 1. Point Clouds Branch */}
+							<div
+								className="potree_tree_node"
+								onClick={() => toggleTreeNode('pointclouds')}
+								style={{ paddingLeft: '4px' }}
+							>
+								{treeOpen.pointclouds ? <IconChevronDown size={12} /> : <IconChevronRight size={12} />}
 								<input
 									type="checkbox"
-									checked={edlEnabled}
-									onChange={e => setEdlEnabled(e.target.checked)}
-									style={{ accentColor: '#38bdf8', width: '16px', height: '16px', cursor: 'pointer' }}
+									className="potree_tree_checkbox"
+									checked={pointclouds.some((pc: any) => pc.visible !== false)}
+									onChange={e => {
+										e.stopPropagation();
+										const vis = e.target.checked;
+										for (const pc of pointclouds) pc.visible = vis;
+										triggerSceneUpdate();
+									}}
 								/>
+								<IconFolder size={14} color="#60a5fa" />
+								<span style={{ fontWeight: 600, color: '#93c5fd' }}>Point Clouds</span>
 							</div>
-
-							{edlEnabled && (
-								<div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-									<div>
-										<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-											<span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Bán kính bóng đổ:</span>
-											<span style={{ fontSize: '11px', color: '#38bdf8' }}>{edlRadius.toFixed(1)}</span>
+							{treeOpen.pointclouds && (
+								<div style={{ paddingLeft: '22px' }}>
+									{pointclouds.map((pc: any, idx: number) => {
+										const isSelected = selectedObject === pc;
+										return (
+											<div
+												key={pc.uuid || idx}
+												className={`potree_tree_node ${isSelected ? 'selected' : ''}`}
+												onClick={() => setSelectedObject(pc)}
+											>
+												<input
+													type="checkbox"
+													className="potree_tree_checkbox"
+													checked={pc.visible !== false}
+													onChange={e => {
+														e.stopPropagation();
+														pc.visible = e.target.checked;
+														triggerSceneUpdate();
+													}}
+												/>
+												<IconCloud size={14} color="#38bdf8" />
+												<span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+													{pc.name || 'pointcloud'}
+												</span>
+												<button
+													type="button"
+													title="Focus Camera"
+													onClick={e => {
+														e.stopPropagation();
+														viewer?.zoomTo?.(pc, 1, 500);
+													}}
+													style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 2 }}
+												>
+													<IconFit size={12} />
+												</button>
+											</div>
+										);
+									})}
+									{pointclouds.length === 0 && (
+										<div style={{ color: '#64748b', fontStyle: 'italic', padding: '2px 0 2px 24px' }}>
+											(No point clouds)
 										</div>
-										<input
-											type="range"
-											min={0.5}
-											max={3}
-											step={0.1}
-											value={edlRadius}
-											onChange={e => setEdlRadius(Number(e.target.value))}
-											style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
-										/>
-									</div>
+									)}
+								</div>
+							)}
 
-									<div>
-										<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-											<span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Cường độ viền nổi:</span>
-											<span style={{ fontSize: '11px', color: '#38bdf8' }}>{edlStrength.toFixed(1)}</span>
+							{/* 2. Measurements Branch */}
+							<div
+								className="potree_tree_node"
+								onClick={() => toggleTreeNode('measurements')}
+								style={{ paddingLeft: '4px' }}
+							>
+								{treeOpen.measurements ? <IconChevronDown size={12} /> : <IconChevronRight size={12} />}
+								<input
+									type="checkbox"
+									className="potree_tree_checkbox"
+									checked={measurements.some((m: any) => m.visible !== false)}
+									onChange={e => {
+										e.stopPropagation();
+										const vis = e.target.checked;
+										for (const m of measurements) m.visible = vis;
+										triggerSceneUpdate();
+									}}
+								/>
+								<IconFolder size={14} color="#60a5fa" />
+								<span style={{ fontWeight: 600, color: '#93c5fd' }}>Measurements</span>
+							</div>
+							{treeOpen.measurements && (
+								<div style={{ paddingLeft: '22px' }}>
+									{measurements.map((m: any, idx: number) => {
+										const isSelected = selectedObject === m;
+										return (
+											<div
+												key={m.uuid || idx}
+												className={`potree_tree_node ${isSelected ? 'selected' : ''}`}
+												onClick={() => setSelectedObject(m)}
+											>
+												<input
+													type="checkbox"
+													className="potree_tree_checkbox"
+													checked={m.visible !== false}
+													onChange={e => {
+														e.stopPropagation();
+														m.visible = e.target.checked;
+														triggerSceneUpdate();
+													}}
+												/>
+												<IconRuler size={14} color="#f59e0b" />
+												<span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+													{m.name || `Measure ${idx + 1}`}
+												</span>
+											</div>
+										);
+									})}
+									{measurements.length === 0 && (
+										<div style={{ color: '#64748b', fontStyle: 'italic', padding: '2px 0 2px 24px' }}>
+											(No measurements)
 										</div>
-										<input
-											type="range"
-											min={0.1}
-											max={3}
-											step={0.1}
-											value={edlStrength}
-											onChange={e => setEdlStrength(Number(e.target.value))}
-											style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
-										/>
+									)}
+								</div>
+							)}
+
+							{/* 3. Annotations Branch */}
+							<div
+								className="potree_tree_node"
+								onClick={() => toggleTreeNode('annotations')}
+								style={{ paddingLeft: '4px' }}
+							>
+								{treeOpen.annotations ? <IconChevronDown size={12} /> : <IconChevronRight size={12} />}
+								<input
+									type="checkbox"
+									className="potree_tree_checkbox"
+									checked={annotations.some((a: any) => a.visible !== false)}
+									onChange={e => {
+										e.stopPropagation();
+										const vis = e.target.checked;
+										for (const a of annotations) a.visible = vis;
+										triggerSceneUpdate();
+									}}
+								/>
+								<IconFolder size={14} color="#60a5fa" />
+								<span style={{ fontWeight: 600, color: '#93c5fd' }}>Annotations</span>
+							</div>
+							{treeOpen.annotations && (
+								<div style={{ paddingLeft: '22px' }}>
+									{annotations.map((a: any, idx: number) => (
+										<div key={a.uuid || idx} className="potree_tree_node">
+											<input
+												type="checkbox"
+												className="potree_tree_checkbox"
+												checked={a.visible !== false}
+												onChange={e => {
+													e.stopPropagation();
+													a.visible = e.target.checked;
+													triggerSceneUpdate();
+												}}
+											/>
+											<IconTag size={14} color="#10b981" />
+											<span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+												{a.title || `Annotation ${idx + 1}`}
+											</span>
+										</div>
+									))}
+									{annotations.length === 0 && (
+										<div style={{ color: '#64748b', fontStyle: 'italic', padding: '2px 0 2px 24px' }}>
+											(No annotations)
+										</div>
+									)}
+								</div>
+							)}
+
+							{/* 4. Other Branch */}
+							<div
+								className="potree_tree_node"
+								onClick={() => toggleTreeNode('other')}
+								style={{ paddingLeft: '4px' }}
+							>
+								{treeOpen.other ? <IconChevronDown size={12} /> : <IconChevronRight size={12} />}
+								<input type="checkbox" className="potree_tree_checkbox" defaultChecked />
+								<IconFolder size={14} color="#60a5fa" />
+								<span style={{ fontWeight: 600, color: '#93c5fd' }}>Other</span>
+							</div>
+							{treeOpen.other && (
+								<div style={{ paddingLeft: '22px' }}>
+									<div className="potree_tree_node">
+										<input type="checkbox" className="potree_tree_checkbox" defaultChecked />
+										<IconCamera size={14} color="#c084fc" />
+										<span>Camera</span>
 									</div>
 								</div>
 							)}
 						</div>
 
-						{/* Background */}
-						<div>
-							<span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '8px' }}>
-								Màu nền hiển thị (Background)
-							</span>
-							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-								{(['gradient', 'black', 'white', 'skybox', 'none'] as const).map(bg => (
-									<button
-										key={bg}
-										type="button"
-										onClick={() => setBackgroundState(bg)}
-										style={{
-											padding: '7px 4px',
-											borderRadius: '6px',
-											fontSize: '11px',
-											textTransform: 'capitalize',
-											background: background === bg ? 'rgba(56, 189, 248, 0.28)' : 'rgba(255,255,255,0.05)',
-											color: background === bg ? '#38bdf8' : '#f8fafc',
-											border: background === bg ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)',
-											cursor: 'pointer',
-											fontWeight: background === bg ? 600 : 400,
-										}}
-									>
-										{bg}
-									</button>
-								))}
-							</div>
+						{/* Properties Divider */}
+						<div className="divider">
+							<span>Properties</span>
 						</div>
-					</div>
-				)}
 
-				{/* 2. TOOLS TAB */}
-				{activeTab === 'tools' && (
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-						<MeasurementPanel viewer={viewer} style={{ background: 'transparent', border: 'none', padding: 0, boxShadow: 'none' }} />
-
-						<div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
-							<span style={{ fontSize: '11px', color: '#93c5fd', fontWeight: 600, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-								Cắt lát địa hình & Tuyến dây
-							</span>
-							<button
-								type="button"
-								onClick={onOpenProfile}
-								style={{
-									width: '100%',
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									gap: '8px',
-									padding: '10px',
-									borderRadius: '8px',
-									background: 'rgba(56, 189, 248, 0.15)',
-									border: '1px solid #38bdf8',
-									color: '#f8fafc',
-									fontSize: '12px',
-									fontWeight: 600,
-									cursor: 'pointer',
-								}}
-							>
-								<span>📊 Mở cửa sổ mặt cắt 3D (Profile Viewer)</span>
-							</button>
-						</div>
-					</div>
-				)}
-
-				{/* 3. CLASSIFICATION TAB */}
-				{activeTab === 'classification' && (
-					<ClassificationFilterPanel viewer={viewer} style={{ background: 'transparent', border: 'none', padding: 0, boxShadow: 'none', maxWidth: '100%' }} />
-				)}
-
-				{/* 4. SCENE / OBJECTS TAB */}
-				{activeTab === 'scene' && (
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-						{/* Selected Object Inspector View */}
+						{/* Selected Object Properties Panel */}
 						{selectedObject ? (
-							<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-								<button
-									type="button"
-									onClick={() => setSelectedObject(null)}
-									style={{
-										background: 'rgba(255,255,255,0.06)',
-										border: '1px solid rgba(255,255,255,0.1)',
-										color: '#93c5fd',
-										padding: '6px 10px',
-										borderRadius: '6px',
-										fontSize: '11px',
-										cursor: 'pointer',
-										textAlign: 'left',
-										display: 'inline-flex',
-										alignItems: 'center',
-										gap: '6px',
-										width: 'fit-content',
-									}}
-								>
-									← Quay lại cây đối tượng
-								</button>
+							<div style={{ background: '#182635', border: '1px solid #273b50', borderRadius: 6, padding: '10px' }}>
+								<div style={{ fontWeight: 700, color: '#38bdf8', marginBottom: 6, fontSize: 13 }}>
+									{selectedObject.name || 'Object Properties'}
+								</div>
 
-								{selectedObject instanceof PointCloudOctree ? (
-									<PointCloudPropertyPanel pointcloud={selectedObject} />
+								{/* PointCloud Specific Properties */}
+								{selectedObject instanceof PointCloudOctree || selectedObject?.material ? (
+									<>
+										<div className="potree_slider_row">
+											<div className="potree_slider_label">
+												<span>Point Size:</span>
+												<span>{selectedObject.material?.size || 1}</span>
+											</div>
+											<input
+												type="range"
+												className="potree_slider"
+												min={0.1}
+												max={10}
+												step={0.1}
+												defaultValue={selectedObject.material?.size || 1}
+												onChange={e => {
+													if (selectedObject.material) {
+														selectedObject.material.size = Number(e.target.value);
+													}
+												}}
+											/>
+										</div>
+
+										<div style={{ marginTop: 8 }}>
+											<span style={{ color: '#94a3b8', fontSize: 11 }}>Attribute:</span>
+											<select
+												style={{
+													width: '100%',
+													background: '#131f2c',
+													border: '1px solid #283d54',
+													color: '#f8fafc',
+													padding: '4px 6px',
+													borderRadius: 4,
+													marginTop: 4,
+													fontSize: 12,
+												}}
+												defaultValue="RGB"
+												onChange={e => {
+													const mat = selectedObject.material;
+													if (mat && (viewer as any).PointColorType) {
+														mat.pointColorType = (viewer as any).PointColorType[e.target.value] || mat.pointColorType;
+													}
+												}}
+											>
+												<option value="RGB">RGB</option>
+												<option value="ELEVATION">Elevation</option>
+												<option value="INTENSITY">Intensity</option>
+												<option value="CLASSIFICATION">Classification</option>
+												<option value="RETURN_NUMBER">Return Number</option>
+												<option value="NORMAL">Normal</option>
+											</select>
+										</div>
+									</>
 								) : (
-									<SelectedObjectInspector
-										object={selectedObject}
-										viewer={viewer}
-										onDeselect={() => setSelectedObject(null)}
-									/>
+									/* Measurement Specific Properties */
+									<>
+										{selectedObject.points && (
+											<div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+												Points: {selectedObject.points.length}
+											</div>
+										)}
+										<button
+											type="button"
+											onClick={() => {
+												viewer?.scene?.removeMeasurement?.(selectedObject);
+												setSelectedObject(null);
+												triggerSceneUpdate();
+											}}
+											style={{
+												marginTop: 8,
+												width: '100%',
+												background: '#ef4444',
+												border: 'none',
+												color: '#fff',
+												padding: '6px',
+												borderRadius: 4,
+												fontSize: 11,
+												fontWeight: 600,
+												cursor: 'pointer',
+											}}
+										>
+											Remove Object
+										</button>
+									</>
 								)}
 							</div>
 						) : (
-							/* Scene Hierarchy Tree View */
-							<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-								{/* Global Bounding Box Switch */}
-								<label
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: '8px',
-										padding: '8px 10px',
-										borderRadius: '8px',
-										background: 'rgba(255, 255, 255, 0.05)',
-										cursor: 'pointer',
-									}}
-								>
-									<input
-										type="checkbox"
-										checked={showBoundingBox}
-										onChange={e => setShowBoundingBox(e.target.checked)}
-										style={{ accentColor: '#38bdf8' }}
-									/>
-									<IconBox size={16} color="#93c5fd" />
-									<span style={{ fontSize: '12px' }}>Hiển thị khung bao (Bounding Box)</span>
-								</label>
-
-								{/* Export Section */}
-								{(measurements.length > 0 || volumes.length > 0) && (
-									<div
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'space-between',
-											padding: '8px 10px',
-											background: 'rgba(255,255,255,0.03)',
-											borderRadius: '8px',
-											border: '1px solid rgba(255,255,255,0.06)',
-										}}
-									>
-										<span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Xuất kết quả đo:</span>
-										<div style={{ display: 'flex', gap: '6px' }}>
-											<button
-												type="button"
-												onClick={() => handleExportScene('geojson')}
-												style={{
-													background: 'rgba(56, 189, 248, 0.2)',
-													border: '1px solid rgba(56, 189, 248, 0.4)',
-													color: '#38bdf8',
-													borderRadius: '6px',
-													padding: '4px 8px',
-													fontSize: '10px',
-													cursor: 'pointer',
-													fontWeight: 500,
-												}}
-											>
-												GeoJSON
-											</button>
-											<button
-												type="button"
-												onClick={() => handleExportScene('dxf')}
-												style={{
-													background: 'rgba(56, 189, 248, 0.2)',
-													border: '1px solid rgba(56, 189, 248, 0.4)',
-													color: '#38bdf8',
-													borderRadius: '6px',
-													padding: '4px 8px',
-													fontSize: '10px',
-													cursor: 'pointer',
-													fontWeight: 500,
-												}}
-											>
-												DXF CAD
-											</button>
-										</div>
-									</div>
-								)}
-
-								{/* Point Clouds Section */}
-								<div>
-									<span style={{ fontSize: '11px', fontWeight: 600, color: '#93c5fd', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-										Đám mây điểm ({pointclouds.length})
-									</span>
-									<div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-										{pointclouds.map((pc: any, idx: number) => (
-											<div
-												key={idx}
-												style={{
-													display: 'flex',
-													alignItems: 'center',
-													justifyContent: 'space-between',
-													padding: '8px 10px',
-													borderRadius: '8px',
-													background: 'rgba(255, 255, 255, 0.04)',
-													border: '1px solid rgba(255, 255, 255, 0.08)',
-													cursor: 'pointer',
-												}}
-												onClick={() => setSelectedObject(pc)}
-											>
-												<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-													<IconBox size={14} color="#38bdf8" />
-													<span style={{ fontSize: '12px', fontWeight: 500 }}>{pc.name || `Tập điểm ${idx + 1}`}</span>
-												</div>
-												<button
-													type="button"
-													onClick={e => {
-														e.stopPropagation();
-														handleToggleVisibility(pc);
-													}}
-													style={{
-														background: 'none',
-														border: 'none',
-														color: pc.visible !== false ? '#38bdf8' : 'rgba(255,255,255,0.3)',
-														cursor: 'pointer',
-														padding: '2px',
-													}}
-												>
-													<IconEye size={16} />
-												</button>
-											</div>
-										))}
-									</div>
-								</div>
-
-								{/* Measurements Section */}
-								{measurements.length > 0 && (
-									<div>
-										<span style={{ fontSize: '11px', fontWeight: 600, color: '#4ade80', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-											Đo đạc ({measurements.length})
-										</span>
-										<div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-											{measurements.map((m: any, idx: number) => (
-												<div
-													key={idx}
-													style={{
-														display: 'flex',
-														alignItems: 'center',
-														justifyContent: 'space-between',
-														padding: '8px 10px',
-														borderRadius: '8px',
-														background: 'rgba(255, 255, 255, 0.04)',
-														border: '1px solid rgba(255, 255, 255, 0.08)',
-														cursor: 'pointer',
-													}}
-													onClick={() => setSelectedObject(m)}
-												>
-													<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-														<IconRuler size={14} color="#4ade80" />
-														<span style={{ fontSize: '12px' }}>{m.name || `Đo đạc ${idx + 1}`}</span>
-													</div>
-													<button
-														type="button"
-														onClick={e => {
-															e.stopPropagation();
-															handleToggleVisibility(m);
-														}}
-														style={{
-															background: 'none',
-															border: 'none',
-															color: m.visible !== false ? '#4ade80' : 'rgba(255,255,255,0.3)',
-															cursor: 'pointer',
-															padding: '2px',
-														}}
-													>
-														<IconEye size={16} />
-													</button>
-												</div>
-											))}
-										</div>
-									</div>
-								)}
-
-								{/* Volumes Section */}
-								{volumes.length > 0 && (
-									<div>
-										<span style={{ fontSize: '11px', fontWeight: 600, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-											Khối cắt ({volumes.length})
-										</span>
-										<div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-											{volumes.map((vol: any, idx: number) => (
-												<div
-													key={idx}
-													style={{
-														display: 'flex',
-														alignItems: 'center',
-														justifyContent: 'space-between',
-														padding: '8px 10px',
-														borderRadius: '8px',
-														background: 'rgba(255, 255, 255, 0.04)',
-														border: '1px solid rgba(255, 255, 255, 0.08)',
-														cursor: 'pointer',
-													}}
-													onClick={() => setSelectedObject(vol)}
-												>
-													<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-														<IconBox size={14} color="#fbbf24" />
-														<span style={{ fontSize: '12px' }}>{vol.name || `Khối cắt ${idx + 1}`}</span>
-													</div>
-													<button
-														type="button"
-														onClick={e => {
-															e.stopPropagation();
-															handleToggleVisibility(vol);
-														}}
-														style={{
-															background: 'none',
-															border: 'none',
-															color: vol.visible !== false ? '#fbbf24' : 'rgba(255,255,255,0.3)',
-															cursor: 'pointer',
-															padding: '2px',
-														}}
-													>
-														<IconEye size={16} />
-													</button>
-												</div>
-											))}
-										</div>
-									</div>
-								)}
+							<div style={{ color: '#64748b', fontStyle: 'italic', padding: '10px 0', textAlign: 'center' }}>
+								(Select an object in tree to view properties)
 							</div>
 						)}
 					</div>
 				)}
-			</div>
-		</aside>
+
+				{/* SECTION 4: CLASSIFICATION FILTER */}
+				<div
+					className={`potree_accordion_header ${openSections.classification ? 'active' : ''}`}
+					onClick={() => toggleSection('classification')}
+				>
+					<span>Classification filter</span>
+					{openSections.classification ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+				</div>
+				{openSections.classification && (
+					<div className="potree_accordion_body">
+						<div className="divider">
+							<span>Classification</span>
+						</div>
+
+						<div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+							<button
+								type="button"
+								className="potree_selectgroup_btn"
+								onClick={() => setAllClasses(true)}
+							>
+								Select All
+							</button>
+							<button
+								type="button"
+								className="potree_selectgroup_btn"
+								onClick={() => setAllClasses(false)}
+							>
+								Invert
+							</button>
+						</div>
+
+						<div style={{ maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+							{classes.map(c => (
+								<label
+									key={c.code}
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: 6,
+										cursor: 'pointer',
+										padding: '2px 4px',
+										borderRadius: 3,
+									}}
+								>
+									<input
+										type="checkbox"
+										className="potree_tree_checkbox"
+										checked={c.visible}
+										onChange={() => toggleClassVisibility(c.code)}
+									/>
+									<span
+										style={{
+											width: 12,
+											height: 12,
+											backgroundColor: c.color,
+											borderRadius: 2,
+											display: 'inline-block',
+											flexShrink: 0,
+										}}
+									/>
+									<span style={{ fontSize: 11, color: '#e2e8f0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+										{c.code}: {c.name}
+									</span>
+								</label>
+							))}
+						</div>
+
+						<div className="divider">
+							<span>Returns</span>
+						</div>
+
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Return Number:</span>
+								<span>All</span>
+							</div>
+							<input type="range" className="potree_slider" min={0} max={7} defaultValue={0} />
+						</div>
+
+						<div className="potree_slider_row">
+							<div className="potree_slider_label">
+								<span>Number of Returns:</span>
+								<span>All</span>
+							</div>
+							<input type="range" className="potree_slider" min={0} max={7} defaultValue={7} />
+						</div>
+					</div>
+				)}
+
+				{/* SECTION 5: ABOUT */}
+				<div
+					className={`potree_accordion_header ${openSections.about ? 'active' : ''}`}
+					onClick={() => toggleSection('about')}
+				>
+					<span>About</span>
+					{openSections.about ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+				</div>
+				{openSections.about && (
+					<div className="potree_accordion_body" style={{ color: '#94a3b8', lineHeight: 1.5, fontSize: 11 }}>
+						<p style={{ margin: '0 0 8px 0' }}>
+							<a href="http://potree.org" target="_blank" rel="noreferrer" style={{ color: '#38bdf8' }}>
+								Potree
+							</a>{' '}
+							is a WebGL point cloud viewer for large datasets, developed at TU Wien.
+						</p>
+						<p style={{ margin: '0 0 6px 0' }}>
+							<b>Author:</b> Markus Schütz
+						</p>
+						<p style={{ margin: '0 0 6px 0' }}>
+							<b>License:</b> FreeBSD (2-clause BSD)
+						</p>
+						<p style={{ margin: '0 0 6px 0' }}>
+							<b>GitHub:</b>{' '}
+							<a href="https://github.com/potree/potree" target="_blank" rel="noreferrer" style={{ color: '#38bdf8' }}>
+								potree/potree
+							</a>
+						</p>
+						<div className="divider">
+							<span>Funding</span>
+						</div>
+						<div style={{ fontSize: 10, color: '#64748b' }}>
+							Harvest4D, LargeClouds2BIM, Superhumans, FFG, GCD Doctoral College, TU Wien.
+						</div>
+					</div>
+				)}
+			</aside>
+		</>
 	);
 };

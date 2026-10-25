@@ -21,6 +21,9 @@ export class NormalizationMaterial extends THREE.RawShaderMaterial {
 			uniforms,
 			vertexShader: normalizeVert,
 			fragmentShader: normalizeFrag,
+			extensions: {
+				fragDepth: true,
+			},
 			...parameters,
 		});
 	}

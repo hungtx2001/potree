@@ -5,7 +5,7 @@ import { Utils } from '../utils/Utils.js';
 import { PointCloudMaterial } from '../materials/PointCloudMaterial.js';
 import { ProfileRequest } from '../tools/ProfileRequest.js';
 import { PointShape, ClipTask } from '../types.js';
-import { runtime } from '../runtime/index.js';
+import { runtime } from '../runtime/runtime.js';
 
 export class PointCloudOctreeNode extends PointCloudTreeNode {
 	public children: any[] = [];

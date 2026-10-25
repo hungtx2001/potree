@@ -75,44 +75,16 @@ export const runtime: RuntimeConfig = {
 if (typeof Worker !== 'undefined') {
 	try {
 		workerPool.registerWorkerFactory('DecoderWorker', () => {
-			return new Worker(new URL('../../modules/loader/2.0/DecoderWorker.js', import.meta.url), { type: 'module' });
+			return new Worker(new URL('../../workers/DecoderWorker.ts', import.meta.url), { type: 'module' });
 		});
 		workerPool.registerWorkerFactory('DecoderWorker_brotli', () => {
-			return new Worker(new URL('../../modules/loader/2.0/DecoderWorker_brotli.js', import.meta.url), { type: 'module' });
+			return new Worker(new URL('../../workers/DecoderWorker_brotli.ts', import.meta.url), { type: 'module' });
 		});
 		workerPool.registerWorkerFactory('BinaryDecoderWorker', () => {
-			return new Worker(new URL('../../workers/BinaryDecoderWorker.js', import.meta.url), { type: 'module' });
+			return new Worker(new URL('../../workers/BinaryDecoderWorker.ts', import.meta.url), { type: 'module' });
 		});
 	} catch (_e) {
 		// Ignore if import.meta.url or Worker not supported
 	}
 }
 
-// Global compatibility bridge for window.Potree
-if (typeof window !== 'undefined') {
-	const win = window as any;
-	win.Potree = win.Potree || {};
-	win.Potree.workerPool = workerPool;
-	win.Potree.lru = lru;
-	win.Potree.runtime = runtime;
-	Object.defineProperty(win.Potree, 'numNodesLoading', {
-		get() { return runtime.numNodesLoading; },
-		set(v) { runtime.numNodesLoading = v; },
-		configurable: true,
-	});
-	Object.defineProperty(win.Potree, 'maxNodesLoading', {
-		get() { return runtime.maxNodesLoading; },
-		set(v) { runtime.maxNodesLoading = v; },
-		configurable: true,
-	});
-	Object.defineProperty(win.Potree, 'scriptPath', {
-		get() { return runtime.scriptPath; },
-		set(v) { runtime.setScriptPath(v); },
-		configurable: true,
-	});
-	Object.defineProperty(win.Potree, 'resourcePath', {
-		get() { return runtime.resourcePath; },
-		set(v) { runtime.setResourcePath(v); },
-		configurable: true,
-	});
-}

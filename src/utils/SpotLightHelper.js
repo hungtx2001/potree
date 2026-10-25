@@ -1,1 +1,0 @@
-export { SpotLightHelper } from '../core/utils/SpotLightHelper.js';

@@ -133,3 +133,37 @@ export const IconCheck: React.FC<IconProps> = ({ size = 16, color = 'currentColo
 	</svg>
 );
 
+export const IconMenu: React.FC<IconProps> = ({ size = 20, color = 'currentColor', ...props }) => (
+	<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+		<line x1="4" y1="6" x2="20" y2="6" />
+		<line x1="4" y1="12" x2="20" y2="12" />
+		<line x1="4" y1="18" x2="20" y2="18" />
+	</svg>
+);
+
+export const IconFolder: React.FC<IconProps> = ({ size = 16, color = 'currentColor', ...props }) => (
+	<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+		<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+	</svg>
+);
+
+export const IconCloud: React.FC<IconProps> = ({ size = 16, color = 'currentColor', ...props }) => (
+	<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+		<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+	</svg>
+);
+
+export const IconCamera: React.FC<IconProps> = ({ size = 16, color = 'currentColor', ...props }) => (
+	<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+		<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+		<circle cx="12" cy="13" r="3" />
+	</svg>
+);
+
+export const IconTag: React.FC<IconProps> = ({ size = 16, color = 'currentColor', ...props }) => (
+	<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+		<path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+		<path d="M7 7h.01" />
+	</svg>
+);
+

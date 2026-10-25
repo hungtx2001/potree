@@ -1,4 +1,12 @@
+#if defined(GL_EXT_frag_depth)
 #extension GL_EXT_frag_depth : enable
+#define gl_FragDepthCompat gl_FragDepthEXT
+#elif !defined(GL_ES) || __VERSION__ >= 300
+#define gl_FragDepthCompat gl_FragDepth
+#else
+#extension GL_EXT_frag_depth : enable
+#define gl_FragDepthCompat gl_FragDepthEXT
+#endif
 
 precision mediump float;
 precision mediump int;
@@ -19,5 +27,5 @@ void main() {
 	color = color / color.w;
 
 	gl_FragColor = vec4(color.xyz, 1.0);
-	gl_FragDepthEXT = depth;
+	gl_FragDepthCompat = depth;
 }

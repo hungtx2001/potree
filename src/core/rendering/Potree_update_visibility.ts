@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { ClipTask, ClipMethod } from '../types.js';
-import { Box3Helper } from '../../utils/Box3Helper.js';
-import { BinaryHeap } from '../../utils/BinaryHeap.js';
-import { runtime, lru } from '../runtime/index.js';
+import { Box3Helper } from '../utils/Box3Helper.js';
+import { BinaryHeap } from '../utils/BinaryHeap.js';
+import { runtime, lru } from '../runtime/runtime.js';
 
 const pointcloudTransformVersion = new Map<any, { number: number; transform: THREE.Matrix4 }>();
 

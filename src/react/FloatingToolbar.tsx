@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { FloatingToolbarProps, ToolbarAction } from './types.js';
-import { CameraMode } from '../defines.js';
+import { CameraMode } from '../core/types.js';
 
 export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 	viewer,

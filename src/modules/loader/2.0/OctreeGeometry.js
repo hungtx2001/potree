@@ -1,1 +1,0 @@
-export { OctreeGeometry, OctreeGeometryNode } from '../../../core/loader/OctreeGeometry.js';

@@ -1,23 +1,14 @@
 import './styles/theme.css';
-import './viewer/potree.css';
+import './styles/potree.css';
 
-// Re-export entire core engine (pure headless WebGL, Shaders, Octree, Loaders, Tools, Navigation)
+// Core engine (pure headless WebGL, Shaders, Octree, Loaders, Tools, Navigation)
 export * from "./core/index.js";
 
 // Viewer subsystem & UI
-export * from "./viewer/viewer.js";
-export * from "./viewer/profile.js";
-export * from "./viewer/map.js";
-export * from "./viewer/store/PotreeStore.js";
-export * from "./viewer/ui/components/ToggleGroup.js";
-export * from "./viewer/ui/components/ModernSlider.js";
-export * from "./viewer/ui/components/ModernColorPicker.js";
-export * from "./viewer/ui/components/SceneTree.js";
-export * from "./viewer/ui/FloatingToolbar.ts";
-export * from "./viewer/ui/icons.js";
+export * from "./viewer/index.js";
 
 import "./core/utils/CameraExtensions.js";
-import { runtime, workerPool, lru } from "./core/runtime/runtime.ts";
+import { runtime, workerPool, lru } from "./core/runtime/runtime.js";
 
 export { workerPool, lru, runtime };
 

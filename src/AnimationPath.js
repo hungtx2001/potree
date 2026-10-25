@@ -1,1 +1,0 @@
-export { AnimationPath, PathAnimation } from './core/tools/AnimationPath.js';

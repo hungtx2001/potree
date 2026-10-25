@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import type { Viewer } from '../../types/index.js';
+import type { Viewer } from '../viewer/viewer.js';
 import {
 	IconClose,
 	IconFit,

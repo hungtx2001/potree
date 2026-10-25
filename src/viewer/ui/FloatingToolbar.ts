@@ -5,7 +5,7 @@
  */
 
 import { getIcon } from './icons.js';
-import { CameraMode } from '../../defines.js';
+import { CameraMode } from '../../core/types.js';
 
 export interface ToolbarActionContext {
 	viewer: any;

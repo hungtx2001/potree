@@ -1,6 +1,14 @@
 
 #if defined paraboloid_point_shape
-	#extension GL_EXT_frag_depth : enable
+	#if defined(GL_EXT_frag_depth)
+		#extension GL_EXT_frag_depth : enable
+		#define gl_FragDepthCompat gl_FragDepthEXT
+	#elif !defined(GL_ES) || __VERSION__ >= 300
+		#define gl_FragDepthCompat gl_FragDepth
+	#else
+		#extension GL_EXT_frag_depth : enable
+		#define gl_FragDepthCompat gl_FragDepthEXT
+	#endif
 #endif
 
 precision highp float;
@@ -69,7 +77,7 @@ void main() {
 		pos = pos / pos.w;
 		float expDepth = pos.z;
 		depth = (pos.z + 1.0) / 2.0;
-		gl_FragDepthEXT = depth;
+		gl_FragDepthCompat = depth;
 		
 		#if defined(color_type_depth)
 			color.r = linearDepth;

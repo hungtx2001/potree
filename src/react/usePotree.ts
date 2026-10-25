@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { PotreeStore } from '../viewer/store/PotreeStore.js';
 import { Viewer } from '../viewer/viewer.js';
-import { loadPointCloud } from '../core.js';
+import { loadPointCloud } from '../core/index.js';
 
 /**
  * React hook to reactively subscribe to PotreeStore state
