@@ -40,7 +40,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        potree: resolve(__dirname, 'src/Potree.js'),
+        potree: resolve(__dirname, 'src/Potree.ts'),
         core: resolve(__dirname, 'src/core.ts'),
         react: resolve(__dirname, 'src/react/index.ts'),
         cesium: resolve(__dirname, 'src/cesium/index.ts'),
