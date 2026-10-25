@@ -4,3 +4,5 @@ export * from './OctreeLoader.js';
 export * from './BinaryLoader.js';
 export * from './POCLoader.js';
 export * from './EptLoader.js';
+export * from './ShapefileLoader.js';
+export * from './GeoPackageLoader.js';

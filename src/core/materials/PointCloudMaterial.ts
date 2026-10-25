@@ -604,6 +604,29 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
+	get maxSize(): number {
+		return this.uniforms.maxSize?.value ?? 50;
+	}
+
+	set maxSize(value: number) {
+		if (this.uniforms.maxSize && this.uniforms.maxSize.value !== value) {
+			this.uniforms.maxSize.value = value;
+			this.dispatchEvent({ type: 'point_size_changed', target: this });
+			this.dispatchEvent({ type: 'material_property_changed', target: this });
+		}
+	}
+
+	get elevationGradientRepeat(): ElevationGradientRepeat {
+		return this.uniforms.elevationGradientRepat?.value ?? ElevationGradientRepeat.CLAMP;
+	}
+
+	set elevationGradientRepeat(value: ElevationGradientRepeat) {
+		if (this.uniforms.elevationGradientRepat) {
+			this.uniforms.elevationGradientRepat.value = value;
+			this.dispatchEvent({ type: 'material_property_changed', target: this });
+		}
+	}
+
 	get elevationRange(): [number, number] {
 		return this.uniforms.elevationRange.value;
 	}

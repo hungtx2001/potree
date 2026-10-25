@@ -1,48 +1,46 @@
-
 import * as THREE from 'three';
-import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
-import { CesiumControls } from "../core/navigation/CesiumControls.ts";
-import {Renderer} from "../PotreeRenderer.js";
-import {PotreeRenderer} from "./PotreeRenderer.js";
-import {EDLRenderer} from "./EDLRenderer.js";
-import {HQSplatRenderer} from "./HQSplatRenderer.js";
-import {Scene} from "./Scene.js";
-import {ClippingTool} from "../utils/ClippingTool.js";
-import {TransformationTool} from "../utils/TransformationTool.js";
-import {Utils} from "../utils.js";
-import {MapView} from "./map.js";
-import {ProfileWindow, ProfileWindowController} from "./profile.js";
-import {BoxVolume} from "../utils/Volume.js";
-import {Features} from "../Features.js";
-import {Message} from "../utils/Message.js";
+import { ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat } from "../core/types.js";
+import { CesiumControls } from "../core/navigation/CesiumControls.js";
+import { Renderer } from "../core/rendering/PotreeRenderer.js";
+import { StandardRenderer as PotreeRenderer, EDLRenderer, HQSplatRenderer } from "../core/rendering/index.js";
+import { Scene } from "../core/Scene.js";
+import {
+	ClippingTool,
+	TransformationTool,
+	AnnotationTool,
+	MeasuringTool,
+	ProfileTool,
+	VolumeTool,
+	Compass,
+	BoxVolume
+} from "../core/tools/index.js";
+import { Utils, Features, Message } from "../core/utils/index.js";
+import { MapView } from "./map.js";
+import { ProfileWindow, ProfileWindowController } from "./profile.js";
 
-import {AnnotationTool} from "../utils/AnnotationTool.js";
-import {MeasuringTool} from "../utils/MeasuringTool.js";
-import {ProfileTool} from "../utils/ProfileTool.js";
-import {VolumeTool} from "../utils/VolumeTool.js";
-
-import {InputHandler} from "../core/navigation/InputHandler.js";
-import {NavigationCube} from "./NavigationCube.js";
-import {Compass} from "../utils/Compass.js";
-import {OrbitControls} from "../core/navigation/OrbitControls.js";
-import {FirstPersonControls} from "../core/navigation/FirstPersonControls.js";
-import {EarthControls} from "../core/navigation/EarthControls.js";
-import {DeviceOrientationControls} from "../core/navigation/DeviceOrientationControls.js";
-import {VRControls} from "../core/navigation/VRControls.js";
-import { EventDispatcher } from "../EventDispatcher.js";
+import {
+	InputHandler,
+	NavigationCube,
+	OrbitControls,
+	FirstPersonControls,
+	EarthControls,
+	DeviceOrientationControls,
+	VRControls
+} from "../core/navigation/index.js";
+import { EventDispatcher } from "../core/EventDispatcher.js";
 import { ClassificationScheme } from "../core/materials/ClassificationScheme.js";
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import * as TWEEN from '@tweenjs/tween.js';
 import JSON5 from 'json5';
 import proj4 from 'proj4';
-import { runtime } from "../runtime.js";
-import { updatePointClouds } from "../Potree_update_visibility.js";
+import { runtime } from "../core/runtime/runtime.js";
+import { updatePointClouds } from "../core/rendering/Potree_update_visibility.js";
 import { saveProject } from "./SaveProject.js";
 import { loadProject } from "./LoadProject.js";
 import { GeoPackageLoader } from "../loader/GeoPackageLoader.js";
 import { FloatingToolbar } from "./ui/FloatingToolbar.ts";
 import { PotreeStore } from "./store/PotreeStore.js";
-import { loadPointCloud } from "../core.js";
+import { loadPointCloud } from "../core/index.js";
 
 
 export class Viewer extends EventDispatcher{

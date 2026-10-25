@@ -8,3 +8,4 @@ export { InputHandler } from './InputHandler.js';
 export { CesiumControls, type CesiumProjection } from './CesiumControls.js';
 export { View } from './View.js';
 export { NavigationCube } from './NavigationCube.js';
+export { OrientedImageControls } from './OrientedImageControls.js';

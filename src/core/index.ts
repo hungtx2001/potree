@@ -22,14 +22,13 @@ export * from './runtime/index.js';
 
 // Headless Navigation
 export * from './navigation/index.js';
-export { OrientedImageControls } from '../modules/OrientedImages/OrientedImageControls.js';
 
 // Loaders
 export { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.js';
 
 // Headless Viewport & Scene
 export { Viewer } from '../viewer/viewer.js';
-export { Scene } from '../viewer/Scene.js';
+export { Scene } from './Scene.js';
 export { PotreeStore } from '../viewer/store/PotreeStore.js';
 // Core Utilities & Math
 export * from './utils/index.js';

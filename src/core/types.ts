@@ -3,6 +3,7 @@ import * as THREE from 'three';
 export enum CameraMode {
 	PERSPECTIVE = 0,
 	ORTHOGRAPHIC = 1,
+	VR = 2,
 }
 
 export enum PointSizeType {

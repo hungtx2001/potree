@@ -6,3 +6,5 @@ export * from './Version.js';
 export * from './Features.js';
 export * from './XHRFactory.js';
 export * from './Utils.js';
+export * from './Message.js';
+export * from './GeoTIFF.js';
