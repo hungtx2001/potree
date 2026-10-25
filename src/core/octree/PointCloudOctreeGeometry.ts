@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PointCloudTreeNode } from './PointCloudTree.js';
-import { XHRFactory } from '../../XHRFactory.js';
-import { Utils } from '../../utils.js';
+import { XHRFactory } from '../utils/XHRFactory.js';
+import { Utils } from '../utils/Utils.js';
 import { runtime } from '../runtime/index.js';
 
 export class PointCloudOctreeGeometry {

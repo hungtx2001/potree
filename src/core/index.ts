@@ -27,7 +27,7 @@ export * from './navigation/index.js';
 export * from './arena4d/index.js';
 
 // Loaders
-export { OctreeLoader, POCLoader, CopcLoader, EptLoader } from './loader/index.js';
+export * from './loader/index.js';
 
 // Headless Viewport & Scene
 export { Viewer } from '../viewer/viewer.js';

@@ -1035,7 +1035,7 @@ export class ProfileWindowController {
 		};
 
 		this.rotate = (degrees) => {
-			rotate(THREE.Math.degToRad(degrees));
+			rotate(THREE.MathUtils.degToRad(degrees));
 		};
 
 		this.moveForward = () => {

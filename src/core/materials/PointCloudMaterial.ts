@@ -4,8 +4,8 @@ import pointcloudFrag from './shaders/pointcloud.frag?raw';
 import { Gradients } from './Gradients.js';
 import { ClassificationScheme } from './ClassificationScheme.js';
 import { PointSizeType, PointShape, TreeType, ElevationGradientRepeat } from '../types.js';
-import { Utils } from '../../utils.js';
-import { runtime } from '../../runtime.js';
+import { Utils } from '../utils/Utils.js';
+import { runtime } from '../runtime/runtime.js';
 
 export interface PointCloudMaterialParameters {
 	size?: number;

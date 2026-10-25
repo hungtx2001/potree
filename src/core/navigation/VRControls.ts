@@ -4,9 +4,9 @@ import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerM
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
-import { TextSprite } from '../../TextSprite.js';
-import { Utils } from '../../utils.js';
-import { runtime } from '../../runtime.js';
+import { TextSprite } from '../tools/TextSprite.js';
+import { Utils } from '../utils/Utils.js';
+import { runtime } from '../runtime/runtime.js';
 
 const fakeCam = new THREE.PerspectiveCamera();
 

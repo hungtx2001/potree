@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 import { MOUSE } from '../types.js';
-import { Utils } from '../../utils.js';
-import { EventDispatcher } from '../../EventDispatcher.js';
+import { Utils } from '../utils/Utils.js';
+import { EventDispatcher } from '../EventDispatcher.js';
 
 export class FirstPersonControls extends EventDispatcher {
 	public viewer: any;

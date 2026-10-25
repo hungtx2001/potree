@@ -1,64 +1,13 @@
 import './styles/theme.css';
 import './viewer/potree.css';
 
-export * from "./Actions.js";
-export * from "./AnimationPath.js";
-export * from "./Annotation.js";
-export * from "./defines.js";
-export * from "./Enum.js";
-export * from "./EventDispatcher.js";
-export * from "./Features.js";
-export * from "./KeyCodes.js";
-export * from "./LRU.js";
-export * from "./PointCloudEptGeometry.js";
-export * from "./PointCloudOctree.js";
-export * from "./PointCloudOctreeGeometry.js";
-export * from "./PointCloudTree.js";
-export * from "./Points.js";
-export * from "./Potree_update_visibility.js";
-export * from "./PotreeRenderer.js";
-export * from "./ProfileRequest.js";
-export * from "./TextSprite.js";
-export * from "./utils.js";
-export * from "./Version.js";
-export * from "./WorkerPool.js";
-export * from "./XHRFactory.js";
-export * from "./arena4d/PointCloudArena4D.js";
-export * from "./arena4d/PointCloudArena4DGeometry.js";
-export * from "./viewer/SaveProject.js";
-export * from "./viewer/LoadProject.js";
+// Re-export entire core engine (pure headless WebGL, Shaders, Octree, Loaders, Tools, Navigation)
+export * from "./core/index.js";
 
-export * from "./core/materials/index.js";
-
-export * from "./loader/POCLoader.js";
-export * from "./modules/loader/2.0/OctreeLoader.js";
-export * from "./loader/EptLoader.js";
-export * from "./loader/ept/BinaryLoader.js";
-export * from "./loader/ept/LaszipLoader.js";
-export * from "./loader/ept/ZstandardLoader.js";
-export * from "./loader/ShapefileLoader.js";
-export * from "./loader/GeoPackageLoader.js";
-
-export * from "./utils/Box3Helper.js";
-export * from "./utils/ClippingTool.js";
-export * from "./utils/ClipVolume.js";
-export * from "./utils/GeoTIFF.js";
-export * from "./utils/Measure.js";
-export * from "./utils/MeasuringTool.js";
-export * from "./utils/Message.js";
-export * from "./utils/PointCloudSM.js";
-export * from "./utils/PolygonClipVolume.js";
-export * from "./utils/Profile.js";
-export * from "./utils/ProfileTool.js";
-export * from "./utils/ScreenBoxSelectTool.js";
-export * from "./utils/SpotLightHelper.js";
-export * from "./utils/TransformationTool.js";
-export * from "./utils/Volume.js";
-export * from "./utils/VolumeTool.js";
-export * from "./utils/Compass.js";
-
+// Viewer subsystem & UI
 export * from "./viewer/viewer.js";
-export * from "./viewer/Scene.js";
+export * from "./viewer/profile.js";
+export * from "./viewer/map.js";
 export * from "./viewer/store/PotreeStore.js";
 export * from "./viewer/ui/components/ToggleGroup.js";
 export * from "./viewer/ui/components/ModernSlider.js";
@@ -67,36 +16,17 @@ export * from "./viewer/ui/components/SceneTree.js";
 export * from "./viewer/ui/FloatingToolbar.ts";
 export * from "./viewer/ui/icons.js";
 
-export * from "./modules/OrientedImages/OrientedImages.js";
-export * from "./modules/Images360/Images360.js";
-export * from "./modules/CameraAnimation/CameraAnimation.js";
-
-export * from "./modules/loader/2.0/OctreeLoader.js";
-
-export * from "./core/navigation/index.js";
-
-import "./extensions/OrthographicCamera.js";
-import "./extensions/PerspectiveCamera.js";
-import "./extensions/Ray.js";
-
-import {LRU} from "./LRU.js";
-import {OctreeLoader} from "./modules/loader/2.0/OctreeLoader.js";
-import {POCLoader} from "./loader/POCLoader.js";
-import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
-import {PointCloudOctree} from "./PointCloudOctree.js";
-import {PointCloudArena4D} from "./arena4d/PointCloudArena4D.js";
-import {PointCloudArena4DGeometry} from "./arena4d/PointCloudArena4DGeometry.js";
-import {WorkerPool} from "./WorkerPool.js";
-import {workerPool, lru, runtime} from "./runtime.js";
+import "./core/utils/CameraExtensions.js";
 import * as THREE from 'three';
 import { Viewer } from "./viewer/viewer.js";
 import { CesiumControls } from "./core/navigation/CesiumControls.ts";
-import { PointSizeType, PointShape, CameraMode, ClipTask, ClipMethod } from "./defines.ts";
+import { PointSizeType, PointShape, CameraMode, ClipTask, ClipMethod } from "./core/types.ts";
+import { runtime, workerPool, lru } from "./core/runtime/runtime.ts";
+import { loadPointCloud } from "./core/index.js";
 
-export {workerPool, lru, runtime};
+export { workerPool, lru, runtime };
 
 export const version = runtime.version;
-
 export const debug = runtime.debug;
 
 export let pointBudget = runtime.pointBudget;
@@ -106,10 +36,6 @@ export let maxNodesLoading = runtime.maxNodesLoading;
 
 export const scriptPath = runtime.scriptPath;
 export const resourcePath = runtime.resourcePath;
-
-
-
-export { loadPointCloud } from "./core/index.js";
 
 // Dual-mode compatibility: auto-attach to window.Potree in browser environments
 if (typeof window !== 'undefined') {
@@ -141,5 +67,3 @@ if (typeof window !== 'undefined') {
 		w.THREE = THREE;
 	}
 }
-
-

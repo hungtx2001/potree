@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { KeyCodes } from '../types.js';
-import { Utils } from '../../utils.js';
+import { Utils } from '../utils/Utils.js';
 import { EventDispatcher } from '../EventDispatcher.js';
 
 export class InputHandler extends EventDispatcher {
