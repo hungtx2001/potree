@@ -2164,11 +2164,15 @@ export class Viewer extends EventDispatcher {
 	}
 
 	renderDefault(){
+		if (!this.renderArea || this.renderArea.clientWidth <= 0 || this.renderArea.clientHeight <= 0) {
+			return;
+		}
+
 		let pRenderer = this.getPRenderer();
 
 		{ // resize
-			const width = this.scaleFactor * this.renderArea.clientWidth;
-			const height = this.scaleFactor * this.renderArea.clientHeight;
+			const width = Math.max(1, this.scaleFactor * this.renderArea.clientWidth);
+			const height = Math.max(1, this.scaleFactor * this.renderArea.clientHeight);
 
 			this.renderer.setSize(width, height);
 			const pixelRatio = this.renderer.getPixelRatio();

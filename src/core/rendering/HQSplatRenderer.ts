@@ -63,6 +63,8 @@ export class HQSplatRenderer {
 	}
 
 	resize(width: number, height: number): void {
+		width = Math.max(1, Math.floor(width));
+		height = Math.max(1, Math.floor(height));
 		this.rtDepth.setSize(width, height);
 		this.rtAttribute.setSize(width, height);
 	}

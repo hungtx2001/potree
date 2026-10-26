@@ -22,10 +22,7 @@ export const DevApp: React.FC = () => {
 
 		// Clear previous pointclouds if any
 		if (viewer.scene && viewer.scene.pointclouds.length > 0) {
-			const toRemove = [...viewer.scene.pointclouds];
-			for (const pc of toRemove) {
-				viewer.scene.removePointCloud(pc);
-			}
+			viewer.scene.removeAllPointClouds();
 		}
 
 		loadPointCloud('/pointclouds/vol_total/cloud.js', 'sigeom.sa')
@@ -194,7 +191,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 const rootEl = document.getElementById('root');
 if (rootEl) {
-	createRoot(rootEl).render(
+	const globalRootKey = '__POTREE_DEV_ROOT__';
+	let root = (window as any)[globalRootKey];
+	if (!root) {
+		root = createRoot(rootEl);
+		(window as any)[globalRootKey] = root;
+	}
+	root.render(
 		<ErrorBoundary>
 			<DevApp />
 		</ErrorBoundary>

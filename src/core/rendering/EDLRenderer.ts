@@ -54,6 +54,9 @@ export class EDLRenderer {
 			height = this.screenshot.target.height;
 		}
 
+		width = Math.max(1, Math.floor(width));
+		height = Math.max(1, Math.floor(height));
+
 		this.rtEDL.setSize(width, height);
 		this.rtRegular.setSize(width, height);
 	}
@@ -161,7 +164,9 @@ export class EDLRenderer {
 
 		const viewer = this.viewer;
 		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
-		const { width, height } = viewer.renderer.getSize(new THREE.Vector2());
+		const rawSize = viewer.renderer.getSize(new THREE.Vector2());
+		const width = Math.max(1, Math.floor(rawSize.width));
+		const height = Math.max(1, Math.floor(rawSize.height));
 
 		viewer.dispatchEvent({ type: 'render.pass.begin', viewer });
 
