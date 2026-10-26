@@ -12,33 +12,6 @@ import {
 	IconFit,
 	IconClose,
 } from './icons.js';
-import {
-	iconAngle,
-	iconPoint,
-	iconDistance,
-	iconHeight,
-	iconCircle,
-	iconArea,
-	iconVolume,
-	iconProfile,
-	iconResetTools,
-	iconClipVolume,
-	iconClipPolygon,
-	iconClipScreen,
-	iconRemove,
-	iconEarth,
-	iconFps,
-	iconHelicopter,
-	iconOrbit,
-	iconFocus,
-	iconNavCube,
-	iconLeft,
-	iconRight,
-	iconFront,
-	iconBack,
-	iconTop,
-	iconBottom,
-} from './toolIcons.js';
 import { PointCloudOctree } from '../core/octree/PointCloudOctree.js';
 import { Exporters } from '../core/tools/Exporters.js';
 import { CameraMode, ClipTask, ClipMethod } from '../core/types.js';
@@ -554,7 +527,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('angle')}
 								title="Angle measurement"
 							>
-								<img src={iconAngle} alt="Angle" />
+								<img src={`${resPath}/icons/angle.png`} alt="Angle" />
 							</button>
 							<button
 								type="button"
@@ -562,7 +535,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('point')}
 								title="Point coordinates"
 							>
-								<img src={iconPoint} alt="Point" />
+								<img src={`${resPath}/icons/point.svg`} alt="Point" />
 							</button>
 							<button
 								type="button"
@@ -570,7 +543,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('distance')}
 								title="Distance measurement"
 							>
-								<img src={iconDistance} alt="Distance" />
+								<img src={`${resPath}/icons/distance.svg`} alt="Distance" />
 							</button>
 							<button
 								type="button"
@@ -578,7 +551,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('height')}
 								title="Height measurement"
 							>
-								<img src={iconHeight} alt="Height" />
+								<img src={`${resPath}/icons/height.svg`} alt="Height" />
 							</button>
 							<button
 								type="button"
@@ -586,7 +559,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('circle')}
 								title="Circle measurement"
 							>
-								<img src={iconCircle} alt="Circle" />
+								<img src={`${resPath}/icons/circle.svg`} alt="Circle" />
 							</button>
 							<button
 								type="button"
@@ -594,7 +567,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('area')}
 								title="Area measurement"
 							>
-								<img src={iconArea} alt="Area" />
+								<img src={`${resPath}/icons/area.svg`} alt="Area" />
 							</button>
 							<button
 								type="button"
@@ -602,7 +575,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('volume')}
 								title="Volume measurement"
 							>
-								<img src={iconVolume} alt="Volume" />
+								<img src={`${resPath}/icons/volume.svg`} alt="Volume" />
 							</button>
 							<button
 								type="button"
@@ -610,7 +583,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('profile')}
 								title="Height profile"
 							>
-								<img src={iconProfile} alt="Profile" />
+								<img src={`${resPath}/icons/profile.svg`} alt="Profile" />
 							</button>
 							<button
 								type="button"
@@ -618,7 +591,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => startMeasurement('clear')}
 								title="Remove all measurements"
 							>
-								<img src={iconResetTools} alt="Clear All" />
+								<img src={`${resPath}/icons/reset_tools.svg`} alt="Clear All" />
 							</button>
 						</div>
 
@@ -639,7 +612,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Volume clip"
 							>
-								<img src={iconClipVolume} alt="Clip Volume" />
+								<img src={`${resPath}/icons/clip_volume.svg`} alt="Clip Volume" />
 							</button>
 							<button
 								type="button"
@@ -652,7 +625,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Polygon clip"
 							>
-								<img src={iconClipPolygon} alt="Clip Polygon" />
+								<img src={`${resPath}/icons/clip-polygon.svg`} alt="Clip Polygon" />
 							</button>
 							<button
 								type="button"
@@ -665,7 +638,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Screen box clip"
 							>
-								<img src={iconClipScreen} alt="Clip Screen" />
+								<img src={`${resPath}/icons/clip-screen.svg`} alt="Clip Screen" />
 							</button>
 							<button
 								type="button"
@@ -678,7 +651,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Remove all clipping volumes"
 							>
-								<img src={iconRemove} alt="Remove Clips" />
+								<img src={`${resPath}/icons/remove.svg`} alt="Remove Clips" />
 							</button>
 						</div>
 
@@ -743,7 +716,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Earth control"
 							>
-								<img src={iconEarth} alt="Earth" />
+								<img src={`${resPath}/icons/earth_controls_1.png`} alt="Earth" />
 							</button>
 							<button
 								type="button"
@@ -757,7 +730,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Flight control"
 							>
-								<img src={iconFps} alt="Flight" />
+								<img src={`${resPath}/icons/fps_controls.svg`} alt="Flight" />
 							</button>
 							<button
 								type="button"
@@ -771,7 +744,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Helicopter control"
 							>
-								<img src={iconHelicopter} alt="Helicopter" />
+								<img src={`${resPath}/icons/helicopter_controls.svg`} alt="Helicopter" />
 							</button>
 							<button
 								type="button"
@@ -782,7 +755,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Orbit control"
 							>
-								<img src={iconOrbit} alt="Orbit" />
+								<img src={`${resPath}/icons/orbit_controls.svg`} alt="Orbit" />
 							</button>
 							<button
 								type="button"
@@ -792,7 +765,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Full extent"
 							>
-								<img src={iconFocus} alt="Full extent" />
+								<img src={`${resPath}/icons/focus.svg`} alt="Full extent" />
 							</button>
 							<button
 								type="button"
@@ -802,7 +775,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								}}
 								title="Navigation Cube"
 							>
-								<img src={iconNavCube} alt="Navigation Cube" />
+								<img src={`${resPath}/icons/navigation_cube.svg`} alt="Navigation Cube" />
 							</button>
 						</div>
 
@@ -814,7 +787,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => (viewer as any)?.setLeftView?.()}
 								title="Left view"
 							>
-								<img src={iconLeft} alt="Left" />
+								<img src={`${resPath}/icons/left.svg`} alt="Left" />
 							</button>
 							<button
 								type="button"
@@ -822,7 +795,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => (viewer as any)?.setRightView?.()}
 								title="Right view"
 							>
-								<img src={iconRight} alt="Right" />
+								<img src={`${resPath}/icons/right.svg`} alt="Right" />
 							</button>
 							<button
 								type="button"
@@ -830,7 +803,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => (viewer as any)?.setFrontView?.()}
 								title="Front view"
 							>
-								<img src={iconFront} alt="Front" />
+								<img src={`${resPath}/icons/front.svg`} alt="Front" />
 							</button>
 							<button
 								type="button"
@@ -838,7 +811,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => (viewer as any)?.setBackView?.()}
 								title="Back view"
 							>
-								<img src={iconBack} alt="Back" />
+								<img src={`${resPath}/icons/back.svg`} alt="Back" />
 							</button>
 							<button
 								type="button"
@@ -846,7 +819,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => (viewer as any)?.setTopView?.()}
 								title="Top view"
 							>
-								<img src={iconTop} alt="Top" />
+								<img src={`${resPath}/icons/top.svg`} alt="Top" />
 							</button>
 							<button
 								type="button"
@@ -854,7 +827,7 @@ export const PotreeSidebar: React.FC<PotreeSidebarProps> = ({
 								onClick={() => (viewer as any)?.setBottomView?.()}
 								title="Bottom view"
 							>
-								<img src={iconBottom} alt="Bottom" />
+								<img src={`${resPath}/icons/bottom.svg`} alt="Bottom" />
 							</button>
 						</div>
 
